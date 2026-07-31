@@ -45,3 +45,11 @@ npx nx affected -t build,test,lint   # ejecutar solo sobre lo afectado por el ca
 - Nombra cada app de cliente de forma descriptiva y en kebab-case (ej. `apps/acme-dashboard`, no `apps/app1`).
 - El código compartido entre dos o más apps va en `libs/`, no se copia entre apps.
 - El scope de npm del workspace es `@repositorio-de-apps` (ver `package.json`); las libs generadas heredan ese prefijo en sus imports.
+
+## Planificación de trabajo grande: Wayfinder
+
+Para trabajo demasiado grande para una sola sesión de agente (una migración, una feature con muchas decisiones abiertas), este repo trae la skill `/wayfinder` (y sus 5 dependencias: `setup-matt-pocock-skills`, `grilling`, `domain-modeling`, `research`, `prototype`) vendorizadas en `.claude/skills/`, `.github/skills/` y `.agents/skills/`. Traza un mapa de decisiones como issues de GitHub y los va resolviendo uno a la vez. Ver `docs/agents/issue-tracker.md` y `docs/agents/domain.md` para cómo está configurado en este repo.
+
+Requiere el CLI `gh` autenticado (`gh auth login`) — las skills crean y gestionan issues en `FabianRG1990/repositorio-de-apps`.
+
+Son código de terceros (MIT, © Matt Pocock, [mattpocock/skills](https://github.com/mattpocock/skills)) vendorizado sin modificaciones — ver `THIRD_PARTY_LICENSES/mattpocock-skills-LICENSE`.

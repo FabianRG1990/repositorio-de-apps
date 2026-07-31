@@ -21,3 +21,13 @@
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## Agent skills
+
+### Issue tracker
+
+Issues and the Wayfinder map/tickets live as GitHub Issues in this repo (`FabianRG1990/repositorio-de-apps`), via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Multi-context layout — one `CONTEXT.md` per client app under `apps/<client>/`, indexed by a root `CONTEXT-MAP.md`; monorepo-wide ADRs live in `docs/adr/`, client-specific ADRs in `apps/<client>/docs/adr/`. See `docs/agents/domain.md`.
