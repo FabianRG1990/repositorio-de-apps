@@ -1,0 +1,102 @@
+.tokens {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tokens__title {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-3xl);
+  font-weight: 700;
+  margin: 0;
+}
+
+.tokens__subtitle {
+  font-size: var(--bahia-text-base);
+  color: var(--bahia-stone-500);
+  margin: 0.25rem 0 0;
+}
+
+.tokens__heading {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-lg);
+  margin: 0 0 0.5rem;
+}
+
+.f-title {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-xl);
+  font-weight: 700;
+  margin: 0.35rem 0;
+}
+
+.f-body {
+  font-family: var(--bahia-font-body);
+  font-size: var(--bahia-text-base);
+  margin: 0.35rem 0;
+}
+
+.f-mono {
+  font-family: var(--bahia-font-mono);
+  font-size: var(--bahia-text-base);
+  margin: 0.35rem 0;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.swatch {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--bahia-radius);
+  font-size: var(--bahia-text-xs);
+  border: var(--bahia-border-width) solid rgb(0 0 0 / 8%);
+}
+
+.swatch--stone-100 {
+  background: var(--bahia-stone-100);
+}
+
+.swatch--stone-300 {
+  background: var(--bahia-stone-300);
+}
+
+.swatch--stone-600 {
+  background: var(--bahia-stone-600);
+  color: var(--bahia-stone-50);
+}
+
+.swatch--accent {
+  background: var(--bahia-accent-600);
+  color: var(--bahia-stone-50);
+}
+
+.swatch--ingresado {
+  background: var(--bahia-estado-ingresado-bg);
+  color: var(--bahia-estado-ingresado-fg);
+}
+
+.swatch--diagnostico {
+  background: var(--bahia-estado-diagnostico-bg);
+  color: var(--bahia-estado-diagnostico-fg);
+}
+
+.swatch--reparacion {
+  background: var(--bahia-estado-reparacion-bg);
+  color: var(--bahia-estado-reparacion-fg);
+}
+
+.swatch--listo {
+  background: var(--bahia-estado-listo-bg);
+  color: var(--bahia-estado-listo-fg);
+}
+
+.swatch--entregado {
+  background: var(--bahia-estado-entregado-bg);
+  color: var(--bahia-estado-entregado-fg);
+}

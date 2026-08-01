@@ -1,1 +1,62 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Tokens de diseño de Bahía — variante ganadora "C: ficha técnica + stepper de
+// pipeline" del prototipo (ver ticket "Prototipar tokens de diseño Angular",
+// rama prototype/bahia-design-tokens). Fuente de la dirección de diseño: PRD
+// original, sección 6.
+:root {
+  // Tipografía: Space Grotesk (títulos), Inter (cuerpo), IBM Plex Mono (datos: placas, órdenes, kilometraje)
+  --bahia-font-title: 'Space Grotesk', sans-serif;
+  --bahia-font-body: 'Inter', sans-serif;
+  --bahia-font-mono: 'IBM Plex Mono', monospace;
+
+  // Escala tipográfica — ancla conocida (escala por defecto de Tailwind CSS), no improvisada
+  --bahia-text-xs: 0.75rem; // 12px
+  --bahia-text-sm: 0.875rem; // 14px
+  --bahia-text-base: 1rem; // 16px
+  --bahia-text-lg: 1.125rem; // 18px
+  --bahia-text-xl: 1.25rem; // 20px
+  --bahia-text-2xl: 1.5rem; // 24px
+  --bahia-text-3xl: 1.875rem; // 30px
+
+  // Paleta neutra cálida — ancla conocida (escala "stone" de Tailwind CSS), no el crema genérico de IA
+  --bahia-stone-50: #fafaf9;
+  --bahia-stone-100: #f5f5f4;
+  --bahia-stone-200: #e7e5e4;
+  --bahia-stone-300: #d6d3d1;
+  --bahia-stone-400: #a8a29e;
+  --bahia-stone-500: #78716c;
+  --bahia-stone-600: #57534e;
+  --bahia-stone-700: #44403c;
+  --bahia-stone-800: #292524;
+  --bahia-stone-900: #1c1917;
+
+  // Acento naranja — herramienta/señal de taller, para acciones y datos clave
+  --bahia-accent-50: #fff7ed;
+  --bahia-accent-500: #f97316;
+  --bahia-accent-600: #ea580c;
+
+  // Colores semánticos por estado del tablero (Ingresado → Entregado, ver ticket de capa de datos)
+  --bahia-estado-ingresado-fg: #3e6785; // azul acero — "en cola"
+  --bahia-estado-ingresado-bg: #eaf1f6;
+  --bahia-estado-diagnostico-fg: #b45309; // ámbar — "en diagnóstico"
+  --bahia-estado-diagnostico-bg: #fef3c7;
+  --bahia-estado-reparacion-fg: #c2410c; // naranja (acento) — etapa más activa
+  --bahia-estado-reparacion-bg: #ffedd5;
+  --bahia-estado-listo-fg: #4d6a1f; // verde oliva — "listo"
+  --bahia-estado-listo-bg: #eef3e1;
+  --bahia-estado-entregado-fg: #78716c; // neutro — fuera del tablero activo
+  --bahia-estado-entregado-bg: #f5f5f4;
+
+  // Reglas de forma: plano y funcional — sin gradientes, sombras decorativas ni esquinas muy redondeadas
+  --bahia-radius: 2px;
+  --bahia-border-width: 1px;
+  --bahia-shadow: 0 1px 2px rgb(28 25 23 / 8%);
+}
+
+body {
+  margin: 0;
+  font-family: var(--bahia-font-body);
+  background: var(--bahia-stone-100);
+  color: var(--bahia-stone-800);
+}
