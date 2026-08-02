@@ -1,0 +1,11 @@
+# Espejos de skills de agentes (Wayfinder/Matt Pocock + skills de Nx) —
+# contenido de herramientas/terceros, no refleja el stack real de este
+# monorepo (Angular + Nx + TypeScript). Sin esto, GitHub cuenta sus .mjs
+# como "JavaScript" en las estadísticas de lenguaje del repo.
+.claude/** linguist-vendored
+.agents/** linguist-vendored
+.cursor/** linguist-vendored
+.codex/** linguist-vendored
+.gemini/** linguist-vendored
+.opencode/** linguist-vendored
+.github/skills/** linguist-vendored
