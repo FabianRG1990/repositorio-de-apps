@@ -50,9 +50,10 @@ describe('TicketCard', () => {
     expect(compiled.querySelector('[title="Dictado por voz"]')).toBeTruthy();
   });
 
-  it('shows an avanzar button for a non-final estado and emits on click', async () => {
+  it('shows an avanzar button when puedeAvanzar is true and emits on click', async () => {
     const fixture = TestBed.createComponent(TicketCard);
     fixture.componentRef.setInput('orden', ordenBase);
+    fixture.componentRef.setInput('puedeAvanzar', true);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -66,6 +67,20 @@ describe('TicketCard', () => {
     boton.click();
 
     expect(emitido).toBe(true);
+  });
+
+  it('hides the avanzar button when puedeAvanzar is false, even for a non-final estado', async () => {
+    const fixture = TestBed.createComponent(TicketCard);
+    fixture.componentRef.setInput('orden', ordenBase);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.ficha__avanzar')).toBeNull();
+    // sin permiso, tampoco se muestra el mensaje de "completada" — la
+    // orden no está en Entregado, solo no hay nada que el usuario pueda
+    // accionar aquí.
+    expect(compiled.querySelector('.ficha__completada')).toBeNull();
   });
 
   it('shows a completion message instead of a button when estado is Entregado', async () => {

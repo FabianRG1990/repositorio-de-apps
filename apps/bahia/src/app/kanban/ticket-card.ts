@@ -34,6 +34,7 @@ export class TicketCard {
   // Si el usuario en sesión tiene el permiso `diagnosticar` — lo decide
   // KanbanBoard, esta ficha no conoce SesionStore.
   puedeDiagnosticar = input(false);
+  puedeAvanzar = input(false);
   avanzar = output<void>();
   guardarDiagnostico = output<string>();
 
@@ -57,6 +58,10 @@ export class TicketCard {
     const siguiente = siguienteEstado(this.orden().estado);
     return siguiente ? ESTADO_ORDEN_LABEL[siguiente] : undefined;
   });
+
+  protected readonly puedeAvanzarAhora = computed(
+    () => this.puedeAvanzar() && this.siguienteEstadoLabel() !== undefined,
+  );
 
   // El diagnóstico se redacta mientras la orden está en esa etapa; una vez
   // que avanza, queda como registro de solo lectura.

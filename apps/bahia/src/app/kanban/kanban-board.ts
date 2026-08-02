@@ -43,6 +43,16 @@ export class KanbanBoard {
     this.sesionStore.tienePermiso('diagnosticar'),
   );
 
+  // Ningún permiso de Usuario.permisos se pensó para "mover el pipeline" en
+  // general — el ticket de autenticación solo gatea recibir/diagnosticar.
+  // Se reusa `diagnosticar` como aproximación razonable (en la práctica
+  // habilita a mecánico/administración, bloquea a recepción, que en la
+  // vida real solo hace el ingreso). Un sistema real probablemente
+  // querría un permiso propio por transición (reparar, entregar...).
+  protected readonly puedeAvanzar = computed(() =>
+    this.sesionStore.tienePermiso('diagnosticar'),
+  );
+
   // Los 3 stores resuelven contra IndexedDB de forma independiente y no
   // necesariamente al mismo tiempo — sin esto, la primera pintura podía
   // mostrar la ficha con el cliente/vehículo todavía en blanco hasta que

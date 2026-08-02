@@ -65,8 +65,12 @@ describe('KanbanBoard', () => {
     expect(fichaConVisita?.textContent).toMatch(/Visitas previas\s*1/);
   });
 
-  it('avanzar moves the orden to the next column', async () => {
+  it('avanzar moves the orden to the next column for a usuario with permiso diagnosticar', async () => {
     const { ordenesStore } = await esperarCargaCompleta();
+    const usuariosStore = TestBed.inject(UsuariosStore);
+    await waitFor(() => usuariosStore.cargado());
+    const mecanico = usuariosStore.entities().find((u) => u.puesto === 'Mecánico');
+    TestBed.inject(SesionStore).iniciarSesion(mecanico!);
 
     const fixture = TestBed.createComponent(KanbanBoard);
     fixture.detectChanges();
@@ -96,6 +100,16 @@ describe('KanbanBoard', () => {
     expect(ordenesStore.entityMap()[ordenId as string].estado).toBe(
       'Diagnostico',
     );
+  });
+
+  it('hides the avanzar button on every ficha when nobody is logged in', async () => {
+    await esperarCargaCompleta();
+    const fixture = TestBed.createComponent(KanbanBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('.ficha__avanzar')).toHaveLength(0);
   });
 
   it('hides the diagnostico editor when nobody is logged in', async () => {

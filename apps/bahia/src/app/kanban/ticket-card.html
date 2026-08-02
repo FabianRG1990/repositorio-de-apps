@@ -78,11 +78,11 @@
       }
     </ol>
 
-    @if (siguienteEstadoLabel(); as siguiente) {
+    @if (puedeAvanzarAhora()) {
       <button type="button" class="ficha__avanzar" (click)="avanzar.emit()">
-        Avanzar a {{ siguiente }} →
+        Avanzar a {{ siguienteEstadoLabel() }} →
       </button>
-    } @else {
+    } @else if (!siguienteEstadoLabel()) {
       <p class="ficha__completada">Entregado ✓</p>
     }
   </div>

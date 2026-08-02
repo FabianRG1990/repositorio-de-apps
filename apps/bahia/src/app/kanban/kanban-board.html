@@ -18,6 +18,7 @@
               [vehiculo]="item.vehiculo"
               [visitasPrevias]="item.visitasPrevias"
               [puedeDiagnosticar]="puedeDiagnosticar()"
+              [puedeAvanzar]="puedeAvanzar()"
               (avanzar)="avanzarEstado(item.orden)"
               (guardarDiagnostico)="guardarDiagnostico(item.orden, $event)"
             />
