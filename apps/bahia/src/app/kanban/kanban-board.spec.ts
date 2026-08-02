@@ -5,6 +5,7 @@ import { ClientesStore } from '../data-access/stores/clientes.store';
 import { FacturasStore } from '../data-access/stores/facturas.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
 import { SesionStore } from '../data-access/stores/sesion.store';
+import { TalleresStore } from '../data-access/stores/talleres.store';
 import { UsuariosStore } from '../data-access/stores/usuarios.store';
 import { VehiculosStore } from '../data-access/stores/vehiculos.store';
 import { waitFor } from '../data-access/testing/wait-for';
@@ -251,5 +252,46 @@ describe('KanbanBoard', () => {
     expect(creada?.conceptos).toEqual([
       { descripcion: 'Revisión de frenos', monto: 300 },
     ]);
+  });
+
+  it('hides the factura editor when "Facturar" is disabled in configuracion, but keeps an existing factura visible', async () => {
+    await esperarCargaCompleta();
+    const talleresStore = TestBed.inject(TalleresStore);
+    await waitFor(() => talleresStore.cargado());
+    const usuariosStore = TestBed.inject(UsuariosStore);
+    await waitFor(() => usuariosStore.cargado());
+    const administradora = usuariosStore
+      .entities()
+      .find((u) => u.puesto === 'Administración');
+    if (!administradora) throw new Error('seed debería incluir Administración');
+    TestBed.inject(SesionStore).iniciarSesion(administradora);
+
+    talleresStore.actualizarConfiguracion({ facturarHabilitado: false });
+    await waitFor(() => talleresStore.configuracion().facturarHabilitado === false);
+
+    const fixture = TestBed.createComponent(KanbanBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    // orden-1 (OT-0140) ya tiene una factura sembrada — debe seguir visible
+    const fichaConFactura = Array.from(
+      compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
+    ).find((el) => el.textContent?.includes('OT-0140'));
+    expect(fichaConFactura?.textContent).toContain('FA-0001');
+
+    // orden-5 (OT-0153) está en Listo — la avanzamos a Entregado, no debe
+    // ofrecer el formulario de factura nueva con la función desactivada
+    const buscarFicha = () =>
+      Array.from(
+        compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
+      ).find((el) => el.textContent?.includes('OT-0153'));
+    buscarFicha()?.querySelector<HTMLButtonElement>('.ficha__avanzar')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      buscarFicha()?.querySelector('.ficha__concepto-agregar'),
+    ).toBeNull();
   });
 });

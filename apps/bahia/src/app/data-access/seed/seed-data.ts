@@ -38,13 +38,7 @@ export const SEED_USUARIOS: Usuario[] = [
     tallerId: 'taller-1',
     nombre: 'Carla Rojas',
     puesto: 'Administración',
-    permisos: [
-      'recibir',
-      'diagnosticar',
-      'facturar',
-      'asignar_bahia',
-      'ver_reportes',
-    ],
+    permisos: ['recibir', 'diagnosticar', 'facturar', 'ver_reportes'],
   },
 ];
 

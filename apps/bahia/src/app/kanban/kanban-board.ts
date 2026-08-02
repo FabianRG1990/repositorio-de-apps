@@ -17,6 +17,7 @@ import { ClientesStore } from '../data-access/stores/clientes.store';
 import { FacturasStore } from '../data-access/stores/facturas.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
 import { SesionStore } from '../data-access/stores/sesion.store';
+import { TalleresStore } from '../data-access/stores/talleres.store';
 import { VehiculosStore } from '../data-access/stores/vehiculos.store';
 import { TicketCard } from './ticket-card';
 
@@ -46,13 +47,20 @@ export class KanbanBoard {
   private readonly vehiculosStore = inject(VehiculosStore);
   private readonly facturasStore = inject(FacturasStore);
   private readonly sesionStore = inject(SesionStore);
+  private readonly talleresStore = inject(TalleresStore);
 
   protected readonly puedeDiagnosticar = computed(() =>
     this.sesionStore.tienePermiso('diagnosticar'),
   );
 
-  protected readonly puedeFacturar = computed(() =>
-    this.sesionStore.tienePermiso('facturar'),
+  // Además del permiso del usuario, la función debe estar habilitada en la
+  // configuración del taller (ver issue #13) — desactivarla no oculta
+  // facturas ya guardadas (TicketCard las sigue mostrando vía `factura()`),
+  // solo bloquea crear una nueva.
+  protected readonly puedeFacturar = computed(
+    () =>
+      this.sesionStore.tienePermiso('facturar') &&
+      this.talleresStore.configuracion().facturarHabilitado,
   );
 
   // Ningún permiso de Usuario.permisos se pensó para "mover el pipeline" en

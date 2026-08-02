@@ -8,7 +8,11 @@
   @if (sesionStore.tienePermiso('recibir')) {
     <app-nueva-orden-form />
   }
-  @if (sesionStore.tienePermiso('ver_reportes')) {
+  <app-configuracion-panel />
+  @if (
+    sesionStore.tienePermiso('ver_reportes') &&
+    talleresStore.configuracion().verReportesHabilitado
+  ) {
     <app-reportes-panel />
   }
   <app-kanban-board />

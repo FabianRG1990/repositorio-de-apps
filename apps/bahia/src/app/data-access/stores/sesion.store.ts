@@ -28,11 +28,6 @@ export const SesionStore = signalStore(
     cerrarSesion(): void {
       patchState(store, { usuarioActual: null });
     },
-    // Consultado hoy solo por la vista de sesión, para mostrar los
-    // permisos del usuario activo. `recibir`/`diagnosticar` empiezan a
-    // gatear UI real recién cuando existan esas pantallas; `facturar`,
-    // `asignar_bahia` y `ver_reportes` quedan listos sin ningún punto de
-    // la UI que los consulte todavía (ver Usuario.permisos).
     tienePermiso(permiso: Permiso): boolean {
       return store.usuarioActual()?.permisos.includes(permiso) ?? false;
     },
