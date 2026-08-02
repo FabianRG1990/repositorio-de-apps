@@ -1,11 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
+import { resetBahiaDbForTests } from '../persistence/bahia-db';
 import { UsuariosDataService } from './usuarios-data.service';
 
 describe('UsuariosDataService', () => {
   let service: UsuariosDataService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetBahiaDbForTests();
     service = TestBed.inject(UsuariosDataService);
   });
 

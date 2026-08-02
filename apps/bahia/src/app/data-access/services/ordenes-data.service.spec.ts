@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ESTADOS_ORDEN } from '../models/orden-trabajo.model';
+import { resetBahiaDbForTests } from '../persistence/bahia-db';
 import { OrdenesDataService } from './ordenes-data.service';
 
 describe('OrdenesDataService', () => {
   let service: OrdenesDataService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetBahiaDbForTests();
     service = TestBed.inject(OrdenesDataService);
   });
 

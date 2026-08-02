@@ -1,14 +1,23 @@
 import { TestBed } from '@angular/core/testing';
+import { resetBahiaDbForTests } from '../persistence/bahia-db';
+import { waitFor } from '../testing/wait-for';
 import { VehiculosStore } from './vehiculos.store';
 
 describe('VehiculosStore', () => {
-  it('loads the seeded vehiculos on init', () => {
+  beforeEach(async () => {
+    await resetBahiaDbForTests();
+  });
+
+  it('loads the seeded vehiculos on init', async () => {
     const store = TestBed.inject(VehiculosStore);
+    await waitFor(() => store.entities().length > 0);
+
     expect(store.entities()).toHaveLength(4);
   });
 
-  it('crear adds a new vehiculo to the store', () => {
+  it('crear adds a new vehiculo to the store', async () => {
     const store = TestBed.inject(VehiculosStore);
+    await waitFor(() => store.entities().length > 0);
     const antes = store.entities().length;
 
     store.crear({
@@ -18,6 +27,7 @@ describe('VehiculosStore', () => {
       modelo: '3',
       anio: 2022,
     });
+    await waitFor(() => store.entities().length > antes);
 
     expect(store.entities().length).toBe(antes + 1);
   });
