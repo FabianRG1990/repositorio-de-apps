@@ -10,14 +10,14 @@ describe('VehiculosStore', () => {
 
   it('loads the seeded vehiculos on init', async () => {
     const store = TestBed.inject(VehiculosStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
 
     expect(store.entities()).toHaveLength(4);
   });
 
   it('crear adds a new vehiculo to the store', async () => {
     const store = TestBed.inject(VehiculosStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
     const antes = store.entities().length;
 
     store.crear({

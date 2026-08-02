@@ -10,14 +10,14 @@ describe('ClientesStore', () => {
 
   it('loads the seeded clientes on init', async () => {
     const store = TestBed.inject(ClientesStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
 
     expect(store.entities()).toHaveLength(4);
   });
 
   it('crear adds a new cliente to the store', async () => {
     const store = TestBed.inject(ClientesStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
     const antes = store.entities().length;
 
     store.crear({ nombre: 'Nuevo Cliente', telefono: '555-0000' });

@@ -10,7 +10,7 @@ describe('TalleresStore', () => {
 
   it('loads the seeded taller on init', async () => {
     const store = TestBed.inject(TalleresStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
 
     expect(store.entities()).toHaveLength(1);
     expect(store.entities()[0].nombre).toBe('Taller Bahía Centro');

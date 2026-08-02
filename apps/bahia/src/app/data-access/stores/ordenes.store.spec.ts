@@ -11,7 +11,7 @@ describe('OrdenesStore', () => {
 
   it('loads the seeded ordenes on init', async () => {
     const store = TestBed.inject(OrdenesStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
 
     const estadosPresentes = new Set(store.entities().map((o) => o.estado));
     expect(ESTADOS_ORDEN.every((estado) => estadosPresentes.has(estado))).toBe(
@@ -21,7 +21,7 @@ describe('OrdenesStore', () => {
 
   it('crear adds a new orden to the store', async () => {
     const store = TestBed.inject(OrdenesStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
     const antes = store.entities().length;
 
     store.crear({
@@ -42,7 +42,7 @@ describe('OrdenesStore', () => {
 
   it('cambiarEstado updates the estado of the target orden', async () => {
     const store = TestBed.inject(OrdenesStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
     const [primera] = store.entities();
 
     store.cambiarEstado({ id: primera.id, estado: 'Entregado' });

@@ -10,7 +10,7 @@ describe('UsuariosStore', () => {
 
   it('loads the seeded usuarios on init', async () => {
     const store = TestBed.inject(UsuariosStore);
-    await waitFor(() => store.entities().length > 0);
+    await waitFor(() => store.cargado());
 
     expect(store.entities()).toHaveLength(3);
   });

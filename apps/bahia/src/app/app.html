@@ -4,4 +4,8 @@
 
 <app-sesion-selector />
 
+@if (sesionStore.haySesion()) {
+  <app-kanban-board />
+}
+
 <router-outlet></router-outlet>

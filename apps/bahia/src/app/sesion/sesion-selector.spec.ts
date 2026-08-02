@@ -12,7 +12,7 @@ describe('SesionSelector', () => {
 
   it('lists the seeded usuarios when there is no active sesion', async () => {
     const usuariosStore = TestBed.inject(UsuariosStore);
-    await waitFor(() => usuariosStore.entities().length > 0);
+    await waitFor(() => usuariosStore.cargado());
 
     const fixture = TestBed.createComponent(SesionSelector);
     fixture.detectChanges();
@@ -26,7 +26,7 @@ describe('SesionSelector', () => {
 
   it('shows the active usuario and its permisos after iniciarSesion', async () => {
     const usuariosStore = TestBed.inject(UsuariosStore);
-    await waitFor(() => usuariosStore.entities().length > 0);
+    await waitFor(() => usuariosStore.cargado());
 
     const fixture = TestBed.createComponent(SesionSelector);
     fixture.detectChanges();

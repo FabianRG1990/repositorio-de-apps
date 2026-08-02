@@ -1,0 +1,29 @@
+@if (cargando()) {
+  <p class="kanban__cargando">Cargando tablero…</p>
+} @else {
+  <div class="kanban">
+    @for (columna of columnas(); track columna.estado) {
+      <section class="kanban__columna">
+        <header class="kanban__columna-header">
+          <h3 class="kanban__columna-titulo">{{ columna.label }}</h3>
+          <span class="kanban__columna-contador">{{
+            columna.ordenes.length
+          }}</span>
+        </header>
+        <div class="kanban__columna-cuerpo">
+          @for (item of columna.ordenes; track item.orden.id) {
+            <app-ticket-card
+              [orden]="item.orden"
+              [cliente]="item.cliente"
+              [vehiculo]="item.vehiculo"
+              [visitasPrevias]="item.visitasPrevias"
+              (avanzar)="avanzarEstado(item.orden)"
+            />
+          } @empty {
+            <p class="kanban__columna-vacia">Sin órdenes</p>
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

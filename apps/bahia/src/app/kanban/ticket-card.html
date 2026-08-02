@@ -1,0 +1,64 @@
+<article class="ficha">
+  <div class="ficha__perforado"></div>
+  <div class="ficha__contenido">
+    <header class="ficha__header">
+      <h3 class="ficha__titulo">{{ cliente()?.nombre ?? 'Cliente' }}</h3>
+      <span class="ficha__chip mono">{{ orden().numero }}</span>
+    </header>
+
+    <div class="ficha__grid">
+      <div class="campo">
+        <span class="campo__label">Placa</span>
+        <span class="campo__valor mono">{{ vehiculo()?.placa ?? '—' }}</span>
+      </div>
+      <div class="campo">
+        <span class="campo__label">Vehículo</span>
+        <span class="campo__valor"
+          >{{ vehiculo()?.marca }} {{ vehiculo()?.modelo }} ({{
+            vehiculo()?.anio
+          }})</span
+        >
+      </div>
+      <div class="campo">
+        <span class="campo__label">Kilometraje</span>
+        <span class="campo__valor mono"
+          >{{ orden().kilometraje | number }} km</span
+        >
+      </div>
+      <div class="campo">
+        <span class="campo__label">Visitas previas</span>
+        <span class="campo__valor">{{ visitasPrevias() }}</span>
+      </div>
+      <div class="campo campo--full">
+        <span class="campo__label"
+          >Motivo
+          @if (orden().origenMotivo === 'voz') {
+            <span title="Dictado por voz">🎙</span>
+          }
+        </span>
+        <span class="campo__valor">{{ orden().motivoIngreso }}</span>
+      </div>
+    </div>
+
+    <ol class="stepper">
+      @for (etapa of etapas(); track etapa.clave) {
+        <li
+          class="stepper__paso"
+          [class.stepper__paso--actual]="etapa.actual"
+          [class.stepper__paso--pasado]="etapa.pasado"
+        >
+          <span class="stepper__punto"></span>
+          <span class="stepper__label">{{ etapa.label }}</span>
+        </li>
+      }
+    </ol>
+
+    @if (siguienteEstadoLabel(); as siguiente) {
+      <button type="button" class="ficha__avanzar" (click)="avanzar.emit()">
+        Avanzar a {{ siguiente }} →
+      </button>
+    } @else {
+      <p class="ficha__completada">Entregado ✓</p>
+    }
+  </div>
+</article>

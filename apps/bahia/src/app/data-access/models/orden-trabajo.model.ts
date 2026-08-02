@@ -21,6 +21,12 @@ export const ESTADO_ORDEN_LABEL: Record<EstadoOrden, string> = {
   Entregado: 'Entregado',
 };
 
+// Único lugar que sabe "qué sigue" en el pipeline — el tablero kanban y la
+// ficha de cada orden lo consultan para no duplicar la secuencia.
+export function siguienteEstado(estado: EstadoOrden): EstadoOrden | undefined {
+  return ESTADOS_ORDEN[ESTADOS_ORDEN.indexOf(estado) + 1];
+}
+
 export interface OrdenTrabajo {
   id: string;
   numero: string;

@@ -1,5 +1,11 @@
 import { inject } from '@angular/core';
-import { patchState, signalStore, withHooks, withMethods } from '@ngrx/signals';
+import {
+  patchState,
+  signalStore,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
 import {
   addEntity,
   setAllEntities,
@@ -14,11 +20,14 @@ import { OrdenesDataService } from '../services/ordenes-data.service';
 export const OrdenesStore = signalStore(
   { providedIn: 'root' },
   withEntities<OrdenTrabajo>(),
+  withState({ cargado: false }),
   withMethods((store, dataService = inject(OrdenesDataService)) => ({
     cargar: rxMethod<void>(
       pipe(
         switchMap(() => dataService.getAll()),
-        tap((ordenes) => patchState(store, setAllEntities(ordenes))),
+        tap((ordenes) =>
+          patchState(store, setAllEntities(ordenes), { cargado: true }),
+        ),
       ),
     ),
     crear: rxMethod<Omit<OrdenTrabajo, 'id'>>(
