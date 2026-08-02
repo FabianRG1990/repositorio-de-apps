@@ -1,3 +1,28 @@
+// El tablero (kanban) debe llenar el resto del viewport para que su propia
+// barra de scroll horizontal quede siempre visible, sin depender de cuánto
+// contenido haya arriba (sesión, "+ Nueva orden", Configuración, Reportes)
+// — antes se aproximaba con un `calc(100vh - Npx)` fijo en la columna, que
+// dejaba la barra justo en el borde o fuera del viewport en la práctica.
+:host {
+  display: flex;
+  flex-direction: column;
+  // `height` fija (no `min-height`): con solo un mínimo, el contenedor
+  // crecía por encima del viewport cuando el tablero tenía suficientes
+  // fichas, y el flex-grow de abajo nunca llegaba a acotar nada. `overflow-y`
+  // como red de seguridad — si el bloque de arriba (sesión + acciones)
+  // fuera inusualmente alto, la página entera scrollea en vez de recortar
+  // contenido en silencio.
+  height: 100vh;
+  overflow-y: auto;
+}
+
+app-kanban-board {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .shell-header {
   max-width: 480px;
   margin: 0 auto;

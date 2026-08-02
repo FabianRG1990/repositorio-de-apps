@@ -9,7 +9,28 @@
   gap: 1rem;
   padding: 1.5rem;
   overflow-x: auto;
-  align-items: flex-start;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  // Scrollbar propia y visible (no la delgada por defecto del SO) — mismo
+  // criterio que Trello/Linear para que el usuario note que hay más
+  // columnas a la derecha sin depender de adivinarlo.
+  scrollbar-width: thin;
+  scrollbar-color: var(--bahia-stone-400) transparent;
+
+  &::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--bahia-stone-400);
+    border-radius: var(--bahia-radius);
+  }
 }
 
 .kanban__columna {
@@ -17,7 +38,6 @@
   background: var(--bahia-stone-100);
   border-radius: var(--bahia-radius);
   padding: 0.75rem;
-  max-height: calc(100vh - 14rem);
   display: flex;
   flex-direction: column;
   min-height: 0;
