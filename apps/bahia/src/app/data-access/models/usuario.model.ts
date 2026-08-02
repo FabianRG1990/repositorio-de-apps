@@ -10,6 +10,14 @@ export type Permiso =
   | 'asignar_bahia'
   | 'ver_reportes';
 
+export const PERMISO_LABEL: Record<Permiso, string> = {
+  recibir: 'Recibir',
+  diagnosticar: 'Diagnosticar',
+  facturar: 'Facturar',
+  asignar_bahia: 'Asignar bahía',
+  ver_reportes: 'Ver reportes',
+};
+
 export interface Usuario {
   id: string;
   tallerId: string;
