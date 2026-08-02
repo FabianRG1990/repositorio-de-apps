@@ -6,6 +6,7 @@
 // (vehiculo-1, de María Fernández) con dos órdenes — una entregada en el
 // pasado y una activa hoy — para demostrar en vivo "cliente recurrente".
 import { Cliente } from '../models/cliente.model';
+import { Factura } from '../models/factura.model';
 import { OrdenTrabajo } from '../models/orden-trabajo.model';
 import { Taller } from '../models/taller.model';
 import { Usuario } from '../models/usuario.model';
@@ -153,5 +154,24 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
     origenMotivo: 'texto',
     fechaIngreso: '2026-07-29T15:45:00',
     diagnostico: 'Sistema de frenos dentro de parámetros — solo ajuste menor.',
+  },
+];
+
+// Ver issue #11 (reapertura de alcance: facturar/ver_reportes). Solo
+// orden-1 (OT-0140) ya está "Entregado" desde el seed, así que es la
+// única que puede tener una factura — sirve para que "ver_reportes"
+// muestre datos reales desde el primer arranque, sin depender de que
+// alguien facture algo en vivo primero.
+export const SEED_FACTURAS: Factura[] = [
+  {
+    id: 'factura-1',
+    ordenId: 'orden-1',
+    numero: 'FA-0001',
+    fecha: '2026-05-12T12:00:00',
+    conceptos: [
+      { descripcion: 'Cambio de aceite sintético', monto: 450 },
+      { descripcion: 'Filtro de aceite', monto: 120 },
+      { descripcion: 'Mano de obra', monto: 200 },
+    ],
   },
 ];

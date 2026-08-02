@@ -58,19 +58,19 @@ describe('OrdenesStore', () => {
     // 3 órdenes ya diagnosticadas del seed, así que el `waitFor` de abajo
     // no se resuelve de inmediato con un valor sembrado.
     const objetivo = store.entities().find((o) => o.numero === 'OT-0151');
-    expect(objetivo).toBeTruthy();
+    if (!objetivo) throw new Error('seed debería incluir OT-0151');
 
     store.guardarDiagnostico({
-      id: objetivo!.id,
+      id: objetivo.id,
       diagnostico: 'Fuga de aceite en el cárter',
     });
     await waitFor(
-      () => store.entityMap()[objetivo!.id]?.diagnostico !== undefined,
+      () => store.entityMap()[objetivo.id]?.diagnostico !== undefined,
     );
 
-    const actualizada = store.entityMap()[objetivo!.id];
+    const actualizada = store.entityMap()[objetivo.id];
     expect(actualizada.diagnostico).toBe('Fuga de aceite en el cárter');
-    expect(actualizada.estado).toBe(objetivo!.estado);
-    expect(actualizada.numero).toBe(objetivo!.numero);
+    expect(actualizada.estado).toBe(objetivo.estado);
+    expect(actualizada.numero).toBe(objetivo.numero);
   });
 });

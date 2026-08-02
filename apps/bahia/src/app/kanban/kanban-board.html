@@ -19,8 +19,11 @@
               [visitasPrevias]="item.visitasPrevias"
               [puedeDiagnosticar]="puedeDiagnosticar()"
               [puedeAvanzar]="puedeAvanzar()"
+              [puedeFacturar]="puedeFacturar()"
+              [factura]="item.factura"
               (avanzar)="avanzarEstado(item.orden)"
               (guardarDiagnostico)="guardarDiagnostico(item.orden, $event)"
+              (guardarFactura)="guardarFactura(item.orden, $event)"
             />
           } @empty {
             <p class="kanban__columna-vacia">Sin órdenes</p>

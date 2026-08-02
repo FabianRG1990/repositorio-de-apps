@@ -228,9 +228,102 @@
 }
 
 .ficha__completada {
-  margin: 0;
+  margin: 0 0 0.5rem;
   text-align: center;
   font-size: var(--bahia-text-sm);
   color: var(--bahia-estado-listo-fg);
   font-weight: 600;
+}
+
+.ficha__factura {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: var(--bahia-border-width) dashed var(--bahia-stone-300);
+}
+
+.ficha__concepto {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--bahia-text-sm);
+}
+
+.ficha__concepto-desc {
+  flex: 1;
+  min-width: 0;
+}
+
+.ficha__concepto-quitar {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--bahia-stone-500);
+  cursor: pointer;
+  font-size: var(--bahia-text-xs);
+  padding: 0 0.25rem;
+}
+
+.ficha__concepto-quitar:hover {
+  color: var(--bahia-estado-diagnostico-fg);
+}
+
+.ficha__concepto--fija {
+  color: var(--bahia-stone-600);
+}
+
+.ficha__concepto-form {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.ficha__concepto-input {
+  font: inherit;
+  font-size: var(--bahia-text-sm);
+  padding: 0.3rem 0.5rem;
+  border: var(--bahia-border-width) solid var(--bahia-stone-300);
+  border-radius: var(--bahia-radius);
+  min-width: 0;
+  flex: 2;
+}
+
+.ficha__concepto-input--monto {
+  flex: 1;
+}
+
+.ficha__concepto-agregar {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: var(--bahia-text-xs);
+  padding: 0.3rem 0.6rem;
+  background: var(--bahia-stone-100);
+  border: var(--bahia-border-width) solid var(--bahia-stone-300);
+  border-radius: var(--bahia-radius);
+  cursor: pointer;
+}
+
+.ficha__factura-total {
+  margin: 0.25rem 0 0;
+  font-size: var(--bahia-text-sm);
+  text-align: right;
+}
+
+.ficha__factura-guardar {
+  width: 100%;
+  font: inherit;
+  font-size: var(--bahia-text-sm);
+  padding: 0.5rem 0.75rem;
+  background: var(--bahia-accent-600);
+  color: var(--bahia-stone-50);
+  border: none;
+  border-radius: var(--bahia-radius);
+  cursor: pointer;
+}
+
+.ficha__factura-guardar:disabled {
+  background: var(--bahia-stone-300);
+  cursor: not-allowed;
 }

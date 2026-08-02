@@ -1,6 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { Cliente } from '../data-access/models/cliente.model';
 import {
+  Concepto,
+  Factura,
+  siguienteNumeroFactura,
+} from '../data-access/models/factura.model';
+import {
   EstadoOrden,
   ESTADOS_ORDEN,
   ESTADO_ORDEN_LABEL,
@@ -9,6 +14,7 @@ import {
 } from '../data-access/models/orden-trabajo.model';
 import { Vehiculo } from '../data-access/models/vehiculo.model';
 import { ClientesStore } from '../data-access/stores/clientes.store';
+import { FacturasStore } from '../data-access/stores/facturas.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
 import { SesionStore } from '../data-access/stores/sesion.store';
 import { VehiculosStore } from '../data-access/stores/vehiculos.store';
@@ -19,6 +25,7 @@ interface OrdenConDetalle {
   cliente: Cliente | undefined;
   vehiculo: Vehiculo | undefined;
   visitasPrevias: number;
+  factura: Factura | undefined;
 }
 
 interface Columna {
@@ -37,10 +44,15 @@ export class KanbanBoard {
   private readonly ordenesStore = inject(OrdenesStore);
   private readonly clientesStore = inject(ClientesStore);
   private readonly vehiculosStore = inject(VehiculosStore);
+  private readonly facturasStore = inject(FacturasStore);
   private readonly sesionStore = inject(SesionStore);
 
   protected readonly puedeDiagnosticar = computed(() =>
     this.sesionStore.tienePermiso('diagnosticar'),
+  );
+
+  protected readonly puedeFacturar = computed(() =>
+    this.sesionStore.tienePermiso('facturar'),
   );
 
   // Ningún permiso de Usuario.permisos se pensó para "mover el pipeline" en
@@ -53,21 +65,25 @@ export class KanbanBoard {
     this.sesionStore.tienePermiso('diagnosticar'),
   );
 
-  // Los 3 stores resuelven contra IndexedDB de forma independiente y no
+  // Los stores resuelven contra IndexedDB de forma independiente y no
   // necesariamente al mismo tiempo — sin esto, la primera pintura podía
   // mostrar la ficha con el cliente/vehículo todavía en blanco hasta que
-  // esos dos stores terminaran de cargar.
+  // esos stores terminaran de cargar.
   protected readonly cargando = computed(
     () =>
       !this.ordenesStore.cargado() ||
       !this.clientesStore.cargado() ||
-      !this.vehiculosStore.cargado(),
+      !this.vehiculosStore.cargado() ||
+      !this.facturasStore.cargado(),
   );
 
   private readonly ordenesConDetalle = computed<OrdenConDetalle[]>(() => {
     const ordenes = this.ordenesStore.entities();
     const clientesPorId = this.clientesStore.entityMap();
     const vehiculosPorId = this.vehiculosStore.entityMap();
+    const facturaPorOrdenId = new Map(
+      this.facturasStore.entities().map((factura) => [factura.ordenId, factura]),
+    );
 
     return ordenes.map((orden) => ({
       orden,
@@ -76,6 +92,7 @@ export class KanbanBoard {
       visitasPrevias: ordenes.filter(
         (otra) => otra.vehiculoId === orden.vehiculoId && otra.id !== orden.id,
       ).length,
+      factura: facturaPorOrdenId.get(orden.id),
     }));
   });
 
@@ -97,5 +114,14 @@ export class KanbanBoard {
 
   protected guardarDiagnostico(orden: OrdenTrabajo, diagnostico: string): void {
     this.ordenesStore.guardarDiagnostico({ id: orden.id, diagnostico });
+  }
+
+  protected guardarFactura(orden: OrdenTrabajo, conceptos: Concepto[]): void {
+    this.facturasStore.crear({
+      ordenId: orden.id,
+      numero: siguienteNumeroFactura(this.facturasStore.entities()),
+      fecha: new Date().toISOString(),
+      conceptos,
+    });
   }
 }
