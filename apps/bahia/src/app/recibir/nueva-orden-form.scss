@@ -10,7 +10,12 @@
   margin: 0 1.5rem 1rem;
 }
 
-.nueva-orden__abrir:hover {
+.nueva-orden__abrir:disabled {
+  background: var(--bahia-stone-300);
+  cursor: not-allowed;
+}
+
+.nueva-orden__abrir:not(:disabled):hover {
   background: var(--bahia-accent-500);
 }
 

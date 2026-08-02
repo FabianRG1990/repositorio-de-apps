@@ -1,6 +1,11 @@
 @if (!abierto()) {
-  <button type="button" class="nueva-orden__abrir" (click)="abrir()">
-    + Nueva orden
+  <button
+    type="button"
+    class="nueva-orden__abrir"
+    [disabled]="cargando()"
+    (click)="abrir()"
+  >
+    {{ cargando() ? 'Cargando…' : '+ Nueva orden' }}
   </button>
 } @else {
   <form class="nueva-orden" (submit)="$event.preventDefault(); enviar()">

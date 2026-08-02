@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import {
   siguienteNumeroOrden,
 } from '../data-access/models/orden-trabajo.model';
@@ -63,7 +63,28 @@ export class NuevaOrdenForm {
       this.motivoIngreso().trim() !== '',
   );
 
+  // Los 4 stores cargan de IndexedDB de forma independiente (misma razón
+  // por la que KanbanBoard tiene su propio `cargando`) — sin esto, abrir y
+  // enviar el formulario apenas carga la página podía dejar `taller`
+  // undefined en `enviar()`, o generar un `numero` repetido porque
+  // `ordenesStore.entities()` todavía estaba vacío.
+  protected readonly cargando = computed(
+    () =>
+      !this.ordenesStore.cargado() ||
+      !this.clientesStore.cargado() ||
+      !this.vehiculosStore.cargado() ||
+      !this.talleresStore.cargado(),
+  );
+
+  constructor() {
+    // Si el componente se destruye (p. ej. al cambiar de usuario) mientras
+    // el micrófono sigue escuchando, nada más lo detendría — quedaría
+    // grabando huérfano en el navegador.
+    inject(DestroyRef).onDestroy(() => this.detenerDictado());
+  }
+
   protected abrir(): void {
+    if (this.cargando()) return;
     this.abierto.set(true);
   }
 

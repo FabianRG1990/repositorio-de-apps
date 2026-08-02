@@ -222,4 +222,49 @@ describe('NuevaOrdenForm', () => {
       .find((o) => o.motivoIngreso === 'revisión escrita a mano');
     expect(creada?.origenMotivo).toBe('texto');
   });
+
+  it('disables "+ Nueva orden" until the dependent stores finish loading', async () => {
+    // sin esperar esperarCargaCompleta() a propósito: se prueba el instante
+    // inicial, antes de que IndexedDB resuelva.
+    const fixture = TestBed.createComponent(NuevaOrdenForm);
+    fixture.detectChanges();
+
+    const boton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.nueva-orden__abrir',
+    );
+    expect(boton?.disabled).toBe(true);
+    expect(boton?.textContent?.trim()).toBe('Cargando…');
+
+    await esperarCargaCompleta();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(boton?.disabled).toBe(false);
+    expect(boton?.textContent?.trim()).toBe('+ Nueva orden');
+  });
+
+  it('stops an active dictation when the component is destroyed', async () => {
+    (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition =
+      FakeSpeechRecognition;
+
+    await esperarCargaCompleta();
+    const fixture = TestBed.createComponent(NuevaOrdenForm);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    compiled.querySelector<HTMLButtonElement>('.nueva-orden__abrir')?.click();
+    fixture.detectChanges();
+
+    compiled.querySelector<HTMLButtonElement>('.campo-motivo__mic')?.click();
+    fixture.detectChanges();
+
+    const instancia = FakeSpeechRecognition.ultimaInstancia;
+    expect(instancia).toBeTruthy();
+    const detenerSpy = vi.spyOn(instancia as FakeSpeechRecognition, 'stop');
+
+    fixture.destroy();
+
+    expect(detenerSpy).toHaveBeenCalled();
+  });
 });
