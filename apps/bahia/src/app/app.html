@@ -5,6 +5,9 @@
 <app-sesion-selector />
 
 @if (sesionStore.haySesion()) {
+  @if (sesionStore.tienePermiso('recibir')) {
+    <app-nueva-orden-form />
+  }
   <app-kanban-board />
 }
 

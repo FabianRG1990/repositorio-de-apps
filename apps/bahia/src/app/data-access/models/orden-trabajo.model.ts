@@ -41,3 +41,14 @@ export interface OrdenTrabajo {
   origenMotivo: 'voz' | 'texto';
   fechaIngreso: string;
 }
+
+// "OT-0001", "OT-0002"... — el siguiente número disponible a partir de las
+// órdenes ya existentes (no un contador aparte, para no desincronizarse).
+export function siguienteNumeroOrden(ordenes: OrdenTrabajo[]): string {
+  const maxActual = ordenes.reduce((max, orden) => {
+    const coincidencia = /^OT-(\d+)$/.exec(orden.numero);
+    const numero = coincidencia ? Number(coincidencia[1]) : 0;
+    return Math.max(max, numero);
+  }, 0);
+  return `OT-${String(maxActual + 1).padStart(4, '0')}`;
+}
