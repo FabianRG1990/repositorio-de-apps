@@ -93,6 +93,42 @@
   font-family: var(--bahia-font-mono);
 }
 
+.ficha__diagnostico {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: var(--bahia-border-width) dashed var(--bahia-stone-300);
+}
+
+.ficha__diagnostico-texto {
+  font: inherit;
+  font-size: var(--bahia-text-sm);
+  padding: 0.4rem 0.5rem;
+  border: var(--bahia-border-width) solid var(--bahia-stone-300);
+  border-radius: var(--bahia-radius);
+  resize: vertical;
+}
+
+.ficha__diagnostico-guardar {
+  align-self: flex-start;
+  font: inherit;
+  font-size: var(--bahia-text-xs);
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  background: var(--bahia-accent-600);
+  color: var(--bahia-stone-50);
+  border: none;
+  border-radius: var(--bahia-radius);
+  cursor: pointer;
+}
+
+.ficha__diagnostico-guardar:disabled {
+  background: var(--bahia-stone-300);
+  cursor: not-allowed;
+}
+
 .stepper {
   list-style: none;
   display: flex;

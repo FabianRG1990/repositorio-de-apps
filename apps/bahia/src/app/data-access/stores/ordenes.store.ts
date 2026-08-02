@@ -47,6 +47,19 @@ export const OrdenesStore = signalStore(
         ),
       ),
     ),
+    guardarDiagnostico: rxMethod<{ id: string; diagnostico: string }>(
+      pipe(
+        switchMap(({ id, diagnostico }) =>
+          dataService.update(id, { diagnostico }),
+        ),
+        tap((actualizada) =>
+          patchState(
+            store,
+            updateEntity({ id: actualizada.id, changes: actualizada }),
+          ),
+        ),
+      ),
+    ),
   })),
   withHooks({
     onInit(store) {

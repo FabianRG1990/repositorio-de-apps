@@ -101,6 +101,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
     motivoIngreso: 'Cambio de aceite y filtros',
     origenMotivo: 'texto',
     fechaIngreso: '2026-05-12T09:30:00',
+    diagnostico: 'Aceite y filtro visiblemente vencidos, sin daño adicional.',
   },
   {
     id: 'orden-2',
@@ -137,6 +138,8 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
     motivoIngreso: 'Cambio de balatas y disco delantero derecho',
     origenMotivo: 'texto',
     fechaIngreso: '2026-07-30T11:20:00',
+    diagnostico:
+      'Balatas delanteras al 10% y disco derecho con rayado profundo — requiere reemplazo de ambos.',
   },
   {
     id: 'orden-5',
@@ -149,5 +152,6 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
     motivoIngreso: 'Revisión de sistema de frenos',
     origenMotivo: 'texto',
     fechaIngreso: '2026-07-29T15:45:00',
+    diagnostico: 'Sistema de frenos dentro de parámetros — solo ajuste menor.',
   },
 ];

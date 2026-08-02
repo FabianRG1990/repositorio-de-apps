@@ -3,6 +3,8 @@ import { ESTADOS_ORDEN } from '../data-access/models/orden-trabajo.model';
 import { resetBahiaDbForTests } from '../data-access/persistence/bahia-db';
 import { ClientesStore } from '../data-access/stores/clientes.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
+import { SesionStore } from '../data-access/stores/sesion.store';
+import { UsuariosStore } from '../data-access/stores/usuarios.store';
 import { VehiculosStore } from '../data-access/stores/vehiculos.store';
 import { waitFor } from '../data-access/testing/wait-for';
 import { KanbanBoard } from './kanban-board';
@@ -93,6 +95,59 @@ describe('KanbanBoard', () => {
 
     expect(ordenesStore.entityMap()[ordenId as string].estado).toBe(
       'Diagnostico',
+    );
+  });
+
+  it('hides the diagnostico editor when nobody is logged in', async () => {
+    await esperarCargaCompleta();
+    const fixture = TestBed.createComponent(KanbanBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const ficha = Array.from(
+      compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
+    ).find((el) => el.textContent?.includes('OT-0148')); // seed: estado Diagnostico
+    expect(ficha?.querySelector('.ficha__diagnostico-texto')).toBeNull();
+  });
+
+  it('lets a usuario with permiso diagnosticar save a diagnóstico from the board', async () => {
+    const { ordenesStore } = await esperarCargaCompleta();
+    const usuariosStore = TestBed.inject(UsuariosStore);
+    await waitFor(() => usuariosStore.cargado());
+    const mecanico = usuariosStore.entities().find((u) => u.puesto === 'Mecánico');
+    TestBed.inject(SesionStore).iniciarSesion(mecanico!);
+
+    const fixture = TestBed.createComponent(KanbanBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const ficha = Array.from(
+      compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
+    ).find((el) => el.textContent?.includes('OT-0148'));
+    const textarea = ficha?.querySelector<HTMLTextAreaElement>(
+      '.ficha__diagnostico-texto',
+    );
+    expect(textarea).toBeTruthy();
+
+    textarea!.value = 'Pastillas de freno delanteras al límite';
+    textarea!.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    ficha
+      ?.querySelector<HTMLButtonElement>('.ficha__diagnostico-guardar')
+      ?.click();
+
+    const ordenId = ordenesStore
+      .entities()
+      .find((o) => o.numero === 'OT-0148')?.id as string;
+    await waitFor(
+      () => ordenesStore.entityMap()[ordenId]?.diagnostico !== undefined,
+    );
+
+    expect(ordenesStore.entityMap()[ordenId].diagnostico).toBe(
+      'Pastillas de freno delanteras al límite',
     );
   });
 });

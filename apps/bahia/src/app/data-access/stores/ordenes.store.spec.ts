@@ -50,4 +50,27 @@ describe('OrdenesStore', () => {
 
     expect(store.entityMap()[primera.id].estado).toBe('Entregado');
   });
+
+  it('guardarDiagnostico sets the diagnostico of the target orden without touching other fields', async () => {
+    const store = TestBed.inject(OrdenesStore);
+    await waitFor(() => store.cargado());
+    // OT-0151 (Ingresado) no trae diagnóstico sembrado — a diferencia de las
+    // 3 órdenes ya diagnosticadas del seed, así que el `waitFor` de abajo
+    // no se resuelve de inmediato con un valor sembrado.
+    const objetivo = store.entities().find((o) => o.numero === 'OT-0151');
+    expect(objetivo).toBeTruthy();
+
+    store.guardarDiagnostico({
+      id: objetivo!.id,
+      diagnostico: 'Fuga de aceite en el cárter',
+    });
+    await waitFor(
+      () => store.entityMap()[objetivo!.id]?.diagnostico !== undefined,
+    );
+
+    const actualizada = store.entityMap()[objetivo!.id];
+    expect(actualizada.diagnostico).toBe('Fuga de aceite en el cárter');
+    expect(actualizada.estado).toBe(objetivo!.estado);
+    expect(actualizada.numero).toBe(objetivo!.numero);
+  });
 });

@@ -17,7 +17,9 @@
               [cliente]="item.cliente"
               [vehiculo]="item.vehiculo"
               [visitasPrevias]="item.visitasPrevias"
+              [puedeDiagnosticar]="puedeDiagnosticar()"
               (avanzar)="avanzarEstado(item.orden)"
+              (guardarDiagnostico)="guardarDiagnostico(item.orden, $event)"
             />
           } @empty {
             <p class="kanban__columna-vacia">Sin órdenes</p>

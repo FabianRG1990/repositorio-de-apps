@@ -80,4 +80,65 @@ describe('TicketCard', () => {
       'Entregado',
     );
   });
+
+  it('shows no diagnostico section when there is none and the user cannot diagnosticar', async () => {
+    const fixture = TestBed.createComponent(TicketCard);
+    fixture.componentRef.setInput('orden', ordenBase);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      fixture.nativeElement.querySelector('.ficha__diagnostico'),
+    ).toBeNull();
+  });
+
+  it('shows an editable diagnostico textarea when puedeDiagnosticar is true and estado is Diagnostico', async () => {
+    const fixture = TestBed.createComponent(TicketCard);
+    fixture.componentRef.setInput('orden', ordenBase);
+    fixture.componentRef.setInput('puedeDiagnosticar', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const textarea = compiled.querySelector<HTMLTextAreaElement>(
+      '.ficha__diagnostico-texto',
+    );
+    const boton = compiled.querySelector<HTMLButtonElement>(
+      '.ficha__diagnostico-guardar',
+    );
+    expect(textarea).toBeTruthy();
+    expect(boton?.disabled).toBe(true);
+
+    let emitido: string | undefined;
+    fixture.componentInstance.guardarDiagnostico.subscribe(
+      (valor) => (emitido = valor),
+    );
+
+    textarea!.value = '  Fuga de aceite en el cárter  ';
+    textarea!.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(boton?.disabled).toBe(false);
+    boton?.click();
+
+    expect(emitido).toBe('Fuga de aceite en el cárter');
+  });
+
+  it('shows the diagnostico as read-only once the orden left the Diagnostico estado', async () => {
+    const fixture = TestBed.createComponent(TicketCard);
+    fixture.componentRef.setInput('orden', {
+      ...ordenBase,
+      estado: 'Reparacion',
+      diagnostico: 'Balatas gastadas',
+    });
+    fixture.componentRef.setInput('puedeDiagnosticar', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.ficha__diagnostico-texto')).toBeNull();
+    expect(compiled.querySelector('.ficha__diagnostico')?.textContent).toContain(
+      'Balatas gastadas',
+    );
+  });
 });

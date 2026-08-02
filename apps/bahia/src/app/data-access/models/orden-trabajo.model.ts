@@ -40,6 +40,10 @@ export interface OrdenTrabajo {
   motivoIngreso: string;
   origenMotivo: 'voz' | 'texto';
   fechaIngreso: string;
+  // Hallazgos del mecánico — se llena en la etapa "En diagnóstico" (ver
+  // ticket "Autenticación para la demo": permiso `diagnosticar` → editar
+  // diagnóstico). Ausente en órdenes que todavía no pasaron por ahí.
+  diagnostico?: string;
 }
 
 // "OT-0001", "OT-0002"... — el siguiente número disponible a partir de las

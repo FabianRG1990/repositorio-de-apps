@@ -40,6 +40,31 @@
       </div>
     </div>
 
+    @if (editandoDiagnostico()) {
+      <div class="ficha__diagnostico">
+        <span class="campo__label">Diagnóstico</span>
+        <textarea
+          class="ficha__diagnostico-texto"
+          rows="2"
+          [value]="diagnosticoEditado()"
+          (input)="onDiagnosticoInput($event)"
+        ></textarea>
+        <button
+          type="button"
+          class="ficha__diagnostico-guardar"
+          [disabled]="!diagnosticoEditado().trim()"
+          (click)="enviarDiagnostico()"
+        >
+          Guardar diagnóstico
+        </button>
+      </div>
+    } @else if (orden().diagnostico) {
+      <div class="ficha__diagnostico">
+        <span class="campo__label">Diagnóstico</span>
+        <p class="campo__valor">{{ orden().diagnostico }}</p>
+      </div>
+    }
+
     <ol class="stepper">
       @for (etapa of etapas(); track etapa.clave) {
         <li

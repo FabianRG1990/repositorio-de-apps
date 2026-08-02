@@ -10,6 +10,7 @@ import {
 import { Vehiculo } from '../data-access/models/vehiculo.model';
 import { ClientesStore } from '../data-access/stores/clientes.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
+import { SesionStore } from '../data-access/stores/sesion.store';
 import { VehiculosStore } from '../data-access/stores/vehiculos.store';
 import { TicketCard } from './ticket-card';
 
@@ -36,6 +37,11 @@ export class KanbanBoard {
   private readonly ordenesStore = inject(OrdenesStore);
   private readonly clientesStore = inject(ClientesStore);
   private readonly vehiculosStore = inject(VehiculosStore);
+  private readonly sesionStore = inject(SesionStore);
+
+  protected readonly puedeDiagnosticar = computed(() =>
+    this.sesionStore.tienePermiso('diagnosticar'),
+  );
 
   // Los 3 stores resuelven contra IndexedDB de forma independiente y no
   // necesariamente al mismo tiempo — sin esto, la primera pintura podía
@@ -77,5 +83,9 @@ export class KanbanBoard {
     if (siguiente) {
       this.ordenesStore.cambiarEstado({ id: orden.id, estado: siguiente });
     }
+  }
+
+  protected guardarDiagnostico(orden: OrdenTrabajo, diagnostico: string): void {
+    this.ordenesStore.guardarDiagnostico({ id: orden.id, diagnostico });
   }
 }
