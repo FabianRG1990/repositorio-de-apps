@@ -1,0 +1,83 @@
+.kanban__cargando {
+  padding: 1.5rem;
+  font-size: var(--bahia-text-sm);
+  color: var(--bahia-stone-500);
+}
+
+.kanban {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  overflow-x: auto;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  // Scrollbar propia y visible (no la delgada por defecto del SO) — mismo
+  // criterio que Trello/Linear para que el usuario note que hay más
+  // columnas a la derecha sin depender de adivinarlo.
+  scrollbar-width: thin;
+  scrollbar-color: var(--bahia-stone-400) transparent;
+
+  &::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--bahia-stone-400);
+    border-radius: var(--bahia-radius);
+  }
+}
+
+.kanban__columna {
+  flex: 0 0 300px;
+  background: var(--bahia-stone-100);
+  border-radius: var(--bahia-radius);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.kanban__columna-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 0.25rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.kanban__columna-titulo {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-base);
+  margin: 0;
+}
+
+.kanban__columna-contador {
+  font-family: var(--bahia-font-mono);
+  font-size: var(--bahia-text-xs);
+  color: var(--bahia-stone-500);
+  background: var(--bahia-stone-50);
+  border-radius: var(--bahia-radius);
+  padding: 0.1rem 0.5rem;
+}
+
+.kanban__columna-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.kanban__columna-vacia {
+  font-size: var(--bahia-text-sm);
+  color: var(--bahia-stone-500);
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0;
+}

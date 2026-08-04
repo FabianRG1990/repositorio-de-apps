@@ -1,0 +1,42 @@
+@if (sesionStore.usuarioActual(); as usuario) {
+  <section class="sesion sesion--activa">
+    <p class="sesion__saludo">
+      Sesión iniciada como <strong>{{ usuario.nombre }}</strong> —
+      {{ usuario.puesto }}
+    </p>
+    <ul class="sesion__permisos">
+      @for (permiso of usuario.permisos; track permiso) {
+        <li class="sesion__permiso">{{ permisoLabel[permiso] }}</li>
+      }
+    </ul>
+    <button
+      type="button"
+      class="sesion__boton"
+      (click)="sesionStore.cerrarSesion()"
+    >
+      Cambiar de usuario
+    </button>
+  </section>
+} @else {
+  <section class="sesion sesion--selector">
+    <h2 class="sesion__titulo">¿Quién eres?</h2>
+    @if (usuariosStore.entities().length === 0) {
+      <p class="sesion__cargando">Cargando usuarios…</p>
+    } @else {
+      <ul class="sesion__lista">
+        @for (usuario of usuariosStore.entities(); track usuario.id) {
+          <li>
+            <button
+              type="button"
+              class="sesion__usuario"
+              (click)="sesionStore.iniciarSesion(usuario)"
+            >
+              <span class="sesion__usuario-nombre">{{ usuario.nombre }}</span>
+              <span class="sesion__usuario-puesto">{{ usuario.puesto }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

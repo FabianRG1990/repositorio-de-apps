@@ -29,6 +29,7 @@
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-playwright": "^1.6.2",
+    "fake-indexeddb": "6.2.5",
     "jsdom": "^27.1.0",
     "nx": "23.1.0",
     "prettier": "^3.8.1",
@@ -41,6 +42,9 @@
     "packages/*"
   ],
   "packageManager": "yarn@4.14.1",
+  "resolutions": {
+    "vite": "7.3.6"
+  },
   "dependencies": {
     "@angular/common": "~22.0.4",
     "@angular/compiler": "~22.0.4",
@@ -48,6 +52,8 @@
     "@angular/forms": "~22.0.4",
     "@angular/platform-browser": "~22.0.4",
     "@angular/router": "~22.0.4",
+    "@ngrx/signals": "22.0.0-beta.0",
+    "idb": "8.0.3",
     "rxjs": "~7.8.0"
   }
 }
