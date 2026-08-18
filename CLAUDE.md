@@ -22,6 +22,17 @@
 
 <!-- nx configuration end-->
 
+## Formato
+
+El CI corre `nx format:check`, y `.prettierignore` **no** excluye Markdown: un `.md`
+sin formatear (investigación, ADR, `CONTEXT.md`) deja el PR en rojo igual que un
+`.ts`. Un hook `PostToolUse` (`.claude/hooks/format-on-write.mjs`) pasa Prettier
+sobre cada archivo que se escribe con `Write`/`Edit`, así que dentro de Claude Code
+esto ya está cubierto. Si commiteás por fuera, corré `yarn nx format:write` antes.
+
+En Windows, `prettier --check` local da falsos positivos por CRLF. El log del CI
+(Linux, LF) es la fuente de verdad — no persigas archivos que solo fallan localmente.
+
 ## Agent skills
 
 ### Issue tracker
