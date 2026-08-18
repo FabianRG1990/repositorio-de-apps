@@ -39,6 +39,8 @@ Todo el documento etiqueta explícitamente de dónde viene cada afirmación, por
 
 **6. Multi-especialidad no es un problema de features, es un choque de dos modelos de negocio.** Mecánica es una venta al mostrador con margen sobre repuestos; colisión/pintura es un ciclo de negociación con una aseguradora, con suplementos, tarifas dictadas por la carrier y reglas de tiempo de mezcla (blend). En Estados Unidos **el 30.3% de los talleres de colisión corren más de un sistema de estimación** porque la aseguradora se lo impone ([Repairer Driven News](https://www.repairerdrivennews.com/2021/05/21/ccc-less-and-less-overlap-in-repairer-estimating-system-usage-but-shops-still-have-multiple/)), y re-digitar un estimado entre sistemas cuesta *"hora y media por estimado"* según un consultor del sector ([RDN](https://www.repairerdrivennews.com/2020/10/20/repair-u-rekeying-a-drain-on-shops-time-expenses/)). **No se encontró ningún hilo de practicantes describiendo un solo sistema que maneje bien ambos mundos.** Y en los sistemas mecánicos líderes **el "departamento" ni siquiera existe como concepto de datos** — solo hay categorías y etiquetas.
 
+**7. El mercado latinoamericano está poblado pero es superficial — no está vacío.** El único dato de adopción encontrado (**[BENCHMARK-VENDOR]**, Innocar + Roshfrans, n=435 dueños en 15 países, mayo 2024) sostiene que de ~300,000 talleres mecánicos en Latinoamérica **solo el 23.5% usa software de gestión especializado**, con Colombia en 9%; y que las barreras son costo (29%), desconocimiento de que existan opciones (19%) y "sabía que lo necesitaba pero nunca lo busqué" (19%) — **ningún encuestado expresó desinterés** ([Radar Tecnológico](https://radartecnologico.com/26045/innovacion/adopcion-de-tecnologia-un-reto-vigente-para-los-talleres-mecanicos-en-latam/)). Existen productos locales vivos (TallerOne en Costa Rica, Taller Alpha con módulos de enderezado y pintura, Appli-Car, AutoSoft Taller, TallerPro), pero son mayoritariamente herramientas de facturación de US$21–29/mes diferenciadas por cumplimiento fiscal local. **Tekmetric ya publica página en español.** La premisa del ticket se sostiene con un matiz: el hueco no es de existencia, es de **profundidad y de rango de precio**.
+
 ---
 
 ## 1. El bucle que hace indispensable al sistema: inspección → cotización → aprobación desde el celular
@@ -61,6 +63,12 @@ Esta es la respuesta central a la pregunta del ticket, y es la más consistente 
 Pero **el mismo dueño admite el problema real**: su tasa de envío de inspecciones estaba en **30%**, y *"me tomó varios años llevar mis envíos de más de 30% a consistentemente más de 80 o 90%."* Y otro dueño lo dice sin rodeos: *"hemos estado tan ocupados los últimos meses que no hemos estado usando la función de inspección tanto como deberíamos."* ([AutoShopOwner](https://www.autoshopowner.com/forums/topic/16875-do-i-need-a-shop-management-program/)).
 
 > **Implicación de producto:** la función existe en todos los productos; **la adopción diaria es el problema real, no la función**. Un sistema que hace la inspección obligatoria/inevitable dentro del flujo (no un botón aparte que el técnico puede saltarse cuando hay presión) es cualitativamente distinto de uno que "tiene DVI".
+
+### La única cuantificación con muestra grande que se encontró
+
+**[BENCHMARK-VENDOR / muestra grande]** Cox Automotive *2025 Fixed Ops & Ownership Study* (n=500 tomadores de decisión de fixed ops + 2,502 consumidores, levantado sep–oct 2025): las órdenes de reparación **con fotos o video promediaron US$640 contra US$410 sin ellas (+US$230)**, y los consumidores fueron **49% más propensos a aprobar** los servicios recomendados cuando se les mostró evidencia visual. — https://www.coxautoinc.com/retail/resources/ownership-study/
+
+**Advertencia importante:** el estudio es del lado de concesionarios (dealership fixed ops), no de talleres independientes, y Cox tiene productos en el espacio. Es, aun así, **la única medición con muestra publicada** que liga evidencia visual con tasa de aprobación que se pudo localizar. Todo lo demás en este terreno (AutoVitals "+20% ARO", "+US$128 por RO", Bolton "ARO +25–40%, aprobación +70%") es **[MARKETING]** sin muestra ni metodología publicadas y **no se debe usar como evidencia**.
 
 ### Contra-evidencia importante: más inspección no es mejor
 
@@ -101,6 +109,24 @@ Si el sistema quiere ser "un colaborador real" y no un archivador, tiene que mov
 | Tarifa de labor efectiva (ELR) | US$134.92 | US$134.31 | US$154.06 |
 
 Que el líder del mercado construya su herramienta pública de benchmarking sobre **exactamente estas cuatro** es la señal más fuerte disponible de cuáles son las métricas de gobierno del negocio. Nótese además la dispersión: el top 25% mueve casi **el doble de autos** que la mediana con un ARO solo ~35% mayor — el volumen y la retención pesan tanto como el ticket.
+
+### La contraparte independiente: la encuesta de la industria
+
+**[PRENSA]** *2026 Ratchet+Wrench Industry Survey* (n=430 dueños/gerentes de talleres independientes y algunos de franquicia, levantada en Q1 2026) — https://www.ratchetandwrench.com/home/article/55387461/2026-ratchetwrench-industry-survey-report (resumen con cifras: https://www.aapexshow.com/blog/shop-owners-survey/):
+
+- **74% reporta ARO ≥ US$800**; 15% ≥ US$2,000; 24% entre US$1,200–1,499.
+- **15% no mide ARO en absoluto**, y 4% no sabe.
+- Tarifa de labor publicada: 25% cobra ≥US$150/hora; 49% la subió en los últimos 2 años.
+- **86% dice que da seguimiento a KPIs**, y quienes lo hacen son **"tres veces más propensos a superar US$1 millón en ingresos."**
+- Taller típico: **3–4 bahías, 3–4 empleados**; 30% factura entre US$1M y US$2.5M.
+
+> **Dos lecturas para el producto.** (a) El taller objetivo es pequeño en gente pero significativo en dinero — el software no compite contra un ERP, compite contra una libreta. (b) El 15% que no mide ARO y el 86% que dice medir KPIs describen la misma tensión: **la medición es el diferenciador declarado del taller exitoso**, y sin embargo la definición de las métricas está en disputa (ver abajo).
+
+**[PRENSA]** Benchmarks de eficiencia que la prensa sectorial publica: eficiencia del técnico **130–150%**, productividad **~90%**, promedio nacional de **1.8–2.4 horas por orden de reparación**, y máximo de 0.8 horas no aplicadas en un día de 8 — https://www.ratchetandwrench.com/running-a-shop/article/11488239/utilizing-efficiency-and-productivity-numbers-july-01-2016. La lista de KPIs de 2026: margen bruto (meta 60%, aceptable 50–55%), ARO, car count, utilidad por hora, tasa de cierre y cycle time — https://www.ratchetandwrench.com/running-a-shop/finance/article/55379932/your-guide-to-tracking-kpis
+
+**[PRENSA]** Contexto de mercado que explica por qué el taller independiente puede invertir: Cox Automotive *2023 Service Industry Study* (n=2,493 dueños de vehículo) — los talleres de reparación general **superaron por primera vez a los concesionarios** como proveedor preferido (33% vs 31%), y el dueño promedio lleva su vehículo a servicio **2.5 veces al año** — https://www.coxautoinc.com/insights/2023-service-industry-study/. En el estudio de 2025 (n=1,974), los concesionarios han perdido **12% de las visitas de servicio desde 2018**, y el costo promedio de reparación en taller general (US$275) ya **supera** al de concesionario (US$261) — https://www.coxautoinc.com/insights/new-cox-automotive-study-finds-dealerships-have-lost-12-of-service-visits-to-competition-since-2018/
+
+> **2.5 visitas al año es el dato que define el modelo de historial**: la relación con el cliente se juega en intervalos de ~5 meses. Entre visita y visita, lo único que sostiene la relación es lo que el sistema recuerde y sepa resucitar.
 
 ### Las métricas de labor están vivas, y ni siquiera están estandarizadas
 
@@ -312,11 +338,27 @@ Advertencia: es un grupo de concesionarios (volumen mucho mayor que un taller in
 
 **[PRENSA]** Contexto de por qué el suplemento domina el flujo: **el 82% de las reparaciones tuvo al menos un suplemento, promediando 14.5% del costo total de la reparación.** — [RDN](https://www.repairerdrivennews.com/2020/10/20/repair-u-rekeying-insurer-estimates-insane-hurts-the-body-shop/)
 
+**[BENCHMARK-VENDOR]** Los datos de Mitchell (Q1 2017) confirman la magnitud desde otra fuente: **40.66% de los estimados originales fueron suplementados al menos una vez**, con frecuencia pura de suplementos de **65.41%** y varianza combinada promedio de **US$869.58** — https://www.mitchell.com/insights/article/auto-physical-damage/mitchell-collision-repair-industry-data-q1-2017. Y cada suplemento consume **30 a 45 minutos** de tiempo del estimador, según FenderBender — https://www.fenderbender.com/running-a-shop/finance/article/33028793/the-true-cost-of-collision-repair-supplements
+
+> **El suplemento no es una excepción: es el caso normal.** Cualquier modelo de orden de trabajo para pintura que trate la re-cotización como un caso de borde está mal diseñado desde la raíz.
+
+**[BENCHMARK-VENDOR]** Escala del trabajo de colisión, para dimensionar la diferencia: CCC *Crash Course* Q4 2025 reporta un costo total promedio de reparación de **US$4,768**, con **26.7 horas de labor y 13.0 repuestos por reclamo reparable**; escaneos en ~88% de los estimados DRP y calibraciones en más del 35% (contra 0.9% en 2017) — https://www.cccis.com/reports/crash-course-2025/q4
+
+### 7.1.b La productividad de colisión se mide sobre el vehículo, no sobre el técnico
+
+**[PRENSA]** El par de métricas de colisión es **touch time / cycle time**: promedio nacional de **4.0 horas de touch time por día y 6 días de cycle time**; un taller documentado pasó de 7.2 a 4.3 días de ciclo y de 1.7 a 2.5 horas de touch time en 90 días — https://www.fenderbender.com/33028951. Y **la cabina de pintura es la restricción del sistema**: el taller entero se agenda alrededor de su capacidad.
+
+> Esto es una diferencia de modelo, no de reporte. En mecánica la unidad de medida es **la hora del técnico**; en pintura es **el tiempo que el carro pasa parado**. Un producto multi-especialidad necesita ambas, y son incompatibles en un solo tablero de "eficiencia".
+
 ### 7.2 La labor de pintura se calcula con reglas, no con una guía plana
 
 **[PRODUCTO]** CCC documenta que su cálculo fijo daba *"a cada panel adyacente mezclado el 50% del tiempo de repintado publicado del panel para procesos de dos capas, y 70% para tres capas"*; desde la revisión de MOTOR de octubre 2023 esos porcentajes son **reglas configurables por el taller** (*Estimating Blend Rules*), con **reglas por aseguradora** (*Insurance Blend Rules*) y **reglas copiables para grupos multi-taller**, y los tiempos de mezcla van subrayados en el estimado. — https://cccis.zendesk.com/hc/en-us/articles/20080680958356
 
 > Esto no tiene análogo en mecánica. En mecánica el tiempo de labor viene de un catálogo por operación; en pintura el tiempo **se deriva de otro tiempo** mediante un porcentaje que depende del proceso y de quién paga.
+
+**Y la fórmula está en disputa abierta.** **[PRENSA/ESTUDIO]** El *Blend Study* de SCRS (2022, auditado por DEKRA, con cinco fabricantes de pintura sobre paneles de Ford F-150) concluyó que **mezclar tomó 31.59% MÁS tiempo que repintar el panel completo** — exactamente lo contrario del **50% menos** que CCC, Mitchell y Audatex asignan por fórmula. — https://www.repairerdrivennews.com/2022/11/02/scrs-research-concludes-blend-time-is-greater-than-full-refinish/ · https://scrs.com/scrs-study-concludes-blend-time-is-greater-than-full-refinish/
+
+> **Este es el hallazgo más filoso de la sección de pintura.** El número que los tres sistemas dominantes usan para pagarle al taller **está desmentido por el único estudio empírico auditado del tema**, y el taller no puede cambiarlo porque no controla el sistema. Un producto que le pertenezca al taller (no a la aseguradora) y le permita **definir y defender sus propias reglas de mezcla, con evidencia** resuelve un dolor económico documentado, no hipotético.
 
 ### 7.3 En colisión el "departamento" sí existe; en mecánica no
 
@@ -334,15 +376,56 @@ Un competidor de nicho lo resume con precisión inusual (fuente **[MARKETING]** 
 
 La misma fuente enumera la asimetría: unidad de trabajo (reclamo de seguro vs orden de reparación), suplementos, comunicación con el ajustador, DVI (mecánica inspecciona; colisión **desarma** — teardown), margen sobre repuestos (mecánica gana margen; colisión recibe precios negociados por la aseguradora), historial de servicio (mecánica es recurrente cada 5,000 km; colisión es un evento único por accidente), y matriz de labor (mecánica corre de matrices y canned jobs; colisión saca la labor del estimado).
 
+### 7.5 El diagnóstico eléctrico es la especialidad que ningún modelo representa bien
+
+**[USUARIO]** El consenso en Diagnostic Network es estructural: **no existe tiempo de catálogo para diagnosticar**, así que el tiempo de diagnóstico simplemente no se factura. Un taller reportó operar a **50% de eficiencia contra una norma de 70%**, atribuido en buena parte a diagnóstico y cortesías no facturadas. La práctica común es una tarifa plana de "1 hora" (US$129–185) y luego reautorizar. — https://diag.net/msg/m73mhals5zlx2n9d1n8facs7hi
+
+**[USUARIO]** El mismo problema visto desde el pago del técnico: *"¿qué tan seguido se hacen tratos con el cliente para vender el trabajo, y muchas veces se regala la labor de diagnosticar un problema complicado de manejabilidad? ¿El técnico recibe el tiempo de labor, o el técnico lo sufre?"* — [AutoShopOwner](https://www.autoshopowner.com/forums/topic/19597-technician-pay-plans-is-there-a-right-choice/)
+
+**[SEGUNDA MANO — no verificado]** Se cita que la encuesta 2026 de Ratchet+Wrench encontró que **54% de los talleres no cobra nada por diagnóstico**; la cita aparece en [WickedFile](https://www.wickedfile.com/blogs/mechanic-diagnostic-fee/) **sin enlace al reporte primario, y no se pudo verificar** en la fuente original (R+W publica el reporte completo solo como embed de Issuu). Lo que sí se confirma en la página del reporte es que "rentabilidad del diagnóstico" es una **sección nueva de 2026** — señal de que el sector apenas está tomando el tema en serio.
+
+> **La implicación de modelo es directa:** el diagnóstico no es un servicio con horas y repuestos. Es **una investigación con un resultado incierto que puede o no convertirse en una reparación**. Si el modelo solo sabe representar "trabajo = labor + repuestos", el taller seguirá regalando el diagnóstico, porque el sistema no le da dónde ponerlo. La estructura **queja → causa → corrección** (las Tres C) más una autorización escalonada (autorizar diagnóstico, luego autorizar reparación) es la representación mínima honesta.
+
+### 7.6 Productos que dicen cubrir ambos mundos
+
+**[MARKETING]** Existen: SYNERGY/Imex se posiciona como mecánica + colisión, y SUN Collision anuncia integración con Mitchell 1 Manager SE/ShopKey (https://suncollision.com/sun-collision-integrates-with-manager-se-shopkey-management-systems/). **No se encontró ni un solo testimonio de practicante sobre ninguno de los dos.** Ese vacío de evidencia es, en sí, un hallazgo: si estos productos resolvieran el problema, el sector estaría hablando de ellos.
+
 > **La pregunta clave para el proyecto:** la razón por la que en EE.UU. nadie unifica mecánica y pintura es **el dominio de la aseguradora sobre el estimado de colisión**, no una imposibilidad técnica. En Costa Rica la dinámica de seguros es distinta (mercado con INS y aseguradoras privadas, con menos programas DRP con sistema de estimación mandatorio). **Si esa restricción no se transfiere al mercado objetivo, el taller mixto deja de ser un problema irresoluble y pasa a ser una oportunidad real** — pero eso hay que verificarlo con evidencia local antes de asumirlo.
 
 ---
 
-## 8. Contradicciones e incertidumbres
+## 8. El mercado latinoamericano: poblado pero superficial
+
+La premisa del ticket ("en Costa Rica este tipo de software casi no existe") se puso a prueba. El resultado es más matizado que "está vacío".
+
+### El único dato de adopción que se pudo localizar
+
+**[BENCHMARK-VENDOR]** Estudio de **Innocar** (fabricante de software) junto con **Roshfrans** (lubricantes, México), publicado el **16 de mayo de 2024**, con **n=435 dueños de taller** en Venezuela, EE.UU., República Dominicana, Perú, Panamá, Colombia, México, Honduras, Guatemala, Ecuador, **Costa Rica**, Chile, Bolivia, Belice y Argentina:
+
+- De aproximadamente **300,000 talleres mecánicos en Latinoamérica, solo el 23.5% usa software de gestión especializado.**
+- **Colombia: apenas 9%** de los talleres encuestados usa algún software de gestión.
+- Barreras declaradas: **29% costo**, **19% no sabía que existían opciones**, **19% reconocía la necesidad pero nunca buscó**, 33% otras.
+- **Ningún encuestado expresó desinterés.**
+
+Fuentes: https://radartecnologico.com/26045/innovacion/adopcion-de-tecnologia-un-reto-vigente-para-los-talleres-mecanicos-en-latam/ · https://channelnewsperu.com/solo-23-5-de-talleres-mecanicos-de-america-latina-utiliza-software-especializado-para-gestionar-sus-operaciones/
+
+**Advertencia fuerte:** es un estudio **publicado por un vendedor de software** con muestra autoseleccionada de 435 en 15 países (incluyendo EE.UU.), y **no se encontró corroboración independiente de la cifra de 23.5% en ninguna parte**. Se cita porque es lo único que existe, no porque sea confiable.
+
+### El campo está poblado, pero con productos de otro rango
+
+Productos vivos encontrados: **TallerOne (Costa Rica)** https://mercedsoftware.com/ · **Taller Alpha**, con módulos explícitos de *enderezado y pintura* https://talleralpha.com/ · **Appli-Car** (LATAM, desde US$25/mes) https://www.appli-car.com/es/ · **AutoSoft Taller** (CFDI 4.0, México) https://autosofttaller.com/ · **PTME**, con impuestos multi-país (IVA 19% Colombia, IVA 13% Costa Rica) https://www.programatallermecani.com/ · **TallerPro (Argentina)** https://tallerpro.com.ar/. En España: gdtaller, TuneraTaller, myGestión, verticales de Sage; y **Orderry** localizado.
+
+**El patrón:** herramientas pequeñas, de fundador único, **centradas en facturación** y de **US$21–29/mes**, diferenciadas principalmente por cumplimiento fiscal local (CFDI, Verifactu, tasas de IVA). Casi ninguna combina mecánica con enderezado/pintura — **Taller Alpha es la excepción notable**. Y **Tekmetric ya publica página en español** (https://www.tekmetric.com/espanol), es decir, un jugador estadounidense está tanteando el mercado.
+
+> **Conclusión de mercado.** El hueco no es de *existencia*, es de **rango**: hay software de facturación a US$25/mes y software gringo de US$199–499/mes que no habla el idioma ni la fiscalidad local. **No se encontró un producto que ocupe la franja media-alta con el bucle completo (inspección con fotos → autorización desde el celular → historial vivo → medición) en español y adaptado a la realidad local.** Y la barrera declarada #2 y #3 juntas (38%: "no sabía que existía" + "sabía que lo necesitaba pero nunca busqué") dice que el problema de entrada es tanto de **distribución y demostración** como de producto — lo cual valida directamente que la Fase 1 sea una demo de venta.
+
+---
+
+## 9. Contradicciones e incertidumbres
 
 Registro explícito de lo que **no** quedó resuelto, para no construir sobre arena.
 
-1. **DVI: ¿cuánto sube realmente el ticket?** Las cifras más citadas (+27%, +US$128 por RO, 45% más ARO con 40+ fotos) son **[BENCHMARK-VENDOR]** de AutoVitals, y un análisis las califica como *"un techo para programas bien ejecutados, más que un promedio"* ([WickedFile](https://www.wickedfile.com/blogs/digital-vehicle-inspection)). El dato de practicante (Cloutier, +US$300–400) es de un solo taller y autoreportado en un podcast. **No se encontró ningún estudio independiente con muestra y metodología publicadas.** Tratar todo número de ARO por DVI como orden de magnitud, nunca como pronóstico.
+1. **DVI: ¿cuánto sube realmente el ticket?** Las cifras más citadas (+27%, +US$128 por RO, 45% más ARO con 40+ fotos) son **[BENCHMARK-VENDOR]** de AutoVitals, y un análisis las califica como *"un techo para programas bien ejecutados, más que un promedio"* ([WickedFile](https://www.wickedfile.com/blogs/digital-vehicle-inspection)). El dato de practicante (Cloutier, +US$300–400) es de un solo taller y autoreportado en un podcast. La única cifra con muestra publicada (Cox, +US$230 y +49% de aprobación) es **del lado de concesionarios**, no de talleres independientes. **No se encontró ninguna medición independiente del efecto de la DVI sobre ARO o tasa de aprobación en talleres independientes.** Tratar todo número de ARO por DVI como orden de magnitud, nunca como pronóstico.
 
 2. **Más inspección vs mejor relación.** El caso de Underwood contradice directamente la narrativa "más fotos = más plata": inspecciones más largas bajaron la tasa de aprobación y alargaron la espera; el retorno vino de **duplicar la frecuencia de visita**, no de subir el ticket. Los dos efectos son reales y opuestos.
 
@@ -356,11 +439,19 @@ Registro explícito de lo que **no** quedó resuelto, para no construir sobre ar
 
 7. **El caso de US$96,000/mes en servicios declinados es de un grupo de concesionarios (2018)**, no de un taller independiente. El mecanismo es transferible; la magnitud no.
 
-8. **Costa Rica / Latinoamérica no fue validado en profundidad en esta investigación.** La premisa del ticket (que este software casi no existe localmente) se toma como dada. La afirmación de la sección 7.4 sobre la dinámica de seguros en Costa Rica **es una hipótesis, no un hallazgo**, y necesita verificación local (ver "Preguntas abiertas").
+8. **La cifra de adopción en Latinoamérica (23.5%) no tiene corroboración independiente.** Viene de un estudio publicado por un fabricante de software, con n=435 autoseleccionados en 15 países (uno de ellos EE.UU.). Es el único dato que existe; no es un dato confiable. La afirmación de la sección 7.4 sobre la dinámica de seguros en Costa Rica **sigue siendo una hipótesis, no un hallazgo**, y necesita verificación local (ver "Preguntas abiertas").
+
+9. **La cifra de "54% de talleres no cobra diagnóstico" no se pudo verificar.** Se atribuye a la encuesta 2026 de Ratchet+Wrench pero se cita de segunda mano y sin enlace al reporte primario, que solo se publica como embed de Issuu. Usar solo como señal cualitativa.
+
+10. **La fórmula de tiempo de mezcla en pintura está en disputa activa y sin resolver.** El estudio SCRS (empírico, auditado) dice +31.59%; CCC/Mitchell/Audatex asignan −50% por fórmula. **Ambas cifras se citan aquí porque el conflicto en sí es el hallazgo**, no porque una esté resuelta. Si el proyecto implementa reglas de mezcla, esto es una decisión de negocio (a quién le da la razón el sistema), no una decisión técnica.
+
+11. **No hay benchmark independiente de tasa de comeback, ni de ROI de recordatorios de servicio, ni de tasa de recuperación de trabajo declinado.** Todo lo disponible es marketing sin metodología. Los únicos números citables (Digital Dealer: 10% recuperado en 7 días, hasta 25% en un mes; 7–8% de ROs registran trabajo declinado manualmente vs ~30% con check-in digital) **no llevan atribución de investigación en el propio artículo**.
+
+12. **No se encontró testimonio de practicantes sobre correr mecánica y colisión en un solo sistema, ni sobre correr dos sistemas en paralelo.** Existen productos que lo prometen (SYNERGY/Imex, SUN Collision + Manager SE) pero nadie habla de ellos. Este es el vacío de evidencia más grande de toda la investigación, y es justamente el corazón de la apuesta multi-especialidad.
 
 ---
 
-## 9. Implicaciones para el modelo de historial de cliente/vehículo
+## 10. Implicaciones para el modelo de historial de cliente/vehículo
 
 No son decisiones tomadas — son las restricciones que la evidencia impone sobre el modelo que se diseñe después.
 
@@ -384,7 +475,7 @@ No son decisiones tomadas — son las restricciones que la evidencia impone sobr
 
 ---
 
-## 10. Implicaciones para el modelo de organización multi-especialidad
+## 11. Implicaciones para el modelo de organización multi-especialidad
 
 1. **El "departamento" debe existir como concepto de datos desde el inicio.** Es exactamente lo que los sistemas mecánicos no tienen y lo que sus usuarios reclaman (*"su modelo de datos no tiene un concepto lógico de Departamento"*), y es lo que los sistemas de colisión sí tienen. Si el diferenciador del proyecto es el taller multi-especialidad, ese es el hueco identificado en el mercado.
 
@@ -397,7 +488,7 @@ No son decisiones tomadas — son las restricciones que la evidencia impone sobr
 5. **Cada especialidad tiene una unidad económica distinta y el modelo tiene que tolerarlo:**
    - **Mecánica**: operación de catálogo, margen sobre repuestos, canned jobs, matriz de labor.
    - **Eléctrico/diagnóstico**: tiempo de diagnóstico que no encaja en tarifa fija; necesita la estructura **queja → causa → corrección** (las Tres C de Fullbay) para justificar el cobro; y el hilo de foro sobre labor de diagnóstico regalada (*"¿el técnico recibe el tiempo de labor, o el técnico lo sufre?"*) muestra que **el diagnóstico se cobra mal precisamente porque los sistemas no lo modelan**.
-   - **Pintura**: la labor se **deriva** de otra labor por un porcentaje según proceso (dos vs tres capas) y según quién paga; hay etapas físicas (desarme, enderezado, preparación, cabina, pulido) con capacidad limitada (la cabina es un recurso, no una bahía más); y existe la figura del **suplemento** (trabajo adicional descubierto al desarmar, que requiere reautorización).
+   - **Pintura**: la labor se **deriva** de otra labor por un porcentaje según proceso (dos vs tres capas) y según quién paga — y ese porcentaje está desmentido por el estudio SCRS, así que **debe ser configurable y defendible, no una constante del sistema**; hay etapas físicas (desarme, enderezado, preparación, cabina, pulido) con capacidad limitada (**la cabina es la restricción del taller, no una bahía más**); la métrica es **touch time / cycle time sobre el vehículo**, no eficiencia sobre el técnico; y existe la figura del **suplemento** (trabajo adicional descubierto al desarmar, que requiere reautorización) que ocurre en la mayoría de las reparaciones.
 
 6. **El suplemento es el análogo de la re-cotización, y ya existe evidencia de cómo modelarlo.** `serviceAuthorizationReset` + autorización por trabajo cubre conceptualmente el caso: se descubre daño oculto, se agregan trabajos, se reautoriza solo lo nuevo. Un modelo de autorización a nivel de orden **no puede** representar pintura.
 
@@ -407,7 +498,7 @@ No son decisiones tomadas — son las restricciones que la evidencia impone sobr
 
 ---
 
-## 11. Preguntas abiertas para el mapa
+## 12. Preguntas abiertas para el mapa
 
 Cosas que esta investigación identificó pero no puede responder, y que probablemente merecen su propio ticket:
 
@@ -416,6 +507,8 @@ Cosas que esta investigación identificó pero no puede responder, y que probabl
 3. **¿Qué identificador usa realmente el mostrador en Costa Rica: placa, VIN, o nombre del cliente?** Determina el índice primario de búsqueda del historial.
 4. **¿Cuál es la tasa de adopción realista de una inspección con fotos en un taller local?** El hallazgo más incómodo de esta investigación es que la función existe en todas partes y se usa a medias.
 5. **Benchmarks locales.** Los cuatro números (autos/mes, ARO, margen de repuestos, tarifa efectiva) son de Norteamérica. Sin equivalentes locales, el panel de KPIs no tiene contra qué comparar.
+6. **¿Un taller mixto local realmente quiere un solo sistema, o ya se acomodó a dos?** Es el vacío de evidencia más grande de la investigación (ver incertidumbre 12). Se puede responder con 3–5 entrevistas locales antes de comprometer el modelo de datos.
+7. **¿Qué cumplimiento fiscal/electrónico exige Costa Rica para la factura?** Los competidores locales se diferencian principalmente por eso (los de la sección 8 se venden por CFDI/IVA/Verifactu, no por producto). Es probablemente un requisito de entrada, no un extra.
 
 ---
 
@@ -437,6 +530,10 @@ Cosas que esta investigación identificó pero no puede responder, y que probabl
 
 ### Benchmarks publicados por fabricante
 - Tekmetric Shop Index (>10,000 talleres, datos a junio 2026): https://www.tekmetric.com/shop-index
+- Cox Automotive — 2025 Fixed Ops & Ownership Study (n=500 + 2,502, sep–oct 2025): https://www.coxautoinc.com/retail/resources/ownership-study/
+- Mitchell — Collision Repair Industry Data Q1 2017 (suplementos): https://www.mitchell.com/insights/article/auto-physical-damage/mitchell-collision-repair-industry-data-q1-2017
+- CCC — Crash Course Q4 2025: https://www.cccis.com/reports/crash-course-2025/q4
+- Innocar + Roshfrans — adopción de software en talleres de Latinoamérica (n=435, 15 países, mayo 2024): https://radartecnologico.com/26045/innovacion/adopcion-de-tecnologia-un-reto-vigente-para-los-talleres-mecanicos-en-latam/ · https://channelnewsperu.com/solo-23-5-de-talleres-mecanicos-de-america-latina-utiliza-software-especializado-para-gestionar-sus-operaciones/
 
 ### Reseñas de usuarios
 - G2 — Tekmetric: https://www.g2.com/products/tekmetric/reviews?qs=pros-and-cons
@@ -464,7 +561,8 @@ Cosas que esta investigación identificó pero no puede responder, y que probabl
 - AutoShopOwner — "AutoVitals vs AutoTextMe": https://www.autoshopowner.com/forums/topic/15681-autovitals-vs-autotextme/
 - AutoShopOwner — "Are you happy with your shop management software?": https://www.autoshopowner.com/forums/topic/19571-are-you-happy-with-your-shop-management-software/
 - Automotive Management Network — "Looking to make the switch from Mitchell": https://www.automotivemanagementnetwork.com/forums/topic/looking-to-make-the-switch-from-mitchell/
-- Diagnostic Network: https://diag.net/msg/m3qtz3fa6x08orl5p2bkryx7cd
+- Diagnostic Network — criterio de selección de software: https://diag.net/msg/m3qtz3fa6x08orl5p2bkryx7cd
+- Diagnostic Network — cobro del diagnóstico: https://diag.net/msg/m73mhals5zlx2n9d1n8facs7hi
 - Remarkable Results Radio, THA 418 (Chris Cloutier sobre DVI): https://www.youtube.com/watch?v=fdNvlmkxsxA
 
 ### Prensa sectorial y análisis independiente
@@ -476,6 +574,18 @@ Cosas que esta investigación identificó pero no puede responder, y que probabl
 - Repairer Driven News — re-digitación y suplementos: https://www.repairerdrivennews.com/2020/10/20/repair-u-rekeying-insurer-estimates-insane-hurts-the-body-shop/
 - Body Shop Business — portabilidad de datos (EMS): https://www.bodyshopbusiness.com/ignorance-is-expensive/
 - WickedFile — análisis crítico de las cifras de DVI: https://www.wickedfile.com/blogs/digital-vehicle-inspection
+- WickedFile — tarifa de diagnóstico (cita de segunda mano, no verificada): https://www.wickedfile.com/blogs/mechanic-diagnostic-fee/
+- Ratchet+Wrench — 2026 Industry Survey Report (n=430, Q1 2026): https://www.ratchetandwrench.com/home/article/55387461/2026-ratchetwrench-industry-survey-report · resumen con cifras: https://www.aapexshow.com/blog/shop-owners-survey/
+- Ratchet+Wrench — eficiencia vs productividad: https://www.ratchetandwrench.com/running-a-shop/article/11488239/utilizing-efficiency-and-productivity-numbers-july-01-2016
+- Ratchet+Wrench — guía de KPIs 2026: https://www.ratchetandwrench.com/running-a-shop/finance/article/55379932/your-guide-to-tracking-kpis
+- Cox Automotive — 2023 Service Industry Study (n=2,493): https://www.coxautoinc.com/insights/2023-service-industry-study/
+- Cox Automotive — 2025 Service Industry Study (n=1,974): https://www.coxautoinc.com/insights/new-cox-automotive-study-finds-dealerships-have-lost-12-of-service-visits-to-competition-since-2018/
+- SCRS Blend Study (2022, auditado por DEKRA): https://scrs.com/scrs-study-concludes-blend-time-is-greater-than-full-refinish/ · cobertura: https://www.repairerdrivennews.com/2022/11/02/scrs-research-concludes-blend-time-is-greater-than-full-refinish/
+- FenderBender — costo real de los suplementos: https://www.fenderbender.com/running-a-shop/finance/article/33028793/the-true-cost-of-collision-repair-supplements
+- FenderBender — touch time y cycle time: https://www.fenderbender.com/33028951
+- BodyShop Business — participación en DRP: https://www.bodyshopbusiness.com/insurance-companies-claim-collision-repairs-take-longer-non-drp-shops/
+- Autobody News — tendencias de reclamos 2025/2026: https://www.autobodynews.com/news/2025-data-points-to-fewer-claims-more-collision-repair-complexity-in-2026
+- Digital Dealer — recuperación de servicios declinados (sin atribución de investigación): https://digitaldealer.com/news/4-tips-capture-declined-services/93067/
 
 ### Marketing (citado solo como posicionamiento)
 - Tekmetric — Job Board: https://www.tekmetric.com/post/repairs-management-software-job-board
@@ -484,3 +594,13 @@ Cosas que esta investigación identificó pero no puede responder, y que probabl
 - Mitchell RepairCenter: https://www.mitchell.com/
 - Rome Technologies: https://rometech.com/
 - Claimory vs Tekmetric (competidor de nicho, comparación estructural mecánica vs colisión): https://claimory.io/compare/claimory-vs-tekmetric
+- SUN Collision — integración con Manager SE/ShopKey: https://suncollision.com/sun-collision-integrates-with-manager-se-shopkey-management-systems/
+- Tekmetric en español (señal de entrada al mercado hispanohablante): https://www.tekmetric.com/espanol
+
+### Productos de Latinoamérica y España (relevamiento de mercado)
+- TallerOne (Costa Rica): https://mercedsoftware.com/
+- Taller Alpha (con módulos de enderezado y pintura): https://talleralpha.com/
+- Appli-Car (LATAM): https://www.appli-car.com/es/
+- AutoSoft Taller (México, CFDI 4.0): https://autosofttaller.com/
+- PTME (impuestos multi-país, incluye IVA 13% Costa Rica): https://www.programatallermecani.com/
+- TallerPro (Argentina): https://tallerpro.com.ar/
