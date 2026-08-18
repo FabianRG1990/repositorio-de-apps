@@ -33,7 +33,7 @@
 
    Revisados nueve productos, **todos** tienen algún mecanismo de categorización en la unidad de trabajo. Ninguno lo llama "especialidad".
 
-3. **La excepción real y documentada es el concesionario:** ahí sí existe una orden por departamento. Autosoft marca en la cabecera del RO el campo `Service/Body/Contract/QuickLube [S/B/C/Q]`, es decir, una orden de carrocería es un *tipo de documento distinto* de una orden de servicio mecánico. Fuera del concesionario no encontré evidencia primaria de ese patrón.
+3. **Existe un segundo patrón, maduro y bien documentado: concesionario y MSO de colisión separan por departamento — a veces hasta en sistemas distintos.** Autosoft tipa el RO en cabecera (`Service/Body/Contract/QuickLube`) **y** mantiene tres agendas separadas y un control operativo diario por departamento. En el extremo, la integración oficial Mitchell RepairCenter ↔ CDK declara que "the Repair Order (RO) **exists only in RepairCenter. No CDK Repair Orders are created**" — el taller de chapa corre fuera del DMS y solo empuja asientos contables, mapeados por *Profit Centers*. Keyloop describe lo mismo en Europa. **Sus causas** (P&L departamental exigido por el fabricante, facturación a aseguradoras, plantillas grandes) **no aplican a nuestro cliente en Fase 1** — pero conviene saber que el patrón existe y por qué.
 
 4. **Ningún producto revisado tiene un kanban por especialidad.** Los dos ejes que sí existen son **etapa del proceso** y **técnico**: Shopmonkey tiene un único Workflow con columnas configurables; Tekmetric tiene *Job Board* (etapas) más *Tech Board* (una columna por técnico, con carril de "Unassigned Jobs"); Garage Hive tiene TCards con un carril por técnico; Business Central tiene un único *Dispatch Board* filtrable por `Resource Filter` y `Resource Group Filter`; el taller de carrocería real organiza el tablero por etapas físicas (desarme, carrocería, preparación, pintura, pulido, armado), no por oficio.
 
@@ -230,6 +230,23 @@ Lo relevante para nosotros:
 - El tablero es un **Schedule** con asignaciones por técnico, más **TCards con un carril por técnico** y un carril de pendientes: "when a technician starts a job the job will move from the pending jobs TCard to the relevant technician's TCard" (<https://garagehive.co.uk/features/workshop-management-with-garage-hive/>).
 - Existen **pool jobs**: reservar a una bahía sin asignar técnico individual, y que el grupo tome de la piscina (confianza: media — texto de índice de búsqueda, página no recuperable).
 
+### 3.3c Colisión: la entidad raíz no es la orden, es el expediente del siniestro
+
+**Nexsyis** (gestión de talleres de colisión) no organiza el sistema alrededor de la orden de trabajo sino del ***Folder***, el expediente del siniestro, que cubre "from its earliest stage of first customer contact all the way through" y que puede sostener **más de una reclamación** y un número **ilimitado** de estimaciones sobre el mismo vehículo bajo un solo número de expediente.
+— <https://www.nexsyiscollision.com/repair-order-management> (confianza: alta)
+
+Esto importa por dos razones:
+
+1. **Falsifica un argumento que usé en la primera versión de este documento** para descartar la Opción B ("ningún producto SaaS tiene la entidad agrupadora"). Sí la tiene. Ver retractación en §5.9.
+2. **Revela por qué existe**: la agrupación no nace de la multi-especialidad, nace de que **puede haber varias reclamaciones de seguro y trabajo customer-pay sobre el mismo vehículo a la vez**, cada una con su propio aprobador y su propio documento. Es un problema de *pagadores múltiples*, no de *oficios múltiples*.
+
+De la misma fuente sale el hallazgo de modelado más útil de toda esta investigación sobre sublet:
+
+> "an item invoiced to the carrier as **sublet** may be **performed by a mechanic internally**. Nexsyis handles this seamlessly by taking all of the purchases and labor lines from the estimate(s) and creating a bill of work."
+> — <https://www.nexsyiscollision.com/repair-order-management> (confianza: alta)
+
+**Sublet es una categoría de facturación, no un proveedor.** Quién ejecuta el trabajo (interno o externo) es una dimensión **ortogonal** a cómo se factura la línea. Modelarlo como "proveedor externo" sería un error: hay que modelarlo como bandera de facturación + asignación de recurso, que pueden combinarse libremente.
+
 ### 3.4 La excepción documentada: el concesionario sí separa la orden por departamento
 
 El manual público del DMS **Autosoft** muestra que en la cabecera del repair order hay un campo que tipifica la orden por departamento:
@@ -246,6 +263,30 @@ Dentro de una misma orden, en cambio, el mismo manual describe el patrón de lí
 Y cada "repair" lleva sus propios: `Complaint`, **`Technician`**, `Writer`, `C/W/I/Q` (tipo de pago: customer / warranty / internal / quick lube), **`Labor Level` (A–J, que determina la tarifa)**, `Estimated Labor Time`, `Labor Sale`, `LOP` (labor operation code del fabricante), `Complaint Code`, `Trouble/Fail Code`.
 
 Nótese que **`Labor Level` es una tarifa por línea**: el mismo mecanismo que en CCC (tarifa por *charge category*) permite cobrar la hora de pintura distinto de la de mecánica dentro de una sola orden.
+
+**Y la separación va mucho más allá de un campo en la cabecera.** Autosoft mantiene **tres agendas distintas** dentro del mismo módulo:
+
+> "When scheduling appointments, you have the option of working on three separate schedules: **Service, Body Shop, and Quick Service**."
+> — <https://autosoftdms.com/latest-expert-tips-tricks-november-2016/> (confianza: alta)
+
+Además, las órdenes se filtran por pestañas de departamento, la primera línea de una orden de carrocería arranca con *Paint & Material* en vez de *Shop Supplies*, y el control operativo diario (DOC) se consulta por departamento:
+
+> "The Daily Operating Control screen allows the service manager to view the **service and body shop** daily DOC."
+> — <https://autosoftdms.com/bonus-get-fixed-operations-tips/> (confianza: alta)
+
+**El caso extremo: el taller de carrocería ni siquiera vive en el DMS.** La integración oficial de Mitchell RepairCenter con CDK Global es explícita:
+
+> "the Repair Order (RO) **exists only in RepairCenter. No CDK Repair Orders are created.** All work is done in RepairCenter and after the job is completed, you can transfer data to CDK."
+>
+> Los números de RO del taller de chapa se referencian en el DMS con un prefijo "M" para no colisionar con los de Service, y lo que se transfiere son **asientos contables** — "General Journal Updates (including technician payroll!)" — mapeados por **Profit Centers** contra el plan de cuentas del DMS.
+> — <https://www.mymitchell.com/tchs/helpfiles/RepairCenter/1033/Content/18181.htm> (confianza: alta)
+
+Con Reynolds & Reynolds existe la variante en que el taller sí **toma la numeración de RO del DMS** (<https://www.mymitchell.com/tchs/helpfiles/RepairCenter/1033/Content/18180.htm>), y en Europa Keyloop describe el mismo patrón:
+
+> "If your franchise uses bodyshop management software to manage crash repairs, you can write repair orders, and all their details into the DMS **for invoicing**, without re-keying."
+> — <https://developer.keyloop.io/products/inspect-vehicle-advanced/> (confianza: alta)
+
+**Lectura correcta de esta evidencia:** en el mundo del concesionario y del MSO de colisión, mecánica y carrocería no son dos categorías de línea — **son dos negocios con sistemas, agendas y cuentas de resultados propios**, unidos únicamente en la capa contable y en la factura al cliente. Es un patrón real y maduro, no una rareza. Lo que hay que preguntarse es si sus *causas* (P&L departamental exigido por el fabricante, facturación a aseguradoras, plantillas de decenas de técnicos) aplican a nuestro cliente. En Fase 1, no.
 
 La consultoría de la industria confirma que un taller que combina colisión y mecánica los opera como dos áreas, y que el problema práctico es la coordinación, no el documento:
 
@@ -323,6 +364,29 @@ Y la segmentación por persona se hace con permisos sobre el tablero único, no 
 
 Traducción al modelo: **la orden debe poder imprimir un desglose línea por línea de mano de obra y repuestos, y el trabajo externalizado debe ser identificable como tal en el documento.** Esto empuja hacia una orden única con líneas tipadas, no hacia órdenes separadas.
 
+### 3.6b El oficio "mecánico + eléctrico" sí está formalizado — en el Reino Unido se llama MET
+
+Este es el hallazgo que más cambia la sección de incertidumbres. El **IMI** (Institute of the Motor Industry, el organismo de cualificación profesional del sector en Reino Unido) mantiene **tres familias separadas** dentro de reparación de siniestros: *Body repair*, *Refinishing* y **MET**. Y MET significa literalmente **Mechanical, Electrical and Trim**:
+
+> "The role is to identify damaged **mechanical and electrical** components on a damaged car/light commercial vehicle, and remove and refit these components before and after body repair work has been carried out."
+> — <https://www.theimi.org.uk/learn/qualifications/AS-VDMET-EPA> (confianza: alta)
+
+> Familias de cualificación de accident repair: *Body repair* ("repairing body work"), *MET*, *Refinishing* ("paint repair").
+> — <https://www.theimi.org.uk/learn/qualifications/accident-repair-qualifications> (confianza: alta)
+
+Y desde 2014 existen cualificaciones **multi-skilled** que combinan las tres explícitamente:
+
+> "The level 2 and level 3 **Multi-skilled** Vehicle Collision Repair Qualifications cover **paint, panel and MET** (mechanical electrical trim) disciplines"
+> — <https://motortradesinsight.co.uk/article_page.asp?id=978> (confianza: alta)
+
+Además, mantenimiento de vehículo ligero y vehículo eléctrico/alta tensión son **rutas de cualificación independientes** de las de accident repair (<https://www.theimi.org.uk/learn/qualifications/INT-LEV2-D>, <https://www.theimi.org.uk/learn/qualifications/electric-vehicle>).
+
+**Por qué importa para nosotros:** yo había registrado como incertidumbre que "eléctrico" no existía como categoría de primera clase en ningún sistema anglosajón. Eso es cierto **a nivel de software**, pero **falso a nivel de industria**: el oficio mecánico-eléctrico está formalmente reconocido, certificado y separado de panel y de pintura — exactamente la tripleta del ticket (mecánico + eléctrico + pintura), y con un cuarto reconocimiento explícito de que **un mismo técnico puede acumular varias**. Esto:
+
+- **valida la premisa del ticket** con una fuente institucional, no anecdótica;
+- refuerza que las especialidades deben ser un **catálogo configurable con posibilidad de combinarlas por técnico** (multi-skilled), no un enum de una sola opción por persona;
+- y sugiere que agrupar "mecánico" y "eléctrico" bajo una misma etiqueta es una decisión defendible en algunos mercados y equivocada en otros — es decir, precisamente el tipo de cosa que debe ser dato, no código.
+
 ### 3.7 Mono-especialidad vs. multi-especialidad: la forma del modelo no cambia
 
 | Producto | Especialidad(es) que atiende | Jerarquía |
@@ -363,9 +427,9 @@ Traducción al modelo: **la orden debe poder imprimir un desglose línea por lí
 
 1. **Contradicción real: concesionario vs. taller independiente.** El DMS de concesionario (Autosoft, y por extensión CDK/Reynolds, que no pude verificar con fuente primaria pública) sí separa la orden por departamento. El taller independiente y el software SaaS moderno no. La razón es contable (centro de costo por departamento), no operativa. **Para un taller independiente de rango medio-alto en Costa Rica, el driver contable del concesionario no aplica**, salvo que el cliente quiera P&L por área — lo cual se resuelve con reporte, no con documentos separados.
 
-2. **"Eléctrico" no existe como categoría de primera clase en ningún producto anglosajón revisado.** CCC/CIECA tienen `LAB/LAR/LAM/LAF/LAG/LAS/LAA` — carrocería, pintura, mecánica, chasis, vidrio, estructural, aluminio — pero **no eléctrico**; en EE. UU. se subsume en *mechanical* o en *diagnostic*. En cambio, "auto eléctrico" es una especialidad claramente diferenciada en el mercado hispanohablante. **Incertidumbre a resolver con el cliente, no con más investigación web.** Mitigación de diseño: el propio estándar CIECA reserva `LA1`/`LA2` como *UserDefined*, y Mitchell dice explícitamente que las categorías las determina "the repair facility's operating procedures" — la lección es que **el catálogo de especialidades debe ser dato configurable, no un enum en el código**.
+2. **"Eléctrico" no existe como categoría en el *software* anglosajón — pero sí como *oficio* certificado. Parcialmente resuelto.** CCC/CIECA tienen `LAB/LAR/LAM/LAF/LAG/LAS/LAA` — carrocería, pintura, mecánica, chasis, vidrio, estructural, aluminio — pero **no eléctrico**; en EE. UU. se subsume en *mechanical* o *diagnostic*. Sin embargo, el IMI británico certifica **MET (Mechanical, Electrical and Trim)** como oficio formalmente distinto de panel y de pintura, con cualificaciones *multi-skilled* que combinan los tres (§3.6b). Es decir: **la tripleta del ticket está institucionalmente reconocida; lo que falta es soporte en el software, no realidad en el taller.** Queda por confirmar con el cliente si en Costa Rica "eléctrico" se gestiona como oficio separado de "mecánico" o como sub-especialidad. Mitigación de diseño (sin cambios): CIECA reserva `LA1`/`LA2` como *UserDefined* y Mitchell dice que las categorías las determina "the repair facility's operating procedures" — **el catálogo de especialidades debe ser dato configurable, y un técnico debe poder tener varias**.
 
-3. **No encontré ningún producto con kanban por especialidad.** Todo apunta a tablero único (por etapa) + filtro. Esto contradice la intuición de "un pipeline por área". Antes de implementar tableros separados habría que validarlo con un taller real; la evidencia internacional no lo respalda.
+3. **No encontré ningún producto con kanban por especialidad — pero sí con *carga* por departamento.** Ningún tablero revisado tiene una columna por oficio. Sin embargo, **Rome Technologies** (colisión) sí modela la capacidad departamental explícitamente: "Our load-leveling system makes it easy to schedule work for shop capacity and **avoid overloading any one department**", y su "Big Board" muestra "every vehicle, **load on each department**, and it tells you about parts availability" (<https://www.rometech.com/the-rome-solution/>, confianza: alta). La literatura de programación lean dice lo mismo: se planifica para que carrocería **alimente de forma estable** a pintura, y un mix mal balanceado "starve[s]" a un equipo concreto (<https://www.bodyshopbusiness.com/increasing-touch-time-in-your-auto-body-shop>, <https://elitebodyshopsolutions.com/process-stability/scheduling/>). **Matiz correcto:** la especialidad no es un eje de *columnas del tablero*, pero sí es un eje de *capacidad y carga*. Eso es un requisito de reporting/planificación, no de kanban.
 
 4. **Falta evidencia primaria sobre CCC ONE Repair Workflow a nivel de modelo de datos.** La página de producto es marketing; la Knowledge Base de CCC exige login para los artículos de producción. Sé que existen *production boards* y *repair plan phases*, pero no pude verificar si una fase se asigna a un departamento o si una línea tiene estado propio. **Confianza baja en esa parte; declarada como hueco.**
 
@@ -375,7 +439,13 @@ Traducción al modelo: **la orden debe poder imprimir un desglose línea por lí
 
 7. **`skillRequired` de Shopmonkey es nivel de destreza (`General/Maintenance/Precision`), no oficio.** No es un contraejemplo perfecto; lo que prueba es la *ubicación* del campo (la línea), no su taxonomía. La taxonomía de oficio en Shopmonkey vive en `categoryId`, que existe **en dos niveles** (por `Service` y por línea).
 
-8. **Varias bases de conocimiento están tras login y su evidencia es más débil.** AutoLeap (`help.autoleap.com` no resuelve; la KB vive dentro del User Center), Shop-Ware (`help.shop-ware.com` redirige a login) y Fullbay (la KB real está en "Fullbay Learn", dentro de la app) solo aportan páginas de producto/blog. Sus afirmaciones en este documento están marcadas con confianza media. La documentación de Garage Hive es una SPA renderizada por JavaScript y solo pude recuperar tres páginas.
+8. **Retractación — "ningún producto SaaS tiene la entidad agrupadora" era falso.** Usé ese argumento para descartar la Opción B. **Nexsyis tiene el *Folder***, que agrupa varias reclamaciones y estimaciones ilimitadas sobre un vehículo bajo un solo expediente (§3.3c). La Opción B queda reevaluada arriba: sigue sin ser la recomendada para nuestro caso, pero por razones distintas y mejores (penaliza al mono-especialidad; la autorización por tarea ya resuelve el problema que la motivaba), no por falta de precedente.
+
+9. **El mercado de software está verticalmente segmentado, y esto es un riesgo de producto, no solo un dato.** Shopmonkey lista sus verticales (auto repair, tire, quick lube, heavy duty, wrap & detail) y **no incluye colisión**; Web-Est se vende como "Collision Estimating Software For Independent Body Shops"; Nexsyis y Rome son collision-only; Garage Hive y MAM Autowork Online no ofrecen módulo de carrocería. **Ningún vendor establecido intenta cubrir mecánica general y colisión con el mismo producto.** Un taller real que hace ambas usa *stack partido* — p. ej. Shadow Lake Collision usa CCC para estimar y Nexsyis para gestión y contabilidad (<https://www.autobodynews.com/regional/midwest-regional-news/shop-stack-breakdown-shadow-lake-collision-in-papillion-and-omaha-neb>, confianza: alta). La razón de fondo es que el disparador del trabajo es distinto: en colisión es un **siniestro con aseguradora** (estimaciones, suplementos, DRP, peritaje); en mecánica es un **síntoma del cliente**. **Implicación para #20:** unificar mecánica y pintura en un solo modelo de orden es defendible para un taller independiente que cobra al cliente final, y se vuelve mucho más difícil si aparece facturación a aseguradoras. Conviene confirmar con el cliente si su pintura es customer-pay o de seguro **antes** de cerrar el modelo.
+
+10. **La tarifa por tipo de trabajo es un requisito, no un extra.** El índice nacional de tarifas de EE. UU. publica cuatro tarifas distintas y coexistentes — **Body, Refinish, Frame, Mechanical** — para el mismo taller (<https://www.autobodynews.com/regional/midwest-regional-news/labor-rate-index-national-data-shows-mechanical-labor-rates-rising-faster-than-body-refinish>, confianza: alta). Coincide con CCC (*charge category*) y Autosoft (`Labor Level` A–J). Cualquier modelo que asuma una sola tarifa por taller está mal desde el primer día.
+
+11. **Varias bases de conocimiento están tras login y su evidencia es más débil.** AutoLeap (`help.autoleap.com` no resuelve; la KB vive dentro del User Center), Shop-Ware (`help.shop-ware.com` redirige a login) y Fullbay (la KB real está en "Fullbay Learn", dentro de la app) solo aportan páginas de producto/blog. Sus afirmaciones en este documento están marcadas con confianza media. La documentación de Garage Hive es una SPA renderizada por JavaScript y solo pude recuperar tres páginas.
 
 ---
 
@@ -415,8 +485,18 @@ OrdenDeTrabajo
 Visita ──< OrdenDeTrabajo (una por especialidad) ──< Linea
 ```
 
-**A favor**: es lo que hace el concesionario (`S/B/C/Q`); P&L por área es trivial; cada área tiene su pipeline sin ambigüedad.
-**En contra**: obliga a inventar la entidad `Visita` que ningún producto SaaS tiene; el cliente recibe N documentos o hay que consolidar al facturar (trabajo extra); duplica cliente/vehículo/asesor; **penaliza al taller mono-especialidad con una capa que no necesita**; y contradice el patrón dominante fuera del concesionario.
+**A favor**
+- **Sí tiene precedente, y más fuerte de lo que creí en la primera versión de este documento** (ver retractación en §5.9): el concesionario lo hace (`S/B/C/Q`, agendas separadas, DOC por departamento), y **Nexsyis — sistema de gestión de colisión — tiene exactamente la entidad agrupadora**: el *Folder*, que sostiene más de una reclamación y un número ilimitado de estimaciones sobre el mismo vehículo bajo un solo número de expediente.
+- P&L por área es trivial; cada área tiene su pipeline sin ambigüedad.
+- Es el patrón obligado si el trabajo lo dispara una **aseguradora**: cada reclamación es su propio documento con su propio aprobador.
+
+**En contra**
+- El cliente recibe N documentos, o hay que consolidar al facturar — trabajo extra que la Opción A no tiene.
+- Duplica cliente/vehículo/asesor en cada orden.
+- **Penaliza al taller mono-especialidad con una capa jerárquica que no necesita** — y ese es un requisito explícito del ticket.
+- Contradice el hallazgo unánime de que **la unidad de autorización del cliente ya es la tarea**, no la orden: si se puede aprobar/declinar tarea por tarea dentro de un documento, partir el documento deja de ser necesario.
+
+**Cuándo sí elegirla:** si el negocio principal del cliente fuera reparación de colisión facturada a aseguradoras, con varias reclamaciones por vehículo. **No es nuestro caso en Fase 1.**
 
 ### Opción C — Orden padre con sub-órdenes por especialidad
 
@@ -430,7 +510,7 @@ Visita ──< OrdenDeTrabajo (una por especialidad) ──< Linea
 
 ### Recomendación
 
-**Opción A**, con estas cuatro decisiones tomadas del material investigado:
+**Opción A**, con estas nueve decisiones tomadas del material investigado. Las cinco primeras responden directamente al ticket; las cuatro últimas son restricciones que la evidencia mostró y que, si se ignoran, obligan a rehacer el modelo más adelante:
 
 1. **Catálogo de especialidades configurable, no enum.** Precedente: Mitchell ("as determined by the repair facility's operating procedures"), CIECA (`LA1`/`LA2` UserDefined), Orderry (tipos de orden definidos por el usuario). Esto es lo que hace que "eléctrico" sea representable sin tocar código, y lo que hace que el taller mono-especialidad sea un caso natural del mismo modelo.
 
@@ -441,6 +521,14 @@ Visita ──< OrdenDeTrabajo (una por especialidad) ──< Linea
 4. **Asignación en la línea, permitiendo asignar a una especialidad/grupo antes que a una persona.** Precedente: Business Central permite asignar a `Resource Group` y no solo a `Resource No.`; Garage Hive tiene *pool jobs* reservados a una bahía sin técnico individual. Esto habilita "esto va para pintura" en recepción y "lo hace Juan" después, sin cambiar de entidad.
 
 5. **Autorización del cliente por línea/tarea, no por orden.** Precedente unánime: Tekmetric (approve/decline por job, más *draft jobs* que el cliente no ve), Shopmonkey (`authorizationStatus` por `Service` + `deferredDate`), Garage Hive (autorización por grupo). Es además el mecanismo con el que la industria resuelve la aprobación parcial **sin** partir el documento — lo que elimina la razón principal que uno podría tener para elegir la Opción B.
+
+6. **Tarifa de mano de obra por especialidad, no por taller.** El índice nacional de EE. UU. publica cuatro tarifas coexistentes para un mismo taller (Body / Refinish / Frame / Mechanical); CCC configura tarifa e impuesto *por charge category*; Autosoft usa `Labor Level` A–J por línea. **Asumir una sola tarifa por taller es un error estructural**, aunque el taller de la demo use una sola.
+
+7. **Sublet = bandera de facturación, ortogonal a quién ejecuta.** Precedente: Nexsyis — "an item invoiced to the carrier as sublet may be performed by a mechanic internally". Modelarlo como "proveedor externo" acopla dos cosas que la industria mantiene separadas: *cómo se cobra la línea* y *qué recurso la ejecuta*. En CIECA son dos flags sobre la línea (`PartSubletInd`, `LaborSubletInd`), no una relación a un proveedor.
+
+8. **Un técnico puede tener varias especialidades.** Precedente institucional: las cualificaciones *multi-skilled* del IMI combinan panel, pintura y MET en una sola persona. La relación técnico↔especialidad es N:N, no 1:N.
+
+9. **La especialidad es eje de capacidad y carga, aunque no sea eje de columnas del tablero.** Precedente: Rome ("avoid overloading any one department", Big Board con "load on each department") y la práctica lean de programar para que carrocería alimente a pintura sin dejarla ociosa. Para Fase 1 esto es sobre todo un requisito de *reporte*; conviene no cerrar el modelo de forma que impida calcular carga por especialidad después.
 
 Dos cosas más que salieron de la evidencia y que conviene no perder aunque no sean el objeto de este ticket: **separar horas vendidas de horas fichadas** (Tekmetric `laborHours` vs `loggedHours`; CIECA `LaborHours` vs `DatabaseLaborHours`) y **separar el tipo de documento del estado de taller** (Shopmonkey `status: Estimate|RepairOrder|Invoice` vs `workflowStatusId`; Business Central `Status` vs `Repair Status Code`). Ambas son ortogonales al multi-especialidad pero aparecen en todos los modelos serios.
 
@@ -502,10 +590,51 @@ Dos cosas más que salieron de la evidencia y que conviene no perder aunque no s
 
 **Concesionario / DMS**
 - Autosoft DMS — *Repair Orders* (manual, cap. 5): <https://download.autosoft-asi.com/instructions/S/RepairOrders.pdf>
+- Autosoft — tres agendas separadas (Service / Body Shop / Quick Service): <https://autosoftdms.com/latest-expert-tips-tricks-november-2016/>
+- Autosoft — DOC por departamento: <https://autosoftdms.com/bonus-get-fixed-operations-tips/>
+- Mitchell RepairCenter ↔ **CDK** ("No CDK Repair Orders are created", prefijo "M", Profit Centers): <https://www.mymitchell.com/tchs/helpfiles/RepairCenter/1033/Content/18181.htm>
+- Mitchell RepairCenter ↔ **Reynolds & Reynolds** (numeración de RO desde el DMS): <https://www.mymitchell.com/tchs/helpfiles/RepairCenter/1033/Content/18180.htm>
+- Keyloop (Europa) — escritura de ROs de bodyshop en el DMS para facturación: <https://developer.keyloop.io/products/inspect-vehicle-advanced/>
+- Dominion DMS — *Understanding Service Op Codes*: <https://help.dominiondms.com/en/knowledge/understanding-service-op-codes>
+- Dominion DMS — *Industry Terminology* (Sublet, Internal RO, Labor Rate/Cost): <https://help.dominiondms.com/en/knowledge/industry-terminology>
+- CCC ↔ Tekion (sincronización de números de RO y contabilidad, feb-2025): <https://collisionweek.com/2025/02/04/ccc-repair-workflow-now-integrates-tekion-dms-platform/>
 - DRIVE — *Combine Forces: Collision and General Repair*: <https://driveshops.com/combine-forces-collision-and-general-repair/>
+
+**Gestión de colisión (producción, carga y expediente)**
+- Nexsyis — *Repair Order Management* (Folder; sublet ejecutado internamente): <https://www.nexsyiscollision.com/repair-order-management>
+- Rome Technologies — *The Rome Solution* (load-leveling por departamento, Big Board): <https://www.rometech.com/the-rome-solution/>
+- I-CAR — blueprinting como SOP previo a la reparación: <https://rts.i-car.com/collision-repair-news/crn-28.html>
+- FenderBender — *Fix your blueprinting issues*: <https://www.fenderbender.com/running-a-shop/operations/article/33030034/fix-your-blueprinting-issues-with-these-5-steps>
+- BodyShop Business — *Increasing touch time* (capacidad por body/paint y por técnico): <https://www.bodyshopbusiness.com/increasing-touch-time-in-your-auto-body-shop>
+- Elite Body Shop Solutions — *Scheduling* (starve body/paint team): <https://elitebodyshopsolutions.com/process-stability/scheduling/>
+- AutoBody News — tarifas por tipo (Body / Refinish / Frame / Mechanical): <https://www.autobodynews.com/regional/midwest-regional-news/labor-rate-index-national-data-shows-mechanical-labor-rates-rising-faster-than-body-refinish>
+- AutoBody News — internalización de mecánica en talleres de colisión: <https://www.autobodynews.com/news/inside-collision-repairs-shift-toward-in-house-mechanical-work>
+- AutoBody News — *Shop Stack Breakdown: Shadow Lake Collision* (CCC + Nexsyis): <https://www.autobodynews.com/regional/midwest-regional-news/shop-stack-breakdown-shadow-lake-collision-in-papillion-and-omaha-neb>
+- BodyShop Business — *Ask the Expert: sublet* (Barrett Smith): <https://www.bodyshopbusiness.com/ask-expert-doubt-sub/>
+
+**Cualificaciones profesionales (Reino Unido)**
+- IMI — *Accident Repair Qualifications* (Body / MET / Refinishing): <https://www.theimi.org.uk/learn/qualifications/accident-repair-qualifications>
+- IMI — *Vehicle Damage MET Technician* (Mechanical, Electrical and Trim): <https://www.theimi.org.uk/learn/qualifications/AS-VDMET-EPA>
+- IMI — *Light/Electric Vehicle Maintenance and Repair*: <https://www.theimi.org.uk/learn/qualifications/INT-LEV2-D>
+- IMI — *Electric Vehicle*: <https://www.theimi.org.uk/learn/qualifications/electric-vehicle>
+- Motor Trades Insight — cualificaciones *multi-skilled* (paint + panel + MET), 2014: <https://motortradesinsight.co.uk/article_page.asp?id=978>
+
+**Segmentación vertical del mercado de software**
+- Shopmonkey — verticales declaradas (sin colisión): <https://www.shopmonkey.io/>
+- Web-Est — estimación solo para body shops: <https://www.web-est.com/>
+- Mitchell RepairCenter — *Manage the repair*: <https://www.mitchell.com/solutions/collision-repairers/repair-management/repair-center/manage-repair>
+- MAM Autowork Online (UK) — agenda de taller + agenda MOT separada: <https://mamsoftware.com/page/en/products/autowork-online>
 
 **Regulatorio**
 - California Bureau of Automotive Repair — *Write It Right*: <https://www.bar.ca.gov/wir>
 
 **Estándares de codificación de reparaciones (contexto)**
 - TMC/ATA VMRS — *Implementation Handbook v2.0*, extracto público: <https://tmc.trucking.org/sites/default/files/VMRS_INTRO.pdf>
+
+---
+
+### Nota sobre verificación de fuentes
+
+Varios dominios de prensa técnica (`bodyshopbusiness.com`, `oeconnection.com`, `am-online.com`) devuelven **403** a las herramientas de lectura automática, y algunos PDF (manual contable de GM, entre otros) no fueron legibles. Las afirmaciones que dependen exclusivamente de esas fuentes están marcadas con confianza **media** en el texto y **no fueron verificadas abriendo la página directamente**. Antes de reutilizar cualquiera de ellas en material de cara al cliente, conviene confirmarlas a mano. Las afirmaciones marcadas **alta** sí provienen de páginas leídas íntegramente.
+
+Los créditos de la herramienta de scraping se agotaron durante la investigación, lo que limitó la profundidad en tres áreas declaradas como huecos: CCC ONE Repair Workflow, las *code lists* completas de CIECA y la documentación de Garage Hive.
