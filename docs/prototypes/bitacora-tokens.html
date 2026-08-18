@@ -200,7 +200,9 @@
     --brand-soft: #e0eff0;
   }
 
-  /* --- Rampa C: gris puro + verde --- */
+  /* --- Rampa C: gris puro + azul — BASE VISUAL ELEGIDA (ticket #25) ---
+     Estructura de C con el acento de A. Cierra además la pregunta que #18
+     dejó abierta: gana el gris puro sobre el neutro con matiz frío. */
   .canvas[data-variant='c'] {
     --bg-1: #ffffff;
     --bg-2: #f4f4f4;
@@ -209,9 +211,16 @@
     --border-soft: #c2c2c2;
     --text: #161616;
     --text-muted: #5a5a5a;
-    --brand-text: #0d5c34;
-    --brand-solid: #0f6b3d;
-    --brand-soft: #e3f0e8;
+    --brand-text: #0040b3;
+    --brand-solid: #0047c7;
+    --brand-soft: #e6edfb;
+
+    /* Especialidad = color CATEGÓRICO, con hue propio y nunca sin etiqueta.
+       Antes reutilizaba los tonos semánticos (advertencia/peligro), lo cual
+       hacía leer "pintura" como si el vehículo estuviera en riesgo. */
+    --esp-mec: #0047c7;
+    --esp-ele: #6a3ab2;
+    --esp-pin: #00696e;
   }
 
   .app-head {
@@ -485,15 +494,15 @@
   }
 
   .rail--mec {
-    background: var(--brand-solid);
+    background: var(--esp-mec, var(--brand-solid));
   }
 
   .rail--ele {
-    background: var(--wait-line);
+    background: var(--esp-ele, var(--wait-line));
   }
 
   .rail--pin {
-    background: var(--risk-line);
+    background: var(--esp-pin, var(--risk-line));
   }
 
   .tiempo {
@@ -597,7 +606,7 @@
 </style>
 
 <header class="chrome-head">
-  <strong>Prototipo · ticket #25</strong>
+  <strong>Base elegida · ticket #25</strong>
   <span>Bitácora — tokens y patrón de orden de trabajo</span>
   <span>Cifras: docs/research/taller/diseno-premium-b2b.md (#18)</span>
 </header>
@@ -613,9 +622,19 @@
   >), pensada para sol y guantes.
 </p>
 
+<p class="chrome-note">
+  <b>Decidido (ticket #25):</b> la base visual es la
+  <b>variante C con el acento azul de A</b> — la página abre ahí por defecto.
+  Gana el <b>gris puro</b> sobre el neutro con matiz frío, que era la pregunta
+  que la investigación #18 dejó abierta a propósito. A y B se conservan como
+  registro de lo descartado. En C las especialidades pasaron a tener hue propio:
+  antes reutilizaban los colores semánticos y hacían leer "pintura" como si el
+  vehículo estuviera en riesgo.
+</p>
+
 <div class="tokens" id="tokens"></div>
 
-<main class="canvas" id="canvas" data-variant="a">
+<main class="canvas" id="canvas" data-variant="c">
   <div class="shell" id="shell"></div>
 </main>
 
@@ -799,8 +818,8 @@
       },
     },
     c: {
-      nombre: 'Bitácora cronológica',
-      rampa: 'Gris puro + verde',
+      nombre: 'Bitácora cronológica · BASE ELEGIDA',
+      rampa: 'Gris puro + azul',
       fila: '72 px',
       manda: 'El tiempo en taller',
       render: () => `
@@ -844,7 +863,8 @@
 
   function leerVariante() {
     const v = new URLSearchParams(location.search).get('variant');
-    return ORDEN.includes(v) ? v : 'a';
+    // Por defecto abre en C: es la base visual elegida en el ticket #25.
+    return ORDEN.includes(v) ? v : 'c';
   }
 
   function pintar(v) {
