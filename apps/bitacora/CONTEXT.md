@@ -22,6 +22,10 @@ _Evitar_: mecánico (eso es una Especialidad, no un rol), operario
 La persona del taller que recibe el vehículo, cotiza y trata con el Cliente.
 _Evitar_: recepcionista, vendedor
 
+**Aseguradora**:
+La organización que cubre el costo de ciertas Líneas de servicio, típicamente de pintura por colisión. Aparece únicamente como Pagador: el taller no negocia estimaciones ni suplementos dentro de Bitácora.
+_Evitar_: seguro, compañía
+
 ### El vehículo y su identidad
 
 **Vehículo**:
@@ -61,6 +65,14 @@ _Evitar_: ítem, servicio, tarea, renglón
 **Especialidad**:
 El oficio que ejecuta una Línea de servicio: mecánica, electricidad o pintura. Un taller puede tener una, dos o las tres.
 _Evitar_: departamento, área, rubro
+
+**Pagador**:
+Quién paga una Línea de servicio: el Cliente o una Aseguradora. **Es atributo de la Línea de servicio, no de la Orden** — una misma Orden puede llevar mecánica que paga el Cliente y pintura que paga la Aseguradora.
+_Evitar_: responsable de pago, financiador, tipo de cobro
+
+**Diagnóstico**:
+La revisión que hace el taller para saber qué tiene el Vehículo. No es un concepto aparte: es una Línea de servicio como cualquier otra, que el Asesor cobra o deja en cero según el caso.
+_Evitar_: revisión, chequeo, inspección
 
 **Trabajo declinado**:
 Una Línea de servicio que el taller recomendó y el Cliente no aprobó. Conserva su motivo y su monto, y vuelve a proponerse cuando el Vehículo regresa.
