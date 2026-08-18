@@ -89,3 +89,7 @@ _Evitar_: aprobación, OK del cliente
 **Horas facturadas** / **Horas reales**:
 Las horas que se le cobran al Cliente por una Línea de servicio, y las que efectivamente tomó ejecutarla. Son dos cantidades distintas y se registran por separado.
 _Evitar_: horas (a secas), tiempo
+
+**Dictado**:
+Hablarle a un campo de texto en vez de teclearlo. Es un acelerador sobre campos que ya funcionan escribiendo, nunca una forma distinta de llenar la Orden: lo dictado queda como texto y se corrige a mano.
+_Evitar_: comando de voz, voz, reconocimiento
