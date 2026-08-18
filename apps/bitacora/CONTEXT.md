@@ -26,6 +26,14 @@ _Evitar_: asignado, encargado, dueño de la orden
 La persona del taller que recibe el vehículo, cotiza y trata con el Cliente.
 _Evitar_: recepcionista, vendedor
 
+**Dueño**:
+La persona que responde por el taller: define qué Especialidades ofrece y qué tarifas cobra, y mira cómo va el negocio.
+_Evitar_: administrador, gerente, jefe
+
+**Perfil**:
+Con cuál de los tres papeles — Asesor, Técnico o Dueño — se está usando la app. Determina qué pantalla se abre y qué se ofrece hacer, **no qué está permitido**: todos ven todas las Órdenes.
+_Evitar_: rol, permiso, usuario, sesión
+
 **Aseguradora**:
 La organización que cubre el costo de ciertas Líneas de servicio, típicamente de pintura por colisión. Aparece únicamente como Pagador: el taller no negocia estimaciones ni suplementos dentro de Bitácora.
 _Evitar_: seguro, compañía
