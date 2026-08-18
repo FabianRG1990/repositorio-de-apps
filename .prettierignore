@@ -5,3 +5,13 @@
 /.nx/workspace-data
 .nx/self-healing
 .angular
+
+# Skills de agentes vendorizadas (set Wayfinder/Matt Pocock + set Nx).
+# Son copia byte-a-byte de su fuente upstream: formatearlas rompe esa
+# fidelidad y convierte cada resincronización futura en un conflicto
+# artificial. Ya están marcadas `linguist-vendored` en .gitattributes
+# por la misma razón. Excluimos solo las carpetas de skills, no todo
+# .claude/ ni .github/ — la configuración propia del repo sí se formatea.
+.claude/skills
+.agents/skills
+.github/skills
