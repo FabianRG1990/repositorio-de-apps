@@ -1,0 +1,80 @@
+@if (!abierto()) {
+<button
+  type="button"
+  class="reportes__abrir"
+  [disabled]="cargando()"
+  (click)="abrir()"
+>
+  {{ cargando() ? 'Cargando…' : 'Ver reportes' }}
+</button>
+} @else {
+<section class="reportes">
+  <header class="reportes__header">
+    <h2 class="reportes__titulo">Reportes</h2>
+    <button type="button" class="reportes__cerrar" (click)="cerrar()">
+      Cerrar
+    </button>
+  </header>
+
+  <div class="reportes__filtro">
+    <label class="reportes__filtro-campo">
+      <span>Desde</span>
+      <input
+        type="date"
+        [value]="fechaDesde()"
+        (input)="onFechaDesdeInput($event)"
+      />
+    </label>
+    <label class="reportes__filtro-campo">
+      <span>Hasta</span>
+      <input
+        type="date"
+        [value]="fechaHasta()"
+        (input)="onFechaHastaInput($event)"
+      />
+    </label>
+    @if (fechaDesde() || fechaHasta()) {
+    <button
+      type="button"
+      class="reportes__filtro-limpiar"
+      (click)="limpiarFechas()"
+    >
+      Limpiar
+    </button>
+    }
+  </div>
+
+  <div class="reportes__metrica">
+    <h3 class="reportes__metrica-titulo">Órdenes por estado</h3>
+    <ul class="reportes__estados">
+      @for (item of conteoPorEstado(); track item.estado) {
+      <li class="reportes__estado">
+        <span class="reportes__estado-label">{{ item.label }}</span>
+        <span class="reportes__estado-conteo mono">{{ item.conteo }}</span>
+      </li>
+      }
+    </ul>
+  </div>
+
+  <div class="reportes__metrica">
+    <h3 class="reportes__metrica-titulo">Total facturado</h3>
+    <p class="reportes__total">{{ totalFacturado() | currency: 'MXN' }}</p>
+  </div>
+
+  <div class="reportes__metrica">
+    <h3 class="reportes__metrica-titulo">Vehículo(s) con más visitas</h3>
+    @if (vehiculosConMasVisitas().length === 0) {
+    <p class="reportes__sin-datos">Sin datos en este rango.</p>
+    } @else {
+    <ul class="reportes__vehiculos">
+      @for (item of vehiculosConMasVisitas(); track item.label) {
+      <li class="reportes__vehiculo">
+        <span>{{ item.label }}</span>
+        <span class="mono">{{ item.conteo }} visitas</span>
+      </li>
+      }
+    </ul>
+    }
+  </div>
+</section>
+}

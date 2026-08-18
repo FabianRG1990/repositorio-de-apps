@@ -1,0 +1,158 @@
+<article class="ficha">
+  <div class="ficha__perforado"></div>
+  <div class="ficha__contenido">
+    <header class="ficha__header">
+      <h3 class="ficha__titulo">{{ cliente()?.nombre ?? 'Cliente' }}</h3>
+      <span class="ficha__chip mono">{{ orden().numero }}</span>
+    </header>
+
+    <div class="ficha__grid">
+      <div class="campo">
+        <span class="campo__label">Placa</span>
+        <span class="campo__valor mono">{{ vehiculo()?.placa ?? '—' }}</span>
+      </div>
+      <div class="campo">
+        <span class="campo__label">Vehículo</span>
+        <span class="campo__valor"
+          >{{ vehiculo()?.marca }} {{ vehiculo()?.modelo }} ({{ vehiculo()?.anio
+          }})</span
+        >
+      </div>
+      <div class="campo">
+        <span class="campo__label">Kilometraje</span>
+        <span class="campo__valor mono"
+          >{{ orden().kilometraje | number }} km</span
+        >
+      </div>
+      <div class="campo">
+        <span class="campo__label">Visitas previas</span>
+        <span class="campo__valor">{{ visitasPrevias() }}</span>
+      </div>
+      <div class="campo campo--full">
+        <span class="campo__label"
+          >Motivo @if (orden().origenMotivo === 'voz') {
+          <span title="Dictado por voz">🎙</span>
+          }
+        </span>
+        <span class="campo__valor">{{ orden().motivoIngreso }}</span>
+      </div>
+    </div>
+
+    @if (editandoDiagnostico()) {
+    <div class="ficha__diagnostico">
+      <span class="campo__label">Diagnóstico</span>
+      <textarea
+        class="ficha__diagnostico-texto"
+        rows="2"
+        [value]="diagnosticoEditado()"
+        (input)="onDiagnosticoInput($event)"
+      ></textarea>
+      <button
+        type="button"
+        class="ficha__diagnostico-guardar"
+        [disabled]="!diagnosticoEditado().trim()"
+        (click)="enviarDiagnostico()"
+      >
+        Guardar diagnóstico
+      </button>
+    </div>
+    } @else if (orden().diagnostico) {
+    <div class="ficha__diagnostico">
+      <span class="campo__label">Diagnóstico</span>
+      <p class="campo__valor">{{ orden().diagnostico }}</p>
+    </div>
+    }
+
+    <ol class="stepper">
+      @for (etapa of etapas(); track etapa.clave) {
+      <li
+        class="stepper__paso"
+        [class.stepper__paso--actual]="etapa.actual"
+        [class.stepper__paso--pasado]="etapa.pasado"
+      >
+        <span class="stepper__punto"></span>
+        <span class="stepper__label">{{ etapa.label }}</span>
+      </li>
+      }
+    </ol>
+
+    @if (puedeAvanzarAhora()) {
+    <button type="button" class="ficha__avanzar" (click)="avanzar.emit()">
+      Avanzar a {{ siguienteEstadoLabel() }} →
+    </button>
+    } @else if (!siguienteEstadoLabel()) {
+    <p class="ficha__completada">Entregado ✓</p>
+
+    @if (editandoFactura()) {
+    <div class="ficha__factura">
+      <span class="campo__label">Factura</span>
+      @for (concepto of conceptosEnEdicion(); track $index) {
+      <div class="ficha__concepto">
+        <span class="ficha__concepto-desc">{{ concepto.descripcion }}</span>
+        <span class="ficha__concepto-monto mono"
+          >{{ concepto.monto | currency: 'MXN' }}</span
+        >
+        <button
+          type="button"
+          class="ficha__concepto-quitar"
+          (click)="quitarConcepto($index)"
+          title="Quitar concepto"
+        >
+          ✕
+        </button>
+      </div>
+      }
+      <div class="ficha__concepto-form">
+        <input
+          type="text"
+          class="ficha__concepto-input"
+          placeholder="Descripción"
+          [value]="nuevaDescripcion()"
+          (input)="onNuevaDescripcionInput($event)"
+        />
+        <input
+          type="number"
+          class="ficha__concepto-input ficha__concepto-input--monto"
+          placeholder="Monto"
+          min="0"
+          [value]="nuevoMonto()"
+          (input)="onNuevoMontoInput($event)"
+        />
+        <button
+          type="button"
+          class="ficha__concepto-agregar"
+          (click)="agregarConcepto()"
+        >
+          + Agregar
+        </button>
+      </div>
+      <p class="ficha__factura-total">
+        Total: <strong>{{ totalEnEdicion() | currency: 'MXN' }}</strong>
+      </p>
+      <button
+        type="button"
+        class="ficha__factura-guardar"
+        [disabled]="conceptosEnEdicion().length === 0"
+        (click)="enviarFactura()"
+      >
+        Guardar factura
+      </button>
+    </div>
+    } @else if (factura(); as f) {
+    <div class="ficha__factura">
+      <span class="campo__label">Factura {{ f.numero }}</span>
+      @for (concepto of f.conceptos; track concepto.descripcion) {
+      <div class="ficha__concepto ficha__concepto--fija">
+        <span class="ficha__concepto-desc">{{ concepto.descripcion }}</span>
+        <span class="ficha__concepto-monto mono"
+          >{{ concepto.monto | currency: 'MXN' }}</span
+        >
+      </div>
+      }
+      <p class="ficha__factura-total">
+        Total: <strong>{{ totalFacturaGuardada() | currency: 'MXN' }}</strong>
+      </p>
+    </div>
+    } }
+  </div>
+</article>

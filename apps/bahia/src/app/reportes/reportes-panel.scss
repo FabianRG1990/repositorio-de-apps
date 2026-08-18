@@ -1,0 +1,142 @@
+.reportes__abrir {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  background: var(--bahia-stone-800);
+  color: var(--bahia-stone-50);
+  border: none;
+  border-radius: var(--bahia-radius);
+  cursor: pointer;
+  margin: 0 1.5rem 1rem;
+}
+
+.reportes__abrir:disabled {
+  background: var(--bahia-stone-300);
+  cursor: not-allowed;
+}
+
+.reportes__abrir:not(:disabled):hover {
+  background: var(--bahia-stone-700);
+}
+
+.reportes {
+  max-width: 480px;
+  margin: 0 1.5rem 1.5rem;
+  padding: 1.25rem;
+  background: var(--bahia-stone-50);
+  border: var(--bahia-border-width) solid var(--bahia-stone-300);
+  border-radius: var(--bahia-radius);
+  box-shadow: var(--bahia-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reportes__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.reportes__titulo {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-lg);
+  margin: 0;
+}
+
+.reportes__cerrar {
+  font: inherit;
+  font-size: var(--bahia-text-xs);
+  background: none;
+  border: none;
+  color: var(--bahia-stone-500);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.reportes__filtro {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.reportes__filtro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: var(--bahia-text-xs);
+  color: var(--bahia-stone-500);
+}
+
+.reportes__filtro-campo input {
+  font: inherit;
+  padding: 0.3rem 0.5rem;
+  border: var(--bahia-border-width) solid var(--bahia-stone-300);
+  border-radius: var(--bahia-radius);
+}
+
+.reportes__filtro-limpiar {
+  font: inherit;
+  font-size: var(--bahia-text-xs);
+  background: none;
+  border: none;
+  color: var(--bahia-accent-600);
+  cursor: pointer;
+  padding-bottom: 0.4rem;
+}
+
+.reportes__metrica-titulo {
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-sm);
+  margin: 0 0 0.4rem;
+  color: var(--bahia-stone-600);
+}
+
+.reportes__estados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reportes__estado {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--bahia-text-sm);
+}
+
+.reportes__estado-conteo {
+  font-weight: 600;
+}
+
+.reportes__total {
+  margin: 0;
+  font-family: var(--bahia-font-title);
+  font-size: var(--bahia-text-2xl);
+  color: var(--bahia-accent-600);
+}
+
+.reportes__vehiculos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reportes__vehiculo {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--bahia-text-sm);
+}
+
+.reportes__sin-datos {
+  margin: 0;
+  font-size: var(--bahia-text-sm);
+  color: var(--bahia-stone-500);
+}

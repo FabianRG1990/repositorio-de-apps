@@ -37,6 +37,11 @@ jobs:
 
       - run: yarn install --immutable
 
+      # Los navegadores de Playwright no vienen con la instalación de paquetes.
+      # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
+      # bajarlos con sus dependencias de sistema antes del e2e (ver issue #40).
+      - run: yarn playwright install --with-deps
+
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: yarn nx record -- yarn nx format:check --base="remotes/origin/main"
       - run: yarn nx run-many -t lint test build typecheck e2e
