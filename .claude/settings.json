@@ -14,5 +14,19 @@
     "network": {
       "allowedDomains": ["www.google-analytics.com"]
     }
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/format-on-write.mjs"]
+          }
+        ]
+      }
+    ]
   }
 }
