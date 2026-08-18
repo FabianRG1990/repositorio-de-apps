@@ -18,6 +18,10 @@ _Evitar_: contacto, portador, chofer
 La persona del taller que ejecuta el trabajo. Un mismo Técnico puede dominar varias Especialidades.
 _Evitar_: mecánico (eso es una Especialidad, no un rol), operario
 
+**Responsable**:
+El Técnico a cuyo nombre queda una Orden. Es uno solo por Orden, aunque por dentro la toquen varios: responde por el trabajo, no necesariamente lo ejecuta todo.
+_Evitar_: asignado, encargado, dueño de la orden
+
 **Asesor**:
 La persona del taller que recibe el vehículo, cotiza y trata con el Cliente.
 _Evitar_: recepcionista, vendedor
