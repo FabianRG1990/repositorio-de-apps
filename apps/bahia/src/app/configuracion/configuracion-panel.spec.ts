@@ -46,7 +46,9 @@ describe('ConfiguracionPanel', () => {
     facturarInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    await waitFor(() => talleresStore.configuracion().facturarHabilitado === false);
+    await waitFor(
+      () => talleresStore.configuracion().facturarHabilitado === false,
+    );
 
     expect(talleresStore.configuracion()).toEqual({
       facturarHabilitado: false,

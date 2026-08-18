@@ -6,7 +6,11 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
-import { addEntity, setAllEntities, withEntities } from '@ngrx/signals/entities';
+import {
+  addEntity,
+  setAllEntities,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { Cliente } from '../models/cliente.model';

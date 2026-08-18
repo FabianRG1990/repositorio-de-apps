@@ -12,10 +12,15 @@ import { VehiculosStore } from '../data-access/stores/vehiculos.store';
 
 // Rango abierto (desde/hasta vacíos) = sin límite en ese extremo — se ve
 // igual que sin filtro, tal como se decidió en el issue #11.
-function dentroDeRango(fechaIso: string, desde: string, hasta: string): boolean {
+function dentroDeRango(
+  fechaIso: string,
+  desde: string,
+  hasta: string,
+): boolean {
   const fecha = new Date(fechaIso).getTime();
   if (desde && fecha < new Date(desde).getTime()) return false;
-  if (hasta && fecha > new Date(`${hasta}T23:59:59.999`).getTime()) return false;
+  if (hasta && fecha > new Date(`${hasta}T23:59:59.999`).getTime())
+    return false;
   return true;
 }
 

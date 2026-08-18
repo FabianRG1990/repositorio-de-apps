@@ -76,7 +76,9 @@ describe('KanbanBoard', () => {
     const { ordenesStore } = await esperarCargaCompleta();
     const usuariosStore = TestBed.inject(UsuariosStore);
     await waitFor(() => usuariosStore.cargado());
-    const mecanico = usuariosStore.entities().find((u) => u.puesto === 'Mecánico');
+    const mecanico = usuariosStore
+      .entities()
+      .find((u) => u.puesto === 'Mecánico');
     if (!mecanico) throw new Error('seed debería incluir un Mecánico');
     TestBed.inject(SesionStore).iniciarSesion(mecanico);
 
@@ -100,7 +102,8 @@ describe('KanbanBoard', () => {
     boton?.click();
 
     await waitFor(
-      () => ordenesStore.entityMap()[ordenId as string]?.estado === 'Diagnostico',
+      () =>
+        ordenesStore.entityMap()[ordenId as string]?.estado === 'Diagnostico',
     );
     fixture.detectChanges();
     await fixture.whenStable();
@@ -137,7 +140,9 @@ describe('KanbanBoard', () => {
     const { ordenesStore } = await esperarCargaCompleta();
     const usuariosStore = TestBed.inject(UsuariosStore);
     await waitFor(() => usuariosStore.cargado());
-    const mecanico = usuariosStore.entities().find((u) => u.puesto === 'Mecánico');
+    const mecanico = usuariosStore
+      .entities()
+      .find((u) => u.puesto === 'Mecánico');
     if (!mecanico) throw new Error('seed debería incluir un Mecánico');
     TestBed.inject(SesionStore).iniciarSesion(mecanico);
 
@@ -162,9 +167,8 @@ describe('KanbanBoard', () => {
       ?.querySelector<HTMLButtonElement>('.ficha__diagnostico-guardar')
       ?.click();
 
-    const ordenId = ordenesStore
-      .entities()
-      .find((o) => o.numero === 'OT-0148')?.id as string;
+    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-0148')
+      ?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.diagnostico !== undefined,
     );
@@ -212,9 +216,8 @@ describe('KanbanBoard', () => {
 
     buscarFicha()?.querySelector<HTMLButtonElement>('.ficha__avanzar')?.click();
 
-    const ordenId = ordenesStore
-      .entities()
-      .find((o) => o.numero === 'OT-0153')?.id as string;
+    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-0153')
+      ?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.estado === 'Entregado',
     );
@@ -246,9 +249,7 @@ describe('KanbanBoard', () => {
       facturasStore.entities().some((f) => f.ordenId === ordenId),
     );
 
-    const creada = facturasStore
-      .entities()
-      .find((f) => f.ordenId === ordenId);
+    const creada = facturasStore.entities().find((f) => f.ordenId === ordenId);
     expect(creada?.conceptos).toEqual([
       { descripcion: 'Revisión de frenos', monto: 300 },
     ]);
@@ -267,7 +268,9 @@ describe('KanbanBoard', () => {
     TestBed.inject(SesionStore).iniciarSesion(administradora);
 
     talleresStore.actualizarConfiguracion({ facturarHabilitado: false });
-    await waitFor(() => talleresStore.configuracion().facturarHabilitado === false);
+    await waitFor(
+      () => talleresStore.configuracion().facturarHabilitado === false,
+    );
 
     const fixture = TestBed.createComponent(KanbanBoard);
     fixture.detectChanges();
@@ -290,8 +293,6 @@ describe('KanbanBoard', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(
-      buscarFicha()?.querySelector('.ficha__concepto-agregar'),
-    ).toBeNull();
+    expect(buscarFicha()?.querySelector('.ficha__concepto-agregar')).toBeNull();
   });
 });

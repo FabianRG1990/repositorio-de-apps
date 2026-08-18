@@ -1,5 +1,11 @@
 import { computed } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
 import { Permiso, Usuario } from '../models/usuario.model';
 
 interface SesionState {

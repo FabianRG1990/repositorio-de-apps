@@ -4,18 +4,15 @@
 
 <app-sesion-selector />
 
-@if (sesionStore.haySesion()) {
-  @if (sesionStore.tienePermiso('recibir')) {
-    <app-nueva-orden-form />
-  }
-  <app-configuracion-panel />
-  @if (
-    sesionStore.tienePermiso('ver_reportes') &&
-    talleresStore.configuracion().verReportesHabilitado
-  ) {
-    <app-reportes-panel />
-  }
-  <app-kanban-board />
+@if (sesionStore.haySesion()) { @if (sesionStore.tienePermiso('recibir')) {
+<app-nueva-orden-form />
+}
+<app-configuracion-panel />
+@if ( sesionStore.tienePermiso('ver_reportes') &&
+talleresStore.configuracion().verReportesHabilitado ) {
+<app-reportes-panel />
+}
+<app-kanban-board />
 }
 
 <router-outlet></router-outlet>

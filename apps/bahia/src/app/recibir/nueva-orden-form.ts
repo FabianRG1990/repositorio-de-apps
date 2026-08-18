@@ -1,7 +1,5 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import {
-  siguienteNumeroOrden,
-} from '../data-access/models/orden-trabajo.model';
+import { siguienteNumeroOrden } from '../data-access/models/orden-trabajo.model';
 import { ClientesStore } from '../data-access/stores/clientes.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
 import { TalleresStore } from '../data-access/stores/talleres.store';
@@ -134,7 +132,8 @@ export class NuevaOrdenForm {
     };
     reconocimiento.onerror = (evento) => {
       this.errorVoz.set(
-        MENSAJE_ERROR_VOZ[evento.error] ?? 'No se pudo escuchar. Intenta de nuevo.',
+        MENSAJE_ERROR_VOZ[evento.error] ??
+          'No se pudo escuchar. Intenta de nuevo.',
       );
       this.escuchando.set(false);
     };

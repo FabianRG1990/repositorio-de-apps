@@ -20,8 +20,8 @@ class FakeSpeechRecognition extends EventTarget implements SpeechRecognition {
   onstart: ((this: SpeechRecognition, ev: Event) => void) | null = null;
   onend: ((this: SpeechRecognition, ev: Event) => void) | null = null;
   onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
-    | null = null;
+    ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null =
+    null;
   onerror:
     | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
     | null = null;
@@ -104,9 +104,8 @@ describe('NuevaOrdenForm', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const boton = compiled.querySelector<HTMLButtonElement>(
-      '.campo-motivo__mic',
-    );
+    const boton =
+      compiled.querySelector<HTMLButtonElement>('.campo-motivo__mic');
     expect(boton).toBeTruthy();
     boton?.click();
     fixture.detectChanges();
@@ -150,9 +149,7 @@ describe('NuevaOrdenForm', () => {
     kilometrajeInput.value = '50000';
     kilometrajeInput.dispatchEvent(new Event('input'));
 
-    compiled
-      .querySelector<HTMLButtonElement>('.campo-motivo__mic')
-      ?.click();
+    compiled.querySelector<HTMLButtonElement>('.campo-motivo__mic')?.click();
     FakeSpeechRecognition.ultimaInstancia?.emitirResultado(
       'cambio de aceite',
       true,
@@ -212,9 +209,7 @@ describe('NuevaOrdenForm', () => {
     fixture.detectChanges();
 
     const antes = ordenesStore.entities().length;
-    compiled
-      .querySelector<HTMLButtonElement>('.nueva-orden__enviar')
-      ?.click();
+    compiled.querySelector<HTMLButtonElement>('.nueva-orden__enviar')?.click();
     await waitFor(() => ordenesStore.entities().length > antes);
 
     const creada = ordenesStore
@@ -229,9 +224,9 @@ describe('NuevaOrdenForm', () => {
     const fixture = TestBed.createComponent(NuevaOrdenForm);
     fixture.detectChanges();
 
-    const boton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '.nueva-orden__abrir',
-    );
+    const boton = (
+      fixture.nativeElement as HTMLElement
+    ).querySelector<HTMLButtonElement>('.nueva-orden__abrir');
     expect(boton?.disabled).toBe(true);
     expect(boton?.textContent?.trim()).toBe('Cargando…');
 

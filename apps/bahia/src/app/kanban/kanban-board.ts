@@ -90,7 +90,9 @@ export class KanbanBoard {
     const clientesPorId = this.clientesStore.entityMap();
     const vehiculosPorId = this.vehiculosStore.entityMap();
     const facturaPorOrdenId = new Map(
-      this.facturasStore.entities().map((factura) => [factura.ordenId, factura]),
+      this.facturasStore
+        .entities()
+        .map((factura) => [factura.ordenId, factura]),
     );
 
     return ordenes.map((orden) => ({

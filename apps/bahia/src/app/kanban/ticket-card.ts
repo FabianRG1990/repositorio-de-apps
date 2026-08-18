@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Cliente } from '../data-access/models/cliente.model';
-import { Concepto, Factura, totalFactura } from '../data-access/models/factura.model';
+import {
+  Concepto,
+  Factura,
+  totalFactura,
+} from '../data-access/models/factura.model';
 import {
   ESTADOS_ORDEN,
   ESTADO_ORDEN_LABEL,

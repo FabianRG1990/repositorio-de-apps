@@ -1,38 +1,38 @@
 @if (!abierto()) {
-  <button type="button" class="configuracion__abrir" (click)="abrir()">
-    Configuración
-  </button>
+<button type="button" class="configuracion__abrir" (click)="abrir()">
+  Configuración
+</button>
 } @else {
-  <section class="configuracion">
-    <header class="configuracion__header">
-      <h2 class="configuracion__titulo">Configuración</h2>
-      <button type="button" class="configuracion__cerrar" (click)="cerrar()">
-        Cerrar
-      </button>
-    </header>
+<section class="configuracion">
+  <header class="configuracion__header">
+    <h2 class="configuracion__titulo">Configuración</h2>
+    <button type="button" class="configuracion__cerrar" (click)="cerrar()">
+      Cerrar
+    </button>
+  </header>
 
-    <p class="configuracion__ayuda">
-      Activá o desactivá las funciones opcionales de este taller.
-    </p>
+  <p class="configuracion__ayuda">
+    Activá o desactivá las funciones opcionales de este taller.
+  </p>
 
-    <label class="configuracion__switch">
-      <input
-        type="checkbox"
-        [checked]="talleresStore.configuracion().facturarHabilitado"
-        (change)="onFacturarChange($event)"
-      />
-      <span class="configuracion__switch-track"></span>
-      <span class="configuracion__switch-label">Facturar</span>
-    </label>
+  <label class="configuracion__switch">
+    <input
+      type="checkbox"
+      [checked]="talleresStore.configuracion().facturarHabilitado"
+      (change)="onFacturarChange($event)"
+    />
+    <span class="configuracion__switch-track"></span>
+    <span class="configuracion__switch-label">Facturar</span>
+  </label>
 
-    <label class="configuracion__switch">
-      <input
-        type="checkbox"
-        [checked]="talleresStore.configuracion().verReportesHabilitado"
-        (change)="onVerReportesChange($event)"
-      />
-      <span class="configuracion__switch-track"></span>
-      <span class="configuracion__switch-label">Ver reportes</span>
-    </label>
-  </section>
+  <label class="configuracion__switch">
+    <input
+      type="checkbox"
+      [checked]="talleresStore.configuracion().verReportesHabilitado"
+      (change)="onVerReportesChange($event)"
+    />
+    <span class="configuracion__switch-track"></span>
+    <span class="configuracion__switch-label">Ver reportes</span>
+  </label>
+</section>
 }

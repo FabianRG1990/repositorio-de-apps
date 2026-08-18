@@ -1,81 +1,80 @@
 @if (!abierto()) {
-  <button
-    type="button"
-    class="nueva-orden__abrir"
-    [disabled]="cargando()"
-    (click)="abrir()"
-  >
-    {{ cargando() ? 'Cargando…' : '+ Nueva orden' }}
-  </button>
+<button
+  type="button"
+  class="nueva-orden__abrir"
+  [disabled]="cargando()"
+  (click)="abrir()"
+>
+  {{ cargando() ? 'Cargando…' : '+ Nueva orden' }}
+</button>
 } @else {
-  <form class="nueva-orden" (submit)="$event.preventDefault(); enviar()">
-    <h2 class="nueva-orden__titulo">Recibir vehículo</h2>
+<form class="nueva-orden" (submit)="$event.preventDefault(); enviar()">
+  <h2 class="nueva-orden__titulo">Recibir vehículo</h2>
 
-    <label class="campo-form">
-      <span class="campo-form__label">Vehículo</span>
-      <select
-        class="campo-form__control"
-        [value]="vehiculoId()"
-        (change)="vehiculoId.set($any($event.target).value)"
-      >
-        <option value="" disabled>Selecciona un vehículo</option>
-        @for (opcion of vehiculoOpciones(); track opcion.id) {
-          <option [value]="opcion.id">{{ opcion.label }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="campo-form">
-      <span class="campo-form__label">Kilometraje</span>
-      <input
-        class="campo-form__control"
-        type="number"
-        min="0"
-        [value]="kilometraje()"
-        (input)="onKilometrajeInput($event)"
-      />
-    </label>
-
-    <label class="campo-form">
-      <span class="campo-form__label">Motivo de ingreso</span>
-      <div class="campo-motivo">
-        <textarea
-          class="campo-form__control campo-motivo__texto"
-          rows="3"
-          [value]="motivoIngreso()"
-          (input)="onMotivoInput($event)"
-        ></textarea>
-        @if (soportaVoz) {
-          <button
-            type="button"
-            class="campo-motivo__mic"
-            [class.campo-motivo__mic--activo]="escuchando()"
-            (click)="alternarDictado()"
-            [title]="escuchando() ? 'Detener dictado' : 'Dictar por voz'"
-          >
-            {{ escuchando() ? '⏹' : '🎙' }}
-          </button>
-        }
-      </div>
-      @if (escuchando()) {
-        <p class="campo-motivo__estado">Escuchando…</p>
+  <label class="campo-form">
+    <span class="campo-form__label">Vehículo</span>
+    <select
+      class="campo-form__control"
+      [value]="vehiculoId()"
+      (change)="vehiculoId.set($any($event.target).value)"
+    >
+      <option value="" disabled>Selecciona un vehículo</option>
+      @for (opcion of vehiculoOpciones(); track opcion.id) {
+      <option [value]="opcion.id">{{ opcion.label }}</option>
       }
-      @if (errorVoz(); as mensaje) {
-        <p class="campo-motivo__error">{{ mensaje }}</p>
-      }
-    </label>
+    </select>
+  </label>
 
-    <div class="nueva-orden__acciones">
-      <button type="button" class="nueva-orden__cancelar" (click)="cancelar()">
-        Cancelar
-      </button>
+  <label class="campo-form">
+    <span class="campo-form__label">Kilometraje</span>
+    <input
+      class="campo-form__control"
+      type="number"
+      min="0"
+      [value]="kilometraje()"
+      (input)="onKilometrajeInput($event)"
+    />
+  </label>
+
+  <label class="campo-form">
+    <span class="campo-form__label">Motivo de ingreso</span>
+    <div class="campo-motivo">
+      <textarea
+        class="campo-form__control campo-motivo__texto"
+        rows="3"
+        [value]="motivoIngreso()"
+        (input)="onMotivoInput($event)"
+      ></textarea>
+      @if (soportaVoz) {
       <button
-        type="submit"
-        class="nueva-orden__enviar"
-        [disabled]="!puedeEnviar()"
+        type="button"
+        class="campo-motivo__mic"
+        [class.campo-motivo__mic--activo]="escuchando()"
+        (click)="alternarDictado()"
+        [title]="escuchando() ? 'Detener dictado' : 'Dictar por voz'"
       >
-        Ingresar orden
+        {{ escuchando() ? '⏹' : '🎙' }}
       </button>
+      }
     </div>
-  </form>
+    @if (escuchando()) {
+    <p class="campo-motivo__estado">Escuchando…</p>
+    } @if (errorVoz(); as mensaje) {
+    <p class="campo-motivo__error">{{ mensaje }}</p>
+    }
+  </label>
+
+  <div class="nueva-orden__acciones">
+    <button type="button" class="nueva-orden__cancelar" (click)="cancelar()">
+      Cancelar
+    </button>
+    <button
+      type="submit"
+      class="nueva-orden__enviar"
+      [disabled]="!puedeEnviar()"
+    >
+      Ingresar orden
+    </button>
+  </div>
+</form>
 }

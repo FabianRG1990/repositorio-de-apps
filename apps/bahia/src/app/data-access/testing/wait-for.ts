@@ -4,7 +4,10 @@
 // hasta que la condición se cumpla o se agoten los intentos.
 export async function waitFor(
   predicate: () => boolean,
-  { intentos = 50, esperaMs = 5 }: { intentos?: number; esperaMs?: number } = {},
+  {
+    intentos = 50,
+    esperaMs = 5,
+  }: { intentos?: number; esperaMs?: number } = {},
 ): Promise<void> {
   for (let i = 0; i < intentos && !predicate(); i++) {
     await new Promise((resolve) => setTimeout(resolve, esperaMs));

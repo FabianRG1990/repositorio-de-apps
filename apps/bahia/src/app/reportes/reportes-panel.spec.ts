@@ -59,9 +59,9 @@ describe('ReportesPanel', () => {
     expect(estados).toHaveLength(5);
     // el seed trae exactamente 1 orden en cada uno de los 5 estados
     estados.forEach((estado) => {
-      expect(estado.querySelector('.reportes__estado-conteo')?.textContent).toBe(
-        '1',
-      );
+      expect(
+        estado.querySelector('.reportes__estado-conteo')?.textContent,
+      ).toBe('1');
     });
 
     // la única factura sembrada suma 770 (450 + 120 + 200)
@@ -100,9 +100,9 @@ describe('ReportesPanel', () => {
     const entregado = Array.from(estados).find((el) =>
       el.textContent?.includes('Entregado'),
     );
-    expect(entregado?.querySelector('.reportes__estado-conteo')?.textContent).toBe(
-      '0',
-    );
+    expect(
+      entregado?.querySelector('.reportes__estado-conteo')?.textContent,
+    ).toBe('0');
     expect(compiled.querySelector('.reportes__total')?.textContent).toContain(
       '0',
     );

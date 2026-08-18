@@ -86,7 +86,10 @@ describe('TicketCard', () => {
 
   it('shows a completion message instead of a button when estado is Entregado', async () => {
     const fixture = TestBed.createComponent(TicketCard);
-    fixture.componentRef.setInput('orden', { ...ordenBase, estado: 'Entregado' });
+    fixture.componentRef.setInput('orden', {
+      ...ordenBase,
+      estado: 'Entregado',
+    });
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -153,14 +156,17 @@ describe('TicketCard', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.ficha__diagnostico-texto')).toBeNull();
-    expect(compiled.querySelector('.ficha__diagnostico')?.textContent).toContain(
-      'Balatas gastadas',
-    );
+    expect(
+      compiled.querySelector('.ficha__diagnostico')?.textContent,
+    ).toContain('Balatas gastadas');
   });
 
   it('shows no factura section when Entregado but the user cannot facturar and no factura exists', async () => {
     const fixture = TestBed.createComponent(TicketCard);
-    fixture.componentRef.setInput('orden', { ...ordenBase, estado: 'Entregado' });
+    fixture.componentRef.setInput('orden', {
+      ...ordenBase,
+      estado: 'Entregado',
+    });
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -169,7 +175,10 @@ describe('TicketCard', () => {
 
   it('lets a usuario with permiso facturar add conceptos and emits the total on guardar', async () => {
     const fixture = TestBed.createComponent(TicketCard);
-    fixture.componentRef.setInput('orden', { ...ordenBase, estado: 'Entregado' });
+    fixture.componentRef.setInput('orden', {
+      ...ordenBase,
+      estado: 'Entregado',
+    });
     fixture.componentRef.setInput('puedeFacturar', true);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -199,9 +208,9 @@ describe('TicketCard', () => {
     botonAgregar?.click();
     fixture.detectChanges();
 
-    expect(compiled.querySelector('.ficha__factura-total')?.textContent).toContain(
-      '350',
-    );
+    expect(
+      compiled.querySelector('.ficha__factura-total')?.textContent,
+    ).toContain('350');
     expect(
       compiled.querySelectorAll('.ficha__concepto:not(.ficha__concepto--fija)'),
     ).toHaveLength(2);
@@ -228,7 +237,10 @@ describe('TicketCard', () => {
     };
 
     const fixture = TestBed.createComponent(TicketCard);
-    fixture.componentRef.setInput('orden', { ...ordenBase, estado: 'Entregado' });
+    fixture.componentRef.setInput('orden', {
+      ...ordenBase,
+      estado: 'Entregado',
+    });
     fixture.componentRef.setInput('puedeFacturar', true);
     fixture.componentRef.setInput('factura', factura);
     fixture.detectChanges();

@@ -1,9 +1,5 @@
 export type EstadoOrden =
-  | 'Ingresado'
-  | 'Diagnostico'
-  | 'Reparacion'
-  | 'Listo'
-  | 'Entregado';
+  'Ingresado' | 'Diagnostico' | 'Reparacion' | 'Listo' | 'Entregado';
 
 export const ESTADOS_ORDEN: EstadoOrden[] = [
   'Ingresado',
