@@ -25,20 +25,25 @@
 1. **El patrón dominante es UNA orden por visita del vehículo, subdividida en líneas/tareas, con la especialidad como *atributo de la línea*, no como eje que parte la orden.** Esto se cumple tanto en el mundo de colisión (CCC ONE, Mitchell, el estándar CIECA BMS) como en el de mecánica general (Tekmetric, Shopmonkey), como en ERP genérico (Dynamics 365 Business Central) y en DMS de concesionario (Autosoft).
 
 2. **Ningún producto líder modela "especialidad" como entidad de primera clase con ese nombre.** Cada industria la codifica con un nombre distinto sobre el mismo lugar del modelo (la línea o su recurso asignado):
-   - colisión → `Labor Category` / `LaborType` (CCC, Mitchell, CIECA)
-   - mecánica general → `skillRequired` en la línea de labor (Shopmonkey)
+   - colisión → `Labor Category` / `LaborType` en la línea (CCC, Mitchell, CIECA)
+   - mecánica general → **`Job Categories` por job, opcionalmente obligatorias** (Tekmetric); `Service.categoryId` + `Labor.categoryId` + `Labor.skillRequired` (Shopmonkey)
+   - Reino Unido → *Group Items* con *Service Action Categories* (Garage Hive)
    - ERP → *skill code* + *resource group* asociados al recurso y al ítem (Business Central)
    - DMS de concesionario → *labor level* por línea + tipo de RO en la cabecera (Autosoft)
 
+   Revisados nueve productos, **todos** tienen algún mecanismo de categorización en la unidad de trabajo. Ninguno lo llama "especialidad".
+
 3. **La excepción real y documentada es el concesionario:** ahí sí existe una orden por departamento. Autosoft marca en la cabecera del RO el campo `Service/Body/Contract/QuickLube [S/B/C/Q]`, es decir, una orden de carrocería es un *tipo de documento distinto* de una orden de servicio mecánico. Fuera del concesionario no encontré evidencia primaria de ese patrón.
 
-4. **El tablero es uno solo, con columnas por *etapa de proceso* y filtros por persona/grupo — no un kanban por especialidad.** Shopmonkey tiene un único Workflow con columnas configurables; Business Central tiene un único *Dispatch Board* filtrable por `Resource Filter` y `Resource Group Filter`; el taller de carrocería real organiza el tablero por etapas físicas (desarme, carrocería, preparación, pintura, pulido, armado), no por oficio.
+4. **Ningún producto revisado tiene un kanban por especialidad.** Los dos ejes que sí existen son **etapa del proceso** y **técnico**: Shopmonkey tiene un único Workflow con columnas configurables; Tekmetric tiene *Job Board* (etapas) más *Tech Board* (una columna por técnico, con carril de "Unassigned Jobs"); Garage Hive tiene TCards con un carril por técnico; Business Central tiene un único *Dispatch Board* filtrable por `Resource Filter` y `Resource Group Filter`; el taller de carrocería real organiza el tablero por etapas físicas (desarme, carrocería, preparación, pintura, pulido, armado), no por oficio.
 
-5. **La facturación es una sola factura consolidada por orden, con los totales desglosados por categoría de trabajo.** Los propios esquemas lo demuestran: Tekmetric expone `laborSales / partsSales / subletSales / feeTotal`; Shopmonkey expone `laborCents / partsCents / tiresCents / subcontractsCents / feesCents`; CIECA agrega los totales por `LaborType`. El desglose por especialidad es un *rollup* del atributo de línea, no un documento separado.
+5. **La unidad de negociación con el cliente ya es la línea/tarea, no la orden.** Tekmetric aprueba o declina **cada job por separado** ("Each job on an RO … can be approved or declined separately from other jobs on the RO"); Shopmonkey tiene `authorizationStatus` por `Service`; Garage Hive autoriza grupo por grupo. Nadie factura parcialmente por especialidad: el mecanismo para "el cliente solo aprueba la mitad" es **declinar o diferir tareas dentro de la misma orden**. Este es el argumento más fuerte contra partir la orden por especialidad.
 
-6. **El mejor patrón encontrado para "estado por línea vs. estado global" es el de Business Central:** cada tarea tiene su propio `Repair Status Code` configurable, cada estado declara a qué estado de cabecera mapea y con qué prioridad, y **el estado de la orden se deriva tomando el de mayor prioridad entre sus líneas**. Esto resuelve limpiamente el caso "el carro ya salió de mecánica pero sigue en pintura".
+6. **La facturación es una sola factura consolidada por orden, con los totales desglosados por categoría de trabajo.** Los propios esquemas lo demuestran: Tekmetric expone `laborSales / partsSales / subletSales / feeTotal`; Shopmonkey expone `laborCents / partsCents / tiresCents / subcontractsCents / feesCents`; CIECA agrega los totales por `LaborType`. El desglose por especialidad es un *rollup* del atributo de línea, no un documento separado.
 
-7. **La misma jerarquía sirve a mono-especialidad y multi-especialidad sin ramificar el modelo.** Tekmetric y Shopmonkey son productos de mecánica general pura; CCC y Mitchell son de colisión pura; Fullbay es de diésel pesado puro; todos usan la misma forma `orden → unidad de trabajo autorizable → líneas económicas`. Lo único que cambia es qué valores tiene el catálogo de categorías. **Un taller mono-especialidad es simplemente el caso en que ese catálogo tiene un elemento.**
+7. **El mejor patrón encontrado para "estado por línea vs. estado global" es el de Business Central:** cada tarea tiene su propio `Repair Status Code` configurable, cada estado declara a qué estado de cabecera mapea y con qué prioridad, y **el estado de la orden se deriva tomando el de mayor prioridad entre sus líneas**. Esto resuelve limpiamente el caso "el carro ya salió de mecánica pero sigue en pintura".
+
+8. **La misma jerarquía sirve a mono-especialidad y multi-especialidad sin ramificar el modelo.** Tekmetric y Shopmonkey son productos de mecánica general pura; CCC y Mitchell son de colisión pura; Fullbay es de diésel pesado puro; todos usan la misma forma `orden → unidad de trabajo autorizable → líneas económicas`. Lo único que cambia es qué valores tiene el catálogo de categorías. **Un taller mono-especialidad es simplemente el caso en que ese catálogo tiene un elemento.** Mitchell 1 Manager SE lo confirma por evolución: empezó siendo una rejilla plana de líneas y **añadió después** los contenedores de trabajo (*Job View*).
 
 ---
 
@@ -122,6 +127,27 @@ Documentación oficial tras solicitud de acceso; base URL real `https://shop.tek
 
 Nótese: **el técnico existe en tres niveles** (RO, Job, línea de labor) y **las horas vendidas (`laborHours`) están separadas de las fichadas (`loggedHours`)**.
 
+Tres hechos más de Tekmetric, todos con fuente propia, que resultan decisivos:
+
+- **La autorización del cliente es por *job*, no por orden:** "Each job on an RO in Tekmetric has the ability to be approved or declined separately from other jobs on the RO." Además existe el concepto de *draft job*: "Draft jobs are not presented to the customer."
+  — <https://support.tekmetric.com/hc/en-us/articles/360039270153-What-is-the-difference-between-declined-jobs-draft-jobs> (confianza: alta)
+- **Sí existe categorización por job, y puede ser obligatoria.** Tekmetric tiene *Job Categories*: una lista configurable por taller que se asigna a cada job, con la opción de "require job categories on every job before closing out a repair order".
+  — <https://support.tekmetric.com/hc/en-us/articles/360035750394-Job-Categories-Setup> (confianza: alta)
+- **Los estados del tablero NO son configurables; las etiquetas sí:** "labels are configurable and can be fully customized by column … while statuses cannot be changed." Las columnas son fijas (Estimates / Work-In-Progress / Completed).
+  — <https://support.tekmetric.com/hc/en-us/articles/360039292193-RO-Labels-and-Workflow-Statuses> (confianza: alta)
+
+El segundo punto es importante porque **contradice mi lectura inicial** de que Tekmetric no tipa el trabajo: sí lo hace, con un catálogo configurable por taller a nivel de *job*, exactamente el lugar donde la Opción A pone la especialidad.
+
+**Fullbay** (diésel pesado) usa el mismo patrón con otro nombre: la unidad de trabajo es el **Service Order Action Item (SOAI)**, que lleva las "Three C's" (Complaint, Cause, Correction) y **su propio técnico responsable**: "They can manage inventory and be assigned as lead tech to service order action items (SOAI)"; hay tipos de usuario que "cannot be assigned to an SOAI".
+— <https://www.fullbay.com/blog/who-needs-access-to-fullbay-in-your-shop/> y <https://www.fullbay.com/products/integrations/ai-powered-service-order/> (confianza: alta)
+
+**Protractor** descompone la orden en "concerns, inspections and services" (<https://help.protractor.com/shopmanager/Setup/Work_Order_Setup/Work_Order_Templates.htm>) y exige resolver todas las líneas antes de cerrar: "All line items on the work order should be fully resolved before a work order is saved as completed work" (<https://help.protractor.com/shopmanager/Work_Orders/Work_In_Progress.htm>) (confianza: alta).
+
+**Workshop Software** (Australia) asigna el mecánico a la reserva, pero captura las horas **por línea de mano de obra** y admite varios mecánicos en la misma línea: "If the same mechanic returns … or a second mechanic also worked on the vehicle, click the **+** icon"
+— <https://workshopsoftware.com/knowledge-base/job-centre-invoicing/add-mechanic-hours-to-an-invoice/> (confianza: alta)
+
+**Mitchell 1 Manager SE es el contraejemplo instructivo.** Históricamente su pantalla de orden es una **rejilla plana de líneas**, sin contenedor de trabajo: "The Order screen is where the parts and labor repair lines, the heart of the Manager order, are created and maintained" (<https://buymitchell1.net/managerhelp/Orderscreen.htm>). La agrupación llegó después, como función nueva llamada **Job View**: "Group labor tasks and related parts into job containers" (<https://mitchell1.com/manager-se/service-writer/>). Es decir: el producto legado empezó plano y **evolucionó hacia el contenedor de trabajo**, lo que refuerza que esa es la dirección correcta y no una complicación gratuita. (confianza: alta)
+
 **Shopmonkey** publica su esquema sin login en `https://shopmonkey.dev/schema/<Entidad>` (confianza: alta). La jerarquía es `Order → Service → Labor`:
 
 - `Order`: `status` enum **`Estimate | RepairOrder | Invoice`** (tipo de documento), `workflowStatusId` (estado de taller, configurable), `assignedTechnicianIds[]`, `serviceWriterId`, `authorized`, y totales `laborCents / partsCents / tiresCents / subcontractsCents / feesCents`, más cuatro contadores de horas: `totalLaborHours`, `completedLaborHours`, `totalAuthorizedLaborHours`, `completedAuthorizedLaborHours`.
@@ -142,9 +168,9 @@ La documentación de asignación confirma la lectura:
 > "First, we select the specialist, and then the service/material that they performed/installed." … cuando dos empleados hacen el mismo servicio hay que "add it separately for each specialist. Then, in each line, indicate which part of the service is performed by a particular specialist" (ejemplo: `David - 0.5, Amelie - 0.5`).
 > — <https://help.orderry.com/en/articles/9133947-how-to-assign-multiple-specialists-in-one-work-order> (confianza: alta)
 
-### 3.3 ERP genérico: el modelo más completo (Business Central / Garage Hive)
+### 3.3 ERP genérico: el modelo más completo (Business Central)
 
-Garage Hive, el sistema de talleres más extendido en Reino Unido, está construido sobre el módulo Service de Dynamics 365 Business Central, cuya referencia de tablas es pública. La jerarquía es de tres niveles más una entidad de asignación en paralelo:
+Dynamics 365 Business Central publica la referencia completa de tablas de su módulo Service, y es el modelo más explícito y mejor documentado que encontré. La jerarquía es de tres niveles más una entidad de asignación en paralelo:
 
 | Tabla | Rol | Campos relevantes |
 |---|---|---|
@@ -185,6 +211,24 @@ Los estados de línea (`Repair Status`, tabla 5927) son **de configuración, no 
 > — <https://learn.microsoft.com/en-us/dynamics365/business-central/service-how-setup-resource-allocation> (confianza: alta)
 
 Esto es literalmente "esta línea requiere especialidad *pintura*; este técnico no la tiene; avisá".
+
+> ⚠️ **Corrección sobre Garage Hive.** Es habitual leer que Garage Hive "es Business Central", y así lo asumí al empezar. La documentación propia de Garage Hive apunta a que sus jobsheets se construyen sobre **documentos de venta**, no sobre las tablas nativas del módulo Service: las instrucciones de agrupación remiten a *Sales & Receivables Setup* y a *Custom Grouping* en la pestaña *Invoice Print Options* (<https://docs.garagehive.com/p/ON2BmTskQ8JbTm/How-to-Group-Document-Lines>). **Business Central sirve aquí como arquitectura de referencia, no como descripción de la implementación de Garage Hive.**
+
+### 3.3b Garage Hive: agrupación de líneas y autorización por grupo
+
+Garage Hive (Reino Unido) llega al mismo sitio por otro camino: no tiene una entidad "tarea", sino **Group Items**, que agrupan líneas del documento.
+
+> "this feature enables you to group the document lines under the same **job or category**" — disponible en presupuestos, inspecciones de vehículo y jobsheets.
+> — <https://docs.garagehive.com/p/ON2BmTskQ8JbTm/How-to-Group-Document-Lines> (confianza: alta)
+
+Lo relevante para nosotros:
+
+- **El cliente autoriza grupo por grupo**, no la orden entera: "If you change a group description or price after it has been published and the customer approves it, it is not automatically marked as authorised" (<https://docs.garagehive.com/p/gxoOzrGJdo-BE4/Working-With-Group-Items-Actions>).
+- Los grupos se crean **automáticamente** a partir de paquetes de servicio y de las líneas marcadas como "requires attention" en un checklist o en defectos de ITV: "This action will take the lines marked as 'requires attention' and automatically create groups".
+- **Service Action Categories** clasifican los grupos por urgencia (los tipos de defecto `DANGEROUS` / `MAJOR` / `FAIL` mapean a categorías tipo `REQUIRED`). Es un eje de *prioridad*, no de oficio — pero demuestra que la categorización vive en el grupo de líneas.
+- **Service Types** clasifican la cita/reserva, con `Group Code` y paquete de servicio asociado (<https://docs.garagehive.com/p/zrt1uG4WCC25Gb/How-to-Create-Service-Types>).
+- El tablero es un **Schedule** con asignaciones por técnico, más **TCards con un carril por técnico** y un carril de pendientes: "when a technician starts a job the job will move from the pending jobs TCard to the relevant technician's TCard" (<https://garagehive.co.uk/features/workshop-management-with-garage-hive/>).
+- Existen **pool jobs**: reservar a una bahía sin asignar técnico individual, y que el grupo tome de la piscina (confianza: media — texto de índice de búsqueda, página no recuperable).
 
 ### 3.4 La excepción documentada: el concesionario sí separa la orden por departamento
 
@@ -240,7 +284,16 @@ Y la segmentación por persona se hace con permisos sobre el tablero único, no 
 > "Track Vehicle Flow — Know where vehicles are at every stage with **digital production boards, production schedules, checklists, and reports**."
 > — <https://www.cccis.com/collision-repairers/shop-management/vehicle-workflow> (confianza: media — material de producto de primera mano, sin detalle de modelo)
 
-**Conclusión sobre el kanban:** no encontré un solo producto con un tablero *por especialidad*. Lo que existe es un tablero por *etapa del proceso* (que en colisión coincide parcialmente con la especialidad, porque "pintura" es a la vez oficio y etapa) más filtros por técnico o grupo.
+**Existe un segundo eje de tablero, y es el TÉCNICO — nunca la especialidad.** Varios productos ofrecen dos tableros sobre los mismos datos:
+
+- **Tekmetric**: *Job Board* (columnas = etapa del flujo) y ***Tech Board* (una columna por técnico)**, con despacho de jobs individuales. "Any unassigned jobs will appear in the Unassigned Jobs Column." / "If you hover over each individual job you will then have the ability to assign a technician." / "The wrench on each RO identifies how many jobs are on that particular RO."
+  — <https://support.tekmetric.com/hc/en-us/articles/1500008658441-Tech-Board-Navigation> (confianza: alta)
+- **Garage Hive**: Schedule + TCards con un carril por técnico y un carril de pendientes.
+- **Protractor**: árbol de carpetas de WIP con una carpeta *Unassigned Work* — "contains a listing of work orders for vehicles that are on-site but have not been assigned to a technician" (<https://help.protractor.com/shopmanager/Work_Orders/Work_In_Progress.htm>).
+- **AutoLeap**: un solo Work Board con "Filter repair orders by technician to see workloads at a glance" (<https://autoleap.com/features/work-board/>, confianza: media — material de marketing; su base de conocimiento exige login).
+- **Mitchell 1 Manager SE**: ni siquiera es un tablero, es una rejilla ordenable (WIP).
+
+**Conclusión sobre el kanban:** revisados nueve productos, **cero** tienen un tablero por especialidad. El patrón universal es: **un tablero por etapa del proceso + (opcionalmente) un tablero con un carril por técnico + filtros**. En colisión la etapa coincide parcialmente con la especialidad, porque "pintura" es a la vez oficio y etapa del proceso — pero eso es una coincidencia del dominio de carrocería, no un principio de diseño.
 
 ### 3.6 Facturación y reporte cuando el vehículo pasa por varias especialidades
 
@@ -253,7 +306,15 @@ Y la segmentación por persona se hace con permisos sobre el tablero único, no 
 
 **El desglose por especialidad es un rollup del atributo de línea.** No hay evidencia de ningún producto que emita una factura por especialidad; hay evidencia abundante de reporte por categoría de mano de obra dentro de un documento único.
 
-**Facturación parcial sí existe, pero por cantidad, no por especialidad.** Business Central lo hace con `"Qty. to Invoice"` / `"Qty. to Ship"` / `"Quantity Invoiced"` por `Service Line` (tabla 5902).
+**No existe facturación parcial por especialidad en ningún producto de taller revisado.** La orden es un único documento que cambia de tipo:
+
+- Shopmonkey: "an order can only have one status at a time: estimate, repair order, or invoice" (<https://support.shopmonkey.io/hc/en-us/articles/38743969407124-Repair-Order-Status>).
+- Mitchell 1: agregar una línea a una factura revierte el documento entero a Repair Order — "If parts or labor items are added to an Invoice it is converted back to a Repair Order" (<https://buymitchell1.net/managerhelp/Estimtesordinv.htm>).
+- Tekmetric admite **pago** parcial ("Partially paid"), que no es lo mismo que factura parcial.
+- Fullbay dispara la facturación solo cuando el técnico marca **todos** los ítems como completos.
+- Business Central sí permite posteo parcial por cantidad (`"Qty. to Invoice"` / `"Qty. to Ship"` / `"Quantity Invoiced"` en `Service Line`, tabla 5902), pero eso es el sustrato ERP, no el flujo del taller.
+
+**La respuesta de la industria a "el cliente solo aprueba la mitad del trabajo" no es partir la factura: es declinar o diferir los jobs no aprobados dentro de la misma orden.** Tekmetric aprueba/declina por job; Shopmonkey tiene `authorizationStatus` por `Service` y `deferredDate`; Garage Hive autoriza por grupo. **Esto es un argumento fuerte a favor de la Opción A y en contra de la Opción B**: la unidad de negociación con el cliente ya es la línea/tarea, no la orden.
 
 **Requisito regulatorio (referencia útil para un mercado con protección al consumidor).** El Bureau of Automotive Repair de California exige:
 
@@ -268,9 +329,13 @@ Traducción al modelo: **la orden debe poder imprimir un desglose línea por lí
 |---|---|---|
 | Tekmetric | mecánica general (mono) | `RepairOrder → Job → Labor / Part / Fee`; sublet a nivel RO |
 | Shopmonkey | mecánica general (mono) | `Order → Service → Labor / Part / Subcontract / Fee` |
-| Fullbay | diésel pesado (mono) | Service Order con reparaciones asignadas a técnicos; "Review up-to-the-minute technician stats to help speed up decisions like **who to assign to what jobs**" (<https://www.fullbay.com/products/service-orders/>) |
-| CCC ONE / Mitchell | colisión (mono, pero con líneas mecánicas dentro) | `Workfile/Estimate → líneas con Labor Category` |
-| Business Central / Garage Hive | genérico multi-industria | `Service Header → Service Item Line → Service Line` + `Allocation` |
+| Fullbay | diésel pesado (mono) | `Service Order → Service Order Action Item` (Complaint/Cause/Correction) con *lead tech* propio |
+| Protractor | mecánica general (mono) | `Work Order → concerns / inspections / services → line items` |
+| Workshop Software (AU) | mecánica general (mono) | Job card con líneas de mano de obra; varios mecánicos por línea |
+| Mitchell 1 Manager SE | mecánica general (mono) | Rejilla plana de líneas → ***Job View*** (contenedores de trabajo) añadido después |
+| CCC ONE / Mitchell (colisión) | colisión (mono, pero con líneas mecánicas dentro) | `Workfile/Estimate → líneas con Labor Category` |
+| Garage Hive (UK) | genérico / taller UK | Jobsheet (documento de venta) → líneas + **Group Items** autorizables por separado |
+| Business Central | genérico multi-industria | `Service Header → Service Item Line → Service Line` + `Allocation` |
 | Orderry | genérico multi-industria | `Work Order → líneas de servicio/material con ejecutor` |
 | Autosoft (DMS) | concesionario multi-departamento | RO tipado `S/B/C/Q` → hasta 12 *repairs* con técnico y tarifa propios |
 
@@ -283,10 +348,11 @@ Traducción al modelo: **la orden debe poder imprimir un desglose línea por lí
 | Pregunta | CCC ONE / Mitchell / CIECA | Tekmetric | Shopmonkey | Business Central | Orderry | Autosoft (DMS) |
 |---|---|---|---|---|---|---|
 | ¿Una orden o una por especialidad? | **Una** (workfile único) | **Una** | **Una** | **Una** | Una, pero con *tipos* de orden | **Una por departamento** (`S/B/C/Q`) |
-| ¿Dónde vive la especialidad? | `Labor Category` / `LaborType` en la línea | (no tipada; implícita en el *job*) | `skillRequired` en `Labor` | *Skill code* en recurso + ítem; `Resource Group` | Tipo de orden + ejecutor por línea | `Labor Level` por línea + tipo de RO |
+| ¿Dónde vive la especialidad? | `Labor Category` / `LaborType` en la línea | **`Job Categories`** por job (pueden ser obligatorias) | `Service.categoryId` **+** `Labor.categoryId` **+** `Labor.skillRequired` | *Skill code* en recurso + ítem; `Resource Group` | Tipo de orden + ejecutor por línea | `Labor Level` por línea + tipo de RO |
 | ¿Técnico por orden o por línea? | (n/a en el estimate) | **Por línea de labor** (con atajo a nivel job) | **Por línea de labor** | Entidad `Allocation` por tarea, N por tarea | **Por línea** (con reparto fraccionado) | **Por línea** (*repair*) |
-| ¿Estado por línea? | No (estado de documento) | `complete` por labor, `completed` por job | `completed` por `Labor`; `authorizationStatus` por `Service` | **Sí — `Repair Status Code` por tarea, y la cabecera se deriva por prioridad** | No (estado de orden) | No documentado |
-| ¿Tablero? | Production boards por etapa | Job Board / Tech Board | **Un Workflow, columnas configurables** | **Un Dispatch Board, filtros por recurso/grupo** | Workflow con vistas tabla/tablero/agenda; pipeline por tipo de orden | n/a |
+| ¿Autorización del cliente? | Por documento (aseguradora) | **Por job** (approve/decline independiente; + *draft jobs*) | **Por `Service`** (`NotAuthorized/Authorized/Declined`) | Por documento | Por orden | Por orden |
+| ¿Estado por línea? | No (estado de documento) | `complete` por labor, `completed` por job, readiness de repuestos | `completed` por `Labor`; `authorizationStatus` por `Service` | **Sí — `Repair Status Code` por tarea, y la cabecera se deriva por prioridad** | No (estado de orden) | No documentado |
+| ¿Tablero? | Production boards por etapa | **Job Board (etapas) + Tech Board (1 columna por técnico)** | **Un Workflow, columnas configurables** | **Un Dispatch Board, filtros por recurso/grupo** | Workflow con vistas tabla/tablero/agenda; pipeline por tipo de orden | n/a |
 | ¿Tarifa distinta por especialidad? | **Sí** — rate por *charge category* | Rate por línea de labor | `rateCents` + `rateId` + `laborMatrixId` por línea | Precio por `Resource` | Precio por servicio | **Sí** — `Labor Level` A–J |
 | ¿Sublet? | Flags `PartSubletInd`/`LaborSubletInd` en la línea | `sublets[]` a nivel **RO** | `Subcontract` colgando del **`Service`** | `Service Line` con `Type = Cost` | — | Pantalla *Close Lubricants-Sublet* |
 | Factura | Una, totales por `LaborType` | Una, `laborSales/partsSales/subletSales` | Una, `laborCents/partsCents/subcontractsCents` | Una, con facturación parcial por cantidad | Una | Una por RO (y por tanto por departamento) |
@@ -305,9 +371,11 @@ Traducción al modelo: **la orden debe poder imprimir un desglose línea por lí
 
 5. **CIECA BMS: las *code lists* completas (185 pestañas de enums) están tras login de miembro.** Los códigos de la tabla vienen de ficheros de producción reales, no del diccionario oficial. Confianza alta en los observados, media en la exhaustividad.
 
-6. **Tekmetric no tipa la especialidad.** Su `Job` no tiene categoría ni skill. Esto es un dato en contra de que el campo sea imprescindible — o evidencia de que un producto de mecánica pura no lo necesita, que es justo la asimetría que nos interesa resolver.
+6. ~~**Tekmetric no tipa la especialidad.**~~ **Retractado.** Una primera pasada me hizo concluir que el `Job` de Tekmetric no tenía categoría. Es falso: Tekmetric tiene **Job Categories**, un catálogo configurable por taller que se asigna a cada job y que el taller puede volver **obligatorio antes de cerrar la orden** (<https://support.tekmetric.com/hc/en-us/articles/360035750394-Job-Categories-Setup>). Con esto **la evidencia a favor de tipar la unidad de trabajo pasa a ser unánime** entre los productos revisados.
 
-7. **`skillRequired` de Shopmonkey es nivel de destreza (`General/Maintenance/Precision`), no oficio.** No es un contraejemplo perfecto; lo que prueba es la *ubicación* del campo (la línea), no su taxonomía.
+7. **`skillRequired` de Shopmonkey es nivel de destreza (`General/Maintenance/Precision`), no oficio.** No es un contraejemplo perfecto; lo que prueba es la *ubicación* del campo (la línea), no su taxonomía. La taxonomía de oficio en Shopmonkey vive en `categoryId`, que existe **en dos niveles** (por `Service` y por línea).
+
+8. **Varias bases de conocimiento están tras login y su evidencia es más débil.** AutoLeap (`help.autoleap.com` no resuelve; la KB vive dentro del User Center), Shop-Ware (`help.shop-ware.com` redirige a login) y Fullbay (la KB real está en "Fullbay Learn", dentro de la app) solo aportan páginas de producto/blog. Sus afirmaciones en este documento están marcadas con confianza media. La documentación de Garage Hive es una SPA renderizada por JavaScript y solo pude recuperar tres páginas.
 
 ---
 
@@ -370,7 +438,9 @@ Visita ──< OrdenDeTrabajo (una por especialidad) ──< Linea
 
 3. **Un solo tablero por etapa de proceso, con filtro por especialidad y por técnico** — no tableros separados. Precedente: Shopmonkey (un Workflow, columnas configurables, ocultar columna es preferencia personal), Business Central (`Resource Filter` / `Resource Group Filter` sobre un Dispatch Board). Si más adelante el cliente pide vistas separadas, se resuelven como filtros guardados, no como pipelines paralelos.
 
-4. **Asignación en la línea, permitiendo asignar a una especialidad/grupo antes que a una persona.** Precedente: Business Central permite asignar a `Resource Group` y no solo a `Resource No.`. Esto habilita "esto va para pintura" en recepción y "lo hace Juan" después, sin cambiar de entidad.
+4. **Asignación en la línea, permitiendo asignar a una especialidad/grupo antes que a una persona.** Precedente: Business Central permite asignar a `Resource Group` y no solo a `Resource No.`; Garage Hive tiene *pool jobs* reservados a una bahía sin técnico individual. Esto habilita "esto va para pintura" en recepción y "lo hace Juan" después, sin cambiar de entidad.
+
+5. **Autorización del cliente por línea/tarea, no por orden.** Precedente unánime: Tekmetric (approve/decline por job, más *draft jobs* que el cliente no ve), Shopmonkey (`authorizationStatus` por `Service` + `deferredDate`), Garage Hive (autorización por grupo). Es además el mecanismo con el que la industria resuelve la aprobación parcial **sin** partir el documento — lo que elimina la razón principal que uno podría tener para elegir la Opción B.
 
 Dos cosas más que salieron de la evidencia y que conviene no perder aunque no sean el objeto de este ticket: **separar horas vendidas de horas fichadas** (Tekmetric `laborHours` vs `loggedHours`; CIECA `LaborHours` vs `DatabaseLaborHours`) y **separar el tipo de documento del estado de taller** (Shopmonkey `status: Estimate|RepairOrder|Invoice` vs `workflowStatusId`; Business Central `Status` vs `Repair Status Code`). Ambas son ortogonales al multi-especialidad pero aparecen en todos los modelos serios.
 
@@ -390,16 +460,40 @@ Dos cosas más que salieron de la evidencia y que conviene no perder aunque no s
 
 **Mecánica general**
 - Tekmetric — *Multiple Techs on a Job*: <https://support.tekmetric.com/hc/en-us/articles/24617998260247-Multiple-Techs-on-a-Job>
+- Tekmetric — *Types of Jobs Used to Build an Estimate*: <https://support.tekmetric.com/hc/en-us/articles/27046099150743-Types-of-Jobs-Used-to-Build-an-Estimate>
+- Tekmetric — *Declined jobs vs. draft jobs* (autorización por job): <https://support.tekmetric.com/hc/en-us/articles/360039270153-What-is-the-difference-between-declined-jobs-draft-jobs>
+- Tekmetric — *Job Categories Setup*: <https://support.tekmetric.com/hc/en-us/articles/360035750394-Job-Categories-Setup>
+- Tekmetric — *RO Labels and Workflow Statuses*: <https://support.tekmetric.com/hc/en-us/articles/360039292193-RO-Labels-and-Workflow-Statuses>
+- Tekmetric — *Tech Board Navigation*: <https://support.tekmetric.com/hc/en-us/articles/1500008658441-Tech-Board-Navigation>
+- Tekmetric — *Sublet Workflow*: <https://support.tekmetric.com/hc/en-us/articles/1500000008022-Sublet-Workflow>
 - Tekmetric — API (texto oficial espejado): <https://raw.githubusercontent.com/shermanhuman/oh/master/skills/tekmetric-api/Tekmetric-API.txt>
-- Shopmonkey — esquema público de entidades: <https://shopmonkey.dev/schema/Order>, `/schema/Service`, `/schema/Labor`, `/schema/Subcontract`, `/schema/Fee`, `/schema/Authorization`
+- Shopmonkey — esquema público de entidades: <https://shopmonkey.dev/schema/Order>, `/schema/Service`, `/schema/Labor`, `/schema/Subcontract`, `/schema/Fee`, `/schema/Authorization`, `/schema/WorkflowStatus`
 - Shopmonkey — *Assign Technicians to Labor Items*: <https://support.shopmonkey.io/hc/en-us/articles/38743885537172-Assign-Technicians-to-Labor-Items>
 - Shopmonkey — *Workflow Views*: <https://support.shopmonkey.io/hc/en-us/articles/38743858598676-Workflow-Views>
+- Shopmonkey — *Repair Order Status*: <https://support.shopmonkey.io/hc/en-us/articles/38743969407124-Repair-Order-Status>
+- Shopmonkey — *Request Customer Authorization*: <https://support.shopmonkey.io/hc/en-us/articles/38743372579988-Request-Customer-Authorization>
+- Shopmonkey — *Service Level Categories*: <https://support.shopmonkey.io/hc/en-us/articles/43444408898964-Service-Level-Categories>
 - Fullbay — *Service Work Order Software*: <https://www.fullbay.com/products/service-orders/>
+- Fullbay — *Who needs access to Fullbay* (lead tech por SOAI): <https://www.fullbay.com/blog/who-needs-access-to-fullbay-in-your-shop/>
+- Fullbay — *AI-Powered Service Order* (Three C's por SOAI): <https://www.fullbay.com/products/integrations/ai-powered-service-order/>
+- Protractor — *Work In Progress*: <https://help.protractor.com/shopmanager/Work_Orders/Work_In_Progress.htm>
+- Protractor — *Work Order Templates*: <https://help.protractor.com/shopmanager/Setup/Work_Order_Setup/Work_Order_Templates.htm>
+- Mitchell 1 Manager SE — *Order screen*: <https://buymitchell1.net/managerhelp/Orderscreen.htm>
+- Mitchell 1 Manager SE — *Estimates, Orders, Invoices*: <https://buymitchell1.net/managerhelp/Estimtesordinv.htm>
+- Mitchell 1 Manager SE — *Job View*: <https://mitchell1.com/manager-se/service-writer/>
+- Workshop Software (AU) — *Add mechanic hours to an invoice*: <https://workshopsoftware.com/knowledge-base/job-centre-invoicing/add-mechanic-hours-to-an-invoice/>
+- AutoLeap — *Work Board* (marketing; KB tras login): <https://autoleap.com/features/work-board/>
 - Orderry — *How to assign multiple specialists in one work order*: <https://help.orderry.com/en/articles/9133947-how-to-assign-multiple-specialists-in-one-work-order>
 - Orderry — *Work Orders. General information*: <https://help.orderry.com/en/articles/9133862-work-orders-general-information>
 - Orderry — *How to use work order statuses*: <https://help.orderry.com/en/articles/9148669-how-to-use-work-order-statuses-in-orderry>
 
-**ERP / plataformas genéricas (base de Garage Hive)**
+**Garage Hive (Reino Unido)**
+- *How to Group Document Lines* (Group Items, Service Action Categories): <https://docs.garagehive.com/p/ON2BmTskQ8JbTm/How-to-Group-Document-Lines>
+- *Working With Group Items Actions* (autorización por grupo): <https://docs.garagehive.com/p/gxoOzrGJdo-BE4/Working-With-Group-Items-Actions>
+- *How to Create Service Types*: <https://docs.garagehive.com/p/zrt1uG4WCC25Gb/How-to-Create-Service-Types>
+- *Workshop Management* (Schedule, TCards por técnico): <https://garagehive.co.uk/features/workshop-management-with-garage-hive/>
+
+**ERP / plataformas genéricas (arquitectura de referencia)**
 - Business Central — *Service order status and repair status*: <https://learn.microsoft.com/en-us/dynamics365/business-central/service-service-order-status-and-repair-status>
 - Business Central — *How to allocate resources*: <https://learn.microsoft.com/en-us/dynamics365/business-central/service-how-to-allocate-resources>
 - Business Central — *Set up resource allocation* (skills): <https://learn.microsoft.com/en-us/dynamics365/business-central/service-how-setup-resource-allocation>
