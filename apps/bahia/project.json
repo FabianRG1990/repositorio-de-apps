@@ -50,6 +50,9 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
+      "options": {
+        "port": 4201
+      },
       "configurations": {
         "production": {
           "buildTarget": "bahia:build:production"
@@ -84,7 +87,7 @@
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "bahia:build",
-        "port": 4200,
+        "port": 4201,
         "staticFilePath": "dist/apps/bahia/browser",
         "spa": true
       }
