@@ -190,7 +190,7 @@ describe('KanbanBoard', () => {
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
     ).find((el) => el.textContent?.includes('OT-A1-0140'));
     expect(ficha?.querySelector('.ficha__concepto-agregar')).toBeNull();
-    expect(ficha?.textContent).toContain('FA-0001');
+    expect(ficha?.textContent).toContain('FA-A1-0001');
   });
 
   it('lets a usuario with permiso facturar invoice an orden recién Entregado', async () => {
@@ -281,7 +281,7 @@ describe('KanbanBoard', () => {
     const fichaConFactura = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
     ).find((el) => el.textContent?.includes('OT-A1-0140'));
-    expect(fichaConFactura?.textContent).toContain('FA-0001');
+    expect(fichaConFactura?.textContent).toContain('FA-A1-0001');
 
     // orden-5 (OT-A1-0153) está en Listo — la avanzamos a Entregado, no debe
     // ofrecer el formulario de factura nueva con la función desactivada

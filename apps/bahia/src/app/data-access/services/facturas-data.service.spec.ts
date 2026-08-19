@@ -23,7 +23,7 @@ describe('FacturasDataService', () => {
     const creada = await firstValueFrom(
       service.create({
         ordenId: 'orden-5',
-        numero: 'FA-0002',
+        numero: 'FA-A1-0002',
         fecha: '2026-08-01T12:00:00',
         conceptos: [{ descripcion: 'Revisión de frenos', monto: 300 }],
       }),

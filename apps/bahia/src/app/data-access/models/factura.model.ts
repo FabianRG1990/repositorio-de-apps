@@ -21,13 +21,22 @@ export function totalFactura(factura: Pick<Factura, 'conceptos'>): number {
   return factura.conceptos.reduce((suma, concepto) => suma + concepto.monto, 0);
 }
 
-// "FA-0001", "FA-0002"... — mismo criterio que siguienteNumeroOrden: el
-// siguiente número a partir de las facturas ya existentes.
-export function siguienteNumeroFactura(facturas: Factura[]): string {
+// "FA-A1-0001", "FA-A1-0002"... — mismo criterio que siguienteNumeroOrden: el
+// número lleva el código del puesto que lo acuñó y cada puesto lleva su serie.
+//
+// Acá el problema del consecutivo global (issue #46) es todavía más caro que
+// en las órdenes: este número identifica el documento de cobro. Dos facturas
+// distintas con el mismo número no es un choque de datos, es un problema con
+// el cliente y con Hacienda.
+export function siguienteNumeroFactura(
+  facturas: Factura[],
+  codigoPuesto: string,
+): string {
+  const patron = new RegExp(`^FA-${codigoPuesto}-(\\d+)$`);
   const maxActual = facturas.reduce((max, factura) => {
-    const coincidencia = /^FA-(\d+)$/.exec(factura.numero);
+    const coincidencia = patron.exec(factura.numero);
     const numero = coincidencia ? Number(coincidencia[1]) : 0;
     return Math.max(max, numero);
   }, 0);
-  return `FA-${String(maxActual + 1).padStart(4, '0')}`;
+  return `FA-${codigoPuesto}-${String(maxActual + 1).padStart(4, '0')}`;
 }

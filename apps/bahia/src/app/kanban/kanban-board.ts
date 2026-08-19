@@ -5,6 +5,7 @@ import {
   Factura,
   siguienteNumeroFactura,
 } from '../data-access/models/factura.model';
+import { getCodigoPuesto } from '../data-access/persistence/bahia-db';
 import {
   EstadoOrden,
   ESTADOS_ORDEN,
@@ -126,10 +127,19 @@ export class KanbanBoard {
     this.ordenesStore.guardarDiagnostico({ id: orden.id, diagnostico });
   }
 
-  protected guardarFactura(orden: OrdenTrabajo, conceptos: Concepto[]): void {
+  // `async` porque el código del puesto vive en la base local (ver issue #46).
+  protected async guardarFactura(
+    orden: OrdenTrabajo,
+    conceptos: Concepto[],
+  ): Promise<void> {
+    const codigoPuesto = await getCodigoPuesto();
+
     this.facturasStore.crear({
       ordenId: orden.id,
-      numero: siguienteNumeroFactura(this.facturasStore.entities()),
+      numero: siguienteNumeroFactura(
+        this.facturasStore.entities(),
+        codigoPuesto,
+      ),
       fecha: new Date().toISOString(),
       conceptos,
     });

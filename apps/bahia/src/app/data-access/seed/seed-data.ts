@@ -160,7 +160,7 @@ export const SEED_FACTURAS: Factura[] = [
   {
     id: 'factura-1',
     ordenId: 'orden-1',
-    numero: 'FA-0001',
+    numero: 'FA-A1-0001',
     fecha: '2026-05-12T12:00:00',
     conceptos: [
       { descripcion: 'Cambio de aceite sintético', monto: 450 },
