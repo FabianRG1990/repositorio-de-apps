@@ -43,8 +43,8 @@ jobs:
       - run: yarn install --immutable
 
       # Los navegadores de Playwright no vienen con la instalación de paquetes.
-      # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
-      # bajarlos antes del e2e (ver issue #40).
+      # apps/bahia-e2e corre sobre chromium y firefox, así que hay que bajarlos
+      # antes del e2e (ver issue #40).
       #
       # SIN `--with-deps` a propósito. Esa bandera instala librerías de sistema
       # vía apt, y ahí es donde el CI se colgaba: el mirror

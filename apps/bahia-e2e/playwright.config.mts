@@ -49,10 +49,14 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // Webkit queda fuera a propósito. Necesita librerías de sistema
+    // (libgtk-4, libgraphene, libevent, libopus, GStreamer) que la imagen de
+    // ubuntu-latest no trae, y la única forma de instalarlas en CI es apt —
+    // que es justo lo que colgaba el job hasta seis horas (ver issue #65).
+    // Además la investigación #17 encontró que la app no funciona bien en
+    // Safari: la Web Speech API está bloqueada en PWA instalada y `es-CR`
+    // revienta ahí, así que la cobertura que se pierde es de un navegador
+    // donde el producto ya no se sostiene.
 
     // Uncomment for mobile browsers support
     /* {
