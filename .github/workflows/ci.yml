@@ -13,6 +13,11 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    # Sin esto, un paso colgado corre hasta el límite de 6 horas de GitHub y
+    # recién ahí se cancela: el run 32224073696 ocupó un runner seis horas y
+    # bloqueó un merge toda una jornada. Un CI que normalmente tarda dos
+    # minutos no tiene nada que hacer a los veinte (ver issue #65).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
@@ -38,9 +43,28 @@ jobs:
       - run: yarn install --immutable
 
       # Los navegadores de Playwright no vienen con la instalación de paquetes.
-      # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
-      # bajarlos con sus dependencias de sistema antes del e2e (ver issue #40).
-      - run: yarn playwright install --with-deps
+      # apps/bahia-e2e corre sobre chromium y firefox, así que hay que bajarlos
+      # antes del e2e (ver issue #40).
+      #
+      # SIN `--with-deps` a propósito. Esa bandera instala librerías de sistema
+      # vía apt, y ahí es donde el CI se colgaba: el mirror
+      # azure.archive.ubuntu.com no responde desde el runner y apt reintenta en
+      # bucle. En el run 32295034910 se ve `Ign: ... noble InRelease` repetido
+      # durante diez minutos, mientras los repos de Microsoft y Google
+      # contestaban en milisegundos. La imagen de ubuntu-latest ya trae las
+      # librerías que Playwright necesita, así que apt sobra (ver issue #65).
+      #
+      # La descarga de binarios va contra el CDN de Playwright, no contra apt,
+      # y siempre funcionó. Se cachea para no repetirla en cada corrida.
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: yarn playwright install
+        timeout-minutes: 10
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: yarn nx record -- yarn nx format:check --base="remotes/origin/main"
