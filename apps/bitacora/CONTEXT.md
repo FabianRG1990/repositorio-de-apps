@@ -116,6 +116,10 @@ _Evitar_: rechazado, cancelado, pendiente
 El consentimiento del Cliente a una Línea de servicio concreta, con constancia de quién autorizó y por qué medio. Se autoriza trabajo por trabajo, no la Orden completa.
 _Evitar_: aprobación, OK del cliente
 
+**Próxima visita**:
+La fecha en que el Asesor cree que el Vehículo debería volver, escrita a mano al cerrar la Orden. No se calcula: no hay intervalos ni kilometraje, solo el criterio de quien atendió el carro.
+_Evitar_: mantenimiento programado, cita, vencimiento
+
 **Aviso de listo**:
 La constancia de que el Taller le comunicó a Quien entrega que puede venir a recoger el Vehículo, con la fecha y la persona a la que se le avisó. Es un hecho registrado, no el mensaje en sí: el mensaje viaja por WhatsApp, fuera de Bitácora.
 _Evitar_: notificación, alerta, recordatorio
