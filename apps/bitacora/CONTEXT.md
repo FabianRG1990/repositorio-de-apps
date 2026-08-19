@@ -14,6 +14,10 @@ _Evitar_: empresa, negocio, sucursal, organización
 Cuánto cobra el Taller la hora de una Especialidad. Son distintas entre oficios: la hora de pintura no vale lo mismo que la de mecánica.
 _Evitar_: precio, costo, rate
 
+**Puesto**:
+Cada lugar del Taller desde donde se crean Órdenes — la recepción, la tablet del patio. Tiene una letra que lo identifica y lleva su propia numeración de Folios, para que dos Puestos sin conexión nunca acuñen el mismo.
+_Evitar_: dispositivo, terminal, equipo, caja
+
 **Tiempo parado**:
 Cuánto lleva un Vehículo en el Taller desde que entró. Es el criterio que ordena el tablero — arriba lo que más duele.
 _Evitar_: antigüedad, demora, tiempo de espera
@@ -83,10 +87,6 @@ _Evitar_: orden de trabajo, OT, ticket, job
 **Folio**:
 El número visible de la Orden, el que el Cliente y el Taller usan para referirse al trabajo y el que va impreso en la factura. Lleva la letra del Puesto que lo acuñó y un consecutivo propio de ese Puesto — `A-241` —, así que los Folios de un Taller no forman una sola serie corrida. Se acuña al crear la Orden: ninguna Orden vive sin Folio.
 _Evitar_: número de orden, consecutivo, ID
-
-**Puesto**:
-Cada lugar del Taller desde donde se crean Órdenes — la recepción, la tablet del patio. Tiene una letra que lo identifica y lleva su propia numeración de Folios, para que dos Puestos sin conexión nunca acuñen el mismo.
-_Evitar_: dispositivo, terminal, equipo, caja
 
 **Foto**:
 Una imagen del Vehículo tomada al recibirlo, guardada en la Orden. **Pertenece a la Orden, no a la Línea de servicio**: muestra cómo entró el carro, no justifica un cobro concreto.
