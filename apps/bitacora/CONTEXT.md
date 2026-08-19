@@ -112,6 +112,14 @@ _Evitar_: rechazado, cancelado, pendiente
 El consentimiento del Cliente a una Línea de servicio concreta, con constancia de quién autorizó y por qué medio. Se autoriza trabajo por trabajo, no la Orden completa.
 _Evitar_: aprobación, OK del cliente
 
+**Aviso de listo**:
+La constancia de que el Taller le comunicó a Quien entrega que puede venir a recoger el Vehículo, con la fecha y la persona a la que se le avisó. Es un hecho registrado, no el mensaje en sí: el mensaje viaja por WhatsApp, fuera de Bitácora.
+_Evitar_: notificación, alerta, recordatorio
+
+**Vehículo sin recoger**:
+Un Vehículo cuyo trabajo terminó y del que ya se dio Aviso de listo, pero que sigue en el Taller. Ocupa espacio y por eso el tablero lo señala.
+_Evitar_: abandonado, olvidado, en espera
+
 **Horas facturadas** / **Horas reales**:
 Las horas que se le cobran al Cliente por una Línea de servicio, y las que efectivamente tomó ejecutarla. Son dos cantidades distintas y se registran por separado.
 _Evitar_: horas (a secas), tiempo
