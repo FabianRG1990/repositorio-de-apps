@@ -46,9 +46,16 @@ jobs:
       # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
       # bajarlos antes del e2e (ver issue #40).
       #
-      # Descargarlos son ~400 MB y era el paso más lento del CI con diferencia:
-      # entre 45 s y 6 horas para el mismo comando, según cómo estuviera la red
-      # del runner. Con caché, un acierto lo salta por completo (ver issue #65).
+      # SIN `--with-deps` a propósito. Esa bandera instala librerías de sistema
+      # vía apt, y ahí es donde el CI se colgaba: el mirror
+      # azure.archive.ubuntu.com no responde desde el runner y apt reintenta en
+      # bucle. En el run 32295034910 se ve `Ign: ... noble InRelease` repetido
+      # durante diez minutos, mientras los repos de Microsoft y Google
+      # contestaban en milisegundos. La imagen de ubuntu-latest ya trae las
+      # librerías que Playwright necesita, así que apt sobra (ver issue #65).
+      #
+      # La descarga de binarios va contra el CDN de Playwright, no contra apt,
+      # y siempre funcionó. Se cachea para no repetirla en cada corrida.
       - uses: actions/cache@v4
         id: playwright-cache
         with:
@@ -56,15 +63,8 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: yarn playwright install --with-deps
+        run: yarn playwright install
         timeout-minutes: 10
-
-      # Las librerías de sistema viven fuera de ~/.cache/ms-playwright, así que
-      # no se cachean con los binarios. En la imagen de ubuntu-latest ya vienen
-      # casi todas, por lo que este paso es rápido, pero hay que correrlo igual.
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: yarn playwright install-deps
-        timeout-minutes: 5
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: yarn nx record -- yarn nx format:check --base="remotes/origin/main"
