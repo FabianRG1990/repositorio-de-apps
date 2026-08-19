@@ -4,6 +4,20 @@ Gestión de órdenes de trabajo para talleres automotrices de rango medio-alto q
 
 ## Language
 
+### El taller
+
+**Taller**:
+El negocio que usa Bitácora, con sus datos, las Especialidades que ofrece, sus Tarifas y su personal. Es lo único que el Dueño configura, y lo que configura tiene efecto visible: un Taller de una sola Especialidad no muestra el filtro del tablero.
+_Evitar_: empresa, negocio, sucursal, organización
+
+**Tarifa**:
+Cuánto cobra el Taller la hora de una Especialidad. Son distintas entre oficios: la hora de pintura no vale lo mismo que la de mecánica.
+_Evitar_: precio, costo, rate
+
+**Tiempo parado**:
+Cuánto lleva un Vehículo en el Taller desde que entró. Es el criterio que ordena el tablero — arriba lo que más duele.
+_Evitar_: antigüedad, demora, tiempo de espera
+
 ### Personas y organizaciones
 
 **Cliente**:
