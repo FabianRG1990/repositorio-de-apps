@@ -44,9 +44,27 @@ jobs:
 
       # Los navegadores de Playwright no vienen con la instalación de paquetes.
       # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
-      # bajarlos con sus dependencias de sistema antes del e2e (ver issue #40).
-      - run: yarn playwright install --with-deps
+      # bajarlos antes del e2e (ver issue #40).
+      #
+      # Descargarlos son ~400 MB y era el paso más lento del CI con diferencia:
+      # entre 45 s y 6 horas para el mismo comando, según cómo estuviera la red
+      # del runner. Con caché, un acierto lo salta por completo (ver issue #65).
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: yarn playwright install --with-deps
         timeout-minutes: 10
+
+      # Las librerías de sistema viven fuera de ~/.cache/ms-playwright, así que
+      # no se cachean con los binarios. En la imagen de ubuntu-latest ya vienen
+      # casi todas, por lo que este paso es rápido, pero hay que correrlo igual.
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: yarn playwright install-deps
+        timeout-minutes: 5
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: yarn nx record -- yarn nx format:check --base="remotes/origin/main"
