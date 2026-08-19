@@ -13,6 +13,11 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    # Sin esto, un paso colgado corre hasta el límite de 6 horas de GitHub y
+    # recién ahí se cancela: el run 32224073696 ocupó un runner seis horas y
+    # bloqueó un merge toda una jornada. Un CI que normalmente tarda dos
+    # minutos no tiene nada que hacer a los veinte (ver issue #65).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
@@ -41,6 +46,7 @@ jobs:
       # apps/bahia-e2e corre sobre chromium, firefox y webkit, así que hay que
       # bajarlos con sus dependencias de sistema antes del e2e (ver issue #40).
       - run: yarn playwright install --with-deps
+        timeout-minutes: 10
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: yarn nx record -- yarn nx format:check --base="remotes/origin/main"
