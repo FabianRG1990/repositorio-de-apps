@@ -22,6 +22,29 @@
 
 <!-- nx configuration end-->
 
+## Commits
+
+Un commit es **un cambio lógico que se puede revertir solo**. No se juntan en un
+mismo commit el código, su configuración, su documentación y un pase de formato:
+eso produce una foto del estado final, no un paso del camino, y deja el historial
+inservible para `git revert` y `git bisect`.
+
+- Separar por tipo de cambio, en este orden: tooling/configuración → comportamiento
+  → pruebas → documentación → pases mecánicos (formato, renombrados, movidas). Un
+  pase mecánico nunca comparte commit con un cambio de significado, porque esconde
+  el diff real.
+- Nunca mezclar refactor con cambio de comportamiento. Primero el refactor en su
+  commit, después el cambio encima.
+- Cada commit deja el árbol funcionando — compila y sus pruebas pasan.
+- `git add <ruta>` o `git add -p`; nunca `git add -A` sin leer antes `git status`.
+- Asunto imperativo en español, ≤ ~72 caracteres. Cuerpo con el **porqué**: la
+  restricción, la alternativa descartada, la trampa evitada. El diff ya muestra qué
+  cambió.
+
+Antes de abrir el PR, leer `git log --oneline` de la rama: si dos commits solo
+tienen sentido juntos, hay que unirlos; si el mensaje de uno necesita un "y
+también", hay que partirlo.
+
 ## Formato
 
 El CI corre `nx format:check`, y `.prettierignore` **no** excluye Markdown: un `.md`
