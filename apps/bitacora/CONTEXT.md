@@ -70,6 +70,10 @@ _Evitar_: orden de trabajo, OT, ticket, job
 El número visible de la Orden, el que el Cliente y el taller usan para referirse al trabajo y el que va impreso en la factura.
 _Evitar_: número de orden, consecutivo, ID
 
+**Foto**:
+Una imagen del Vehículo tomada al recibirlo, guardada en la Orden. **Pertenece a la Orden, no a la Línea de servicio**: muestra cómo entró el carro, no justifica un cobro concreto.
+_Evitar_: evidencia, adjunto, imagen, inspección
+
 **Línea de servicio**:
 Cada trabajo concreto dentro de una Orden — "cambio de pastillas", "alternador", "guardabarros derecho". **Es la Línea de servicio la que lleva la Especialidad**, no la Orden.
 _Evitar_: ítem, servicio, tarea, renglón
