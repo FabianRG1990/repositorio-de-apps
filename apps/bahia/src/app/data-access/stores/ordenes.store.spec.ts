@@ -25,7 +25,7 @@ describe('OrdenesStore', () => {
     const antes = store.entities().length;
 
     store.crear({
-      numero: 'OT-0999',
+      numero: 'OT-A1-0999',
       tallerId: 'taller-1',
       clienteId: 'cliente-1',
       vehiculoId: 'vehiculo-1',
@@ -54,11 +54,11 @@ describe('OrdenesStore', () => {
   it('guardarDiagnostico sets the diagnostico of the target orden without touching other fields', async () => {
     const store = TestBed.inject(OrdenesStore);
     await waitFor(() => store.cargado());
-    // OT-0151 (Ingresado) no trae diagnóstico sembrado — a diferencia de las
+    // OT-A1-0151 (Ingresado) no trae diagnóstico sembrado — a diferencia de las
     // 3 órdenes ya diagnosticadas del seed, así que el `waitFor` de abajo
     // no se resuelve de inmediato con un valor sembrado.
-    const objetivo = store.entities().find((o) => o.numero === 'OT-0151');
-    if (!objetivo) throw new Error('seed debería incluir OT-0151');
+    const objetivo = store.entities().find((o) => o.numero === 'OT-A1-0151');
+    if (!objetivo) throw new Error('seed debería incluir OT-A1-0151');
 
     store.guardarDiagnostico({
       id: objetivo.id,

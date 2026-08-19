@@ -87,7 +87,7 @@ export const SEED_VEHICULOS: Vehiculo[] = [
 export const SEED_ORDENES: OrdenTrabajo[] = [
   {
     id: 'orden-1',
-    numero: 'OT-0140',
+    numero: 'OT-A1-0140',
     tallerId: 'taller-1',
     clienteId: 'cliente-1',
     vehiculoId: 'vehiculo-1',
@@ -100,7 +100,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
   },
   {
     id: 'orden-2',
-    numero: 'OT-0148',
+    numero: 'OT-A1-0148',
     tallerId: 'taller-1',
     clienteId: 'cliente-1',
     vehiculoId: 'vehiculo-1',
@@ -112,7 +112,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
   },
   {
     id: 'orden-3',
-    numero: 'OT-0151',
+    numero: 'OT-A1-0151',
     tallerId: 'taller-1',
     clienteId: 'cliente-2',
     vehiculoId: 'vehiculo-2',
@@ -124,7 +124,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
   },
   {
     id: 'orden-4',
-    numero: 'OT-0152',
+    numero: 'OT-A1-0152',
     tallerId: 'taller-1',
     clienteId: 'cliente-3',
     vehiculoId: 'vehiculo-3',
@@ -138,7 +138,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
   },
   {
     id: 'orden-5',
-    numero: 'OT-0153',
+    numero: 'OT-A1-0153',
     tallerId: 'taller-1',
     clienteId: 'cliente-4',
     vehiculoId: 'vehiculo-4',
@@ -152,7 +152,7 @@ export const SEED_ORDENES: OrdenTrabajo[] = [
 ];
 
 // Ver issue #11 (reapertura de alcance: facturar/ver_reportes). Solo
-// orden-1 (OT-0140) ya está "Entregado" desde el seed, así que es la
+// orden-1 (OT-A1-0140) ya está "Entregado" desde el seed, así que es la
 // única que puede tener una factura — sirve para que "ver_reportes"
 // muestre datos reales desde el primer arranque, sin depender de que
 // alguien facture algo en vivo primero.

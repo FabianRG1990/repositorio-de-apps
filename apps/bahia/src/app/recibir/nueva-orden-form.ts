@@ -1,5 +1,6 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { siguienteNumeroOrden } from '../data-access/models/orden-trabajo.model';
+import { getCodigoPuesto } from '../data-access/persistence/bahia-db';
 import { ClientesStore } from '../data-access/stores/clientes.store';
 import { OrdenesStore } from '../data-access/stores/ordenes.store';
 import { TalleresStore } from '../data-access/stores/talleres.store';
@@ -145,15 +146,20 @@ export class NuevaOrdenForm {
     reconocimiento.start();
   }
 
-  protected enviar(): void {
+  // `async` porque el código del puesto vive en la base local (ver issue #46).
+  // La espera es de microsegundos —la base ya está abierta— y ocurre después
+  // del guard, así que no hay ventana para un doble envío que no existiera ya.
+  protected async enviar(): Promise<void> {
     if (!this.puedeEnviar()) return;
 
     const vehiculo = this.vehiculosStore.entityMap()[this.vehiculoId()];
     const taller = this.talleresStore.entities()[0];
     if (!vehiculo || !taller) return;
 
+    const codigoPuesto = await getCodigoPuesto();
+
     this.ordenesStore.crear({
-      numero: siguienteNumeroOrden(this.ordenesStore.entities()),
+      numero: siguienteNumeroOrden(this.ordenesStore.entities(), codigoPuesto),
       tallerId: taller.id,
       clienteId: vehiculo.clienteId,
       vehiculoId: vehiculo.id,
