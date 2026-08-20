@@ -372,6 +372,9 @@
         align-items: center;
         gap: var(--space-16);
         background: var(--sf-1);
+        /* La fila es un <button>: sin esto la hoja del navegador le devuelve su
+           `border: 2px outset`, que es el borde de caja que se acaba de quitar. */
+        border: 0;
         /* §5.1: la fila en reposo va un paso por detrás. Lo que hace que una
            lista "responda" no es el cambio de fondo, es que la fila apuntada
            se oscurece tipográficamente mientras el resto se queda atrás. Los
