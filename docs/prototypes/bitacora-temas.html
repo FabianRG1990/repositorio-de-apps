@@ -116,6 +116,14 @@
         --control-min: 3rem;
         --control: 3.5rem;
 
+        /* WCAG 2.2 SC 2.4.11 (AA), fallo F110: con el panel pegajoso arriba,
+           tabular hacia abajo dejaba la fila enfocada enteramente detrás de
+           él. Los 8 px extra no son adorno: el anillo de foco lleva 2 px de
+           trazo y 2 de hueco, así que el elemento "visible" empieza antes de
+           su caja. La altura real del panel la mide el JS, porque envuelve. */
+        --alto-panel: 5rem;
+        scroll-padding-top: calc(var(--alto-panel) + var(--space-8));
+
         /* Semánticos: NO se personalizan nunca. El principio ISA-101 que
            recoge #18 reserva la saturación a la condición anormal, para que
            una alarma salte contra una pantalla por lo demás tranquila. Si la
@@ -188,11 +196,22 @@
         color: var(--tx-lo);
       }
 
+      /* Sin `overflow: hidden`: el outline respeta el border-radius propio,
+         pero NO hereda el de un ancestro recortado, así que el contenedor se
+         comía el anillo de foco de sus botones. Cada botón lleva su radio, y
+         el valor sale de la fórmula concéntrica: 8 − 1 de borde = 7. */
       .seg {
         display: flex;
         border: 1px solid var(--bd);
         border-radius: var(--r-8);
-        overflow: hidden;
+      }
+
+      .seg button:first-child {
+        border-radius: calc(var(--r-8) - 1px) 0 0 calc(var(--r-8) - 1px);
+      }
+
+      .seg button:last-child {
+        border-radius: 0 calc(var(--r-8) - 1px) calc(var(--r-8) - 1px) 0;
       }
 
       .seg button {
@@ -206,6 +225,7 @@
         background: var(--sf-1);
         color: var(--tx-hi);
         cursor: pointer;
+        position: relative;
       }
 
       .seg button + button {
@@ -381,9 +401,16 @@
         color: var(--tx-hi);
       }
 
-      .fila:focus-visible {
-        outline: 3px solid var(--br-solid);
+      /* #18 §6.4: 2 px de trazo con 2 px de offset — los 3 px no están en la
+         escala. El hueco del offset deja ver la superficie y ES el segundo
+         anillo, que es lo que hace que funcione sobre cualquier fondo. */
+      .fila:focus-visible,
+      .seg button:focus-visible,
+      .swatch:focus-visible,
+      input[type='color']:focus-visible {
+        outline: 2px solid var(--foco);
         outline-offset: 2px;
+        z-index: 1;
       }
 
       /* El tiempo parado es el dato de vistazo: ordena la lista (ADR 0003) */
@@ -984,6 +1011,7 @@
           '--tx-lo': hex.txLo,
           '--br-text': hex.brText,
           '--br-solid': hex.brSolid,
+          '--foco': hex.brSolid,
           '--br-soft': hex.brSoft,
           '--br-on': hex.brOn,
         };
@@ -1089,6 +1117,18 @@
         );
         aplicar();
       });
+
+      // El panel envuelve cuando la ventana es angosta, así que su altura no
+      // se puede escribir a mano: se mide y se publica como custom property
+      // para que scroll-padding-top siga siendo correcto en cualquier ancho.
+      const panel = document.querySelector('.panel');
+      const medirPanel = () =>
+        document.documentElement.style.setProperty(
+          '--alto-panel',
+          `${panel.offsetHeight}px`,
+        );
+      new ResizeObserver(medirPanel).observe(panel);
+      medirPanel();
 
       aplicar();
     </script>
