@@ -167,8 +167,9 @@ describe('KanbanBoard', () => {
       ?.querySelector<HTMLButtonElement>('.ficha__diagnostico-guardar')
       ?.click();
 
-    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-A1-0148')
-      ?.id as string;
+    const ordenId = ordenesStore
+      .entities()
+      .find((o) => o.numero === 'OT-A1-0148')?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.diagnostico !== undefined,
     );
@@ -216,8 +217,9 @@ describe('KanbanBoard', () => {
 
     buscarFicha()?.querySelector<HTMLButtonElement>('.ficha__avanzar')?.click();
 
-    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-A1-0153')
-      ?.id as string;
+    const ordenId = ordenesStore
+      .entities()
+      .find((o) => o.numero === 'OT-A1-0153')?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.estado === 'Entregado',
     );
