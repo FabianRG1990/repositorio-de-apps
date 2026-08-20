@@ -446,6 +446,10 @@
 
       .tiempo small {
         font-size: var(--t-14);
+        /* Sin esto hereda el interlineado en píxeles del dato grande (32 px) y,
+           con su tipo de 14, su medio interlineado empuja la caja de línea a
+           37 px: la fila cómoda medía 77 en vez de los 72 de la escalera. */
+        line-height: 1;
         font-weight: var(--peso-normal);
         color: var(--tx-lo);
         margin-left: var(--space-2);
@@ -722,9 +726,20 @@
         letter-spacing: var(--track-18);
       }
 
-      [data-densidad='a'] .fila-cabecera,
-      [data-densidad='b'] .fila-cabecera {
+      [data-densidad='a'] .fila-cabecera {
         display: contents;
+      }
+
+      /* En la cómoda NO puede ser `display: contents`: .folio no tiene área
+         asignada, así que se auto-colocaba en una tercera fila implícita y la
+         fila medía 88 px en vez de los 72 declarados. Apilado dentro de la
+         columna del tiempo, la escalera 56/72/96 de #18 §6.5 se cumple. */
+      [data-densidad='b'] .fila-cabecera {
+        grid-area: tiempo;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0;
       }
 
       .nota {
