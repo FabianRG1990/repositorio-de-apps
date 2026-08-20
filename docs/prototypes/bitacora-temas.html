@@ -448,8 +448,20 @@
         margin-left: var(--space-2);
       }
 
-      .folio {
+      /* Placa, folio, VIN y nº de parte: se leen como palabra, así que van
+         alineados a la izquierda, pero necesitan que el 0 no se confunda con
+         la O ni la I con la l. `cv08`, `cv05` y `case` no tienen equivalente
+         de alto nivel; el cero cortado sí, y por eso va por
+         font-variant-numeric y no por font-feature-settings (§7.5). */
+      .identificador {
         font-variant-numeric: tabular-nums slashed-zero;
+        font-feature-settings:
+          'cv08' 1,
+          'cv05' 1,
+          'case' 1;
+      }
+
+      .folio {
         color: var(--tx-lo);
         font-size: var(--t-14);
         letter-spacing: var(--track-14);
@@ -1090,9 +1102,12 @@
           <button type="button" class="fila" aria-current="${o.folio === estado.seleccion}">
             <span class="fila-cabecera">
               <span class="tiempo">${tiempoHtml(o.horas)}</span>
-              <span class="folio">${o.folio}</span>
+              <span class="folio identificador">${o.folio}</span>
             </span>
-            <span class="col-titulo titulo">${o.vehiculo} · ${o.placa}</span>
+            <span class="col-titulo titulo"
+              >${o.vehiculo} ·
+              <span class="identificador">${o.placa}</span></span
+            >
             <span class="sub">${o.cliente}</span>
             <span class="esp" style="--esp-h: ${ESPECIALIDAD[o.espKey]}">${o.esp}</span>
             <span class="estado" data-tono="${o.tono}">${o.estado}</span>
