@@ -151,6 +151,7 @@
         color: var(--tx-hi);
         font-size: var(--t-18);
         line-height: var(--i-24);
+        letter-spacing: var(--track-18);
         -webkit-font-smoothing: antialiased;
         transition:
           background 120ms linear,
@@ -179,10 +180,10 @@
       }
 
       .panel__label {
-        font-size: 13px;
-        line-height: 16px;
+        font-size: var(--t-14);
+        line-height: var(--i-16);
         font-weight: var(--peso-fuerte);
-        letter-spacing: 0.04em;
+        letter-spacing: var(--track-14);
         text-transform: uppercase;
         color: var(--tx-lo);
       }
@@ -196,8 +197,9 @@
 
       .seg button {
         font: inherit;
-        font-size: 15px;
-        line-height: 20px;
+        font-size: var(--t-16);
+        line-height: var(--i-24);
+        letter-spacing: 0;
         padding: var(--space-8) var(--space-12);
         min-height: 40px;
         border: 0;
@@ -250,8 +252,9 @@
         margin-left: auto;
         display: flex;
         gap: var(--space-16);
-        font-size: 13px;
-        line-height: 16px;
+        font-size: var(--t-14);
+        line-height: var(--i-16);
+        letter-spacing: var(--track-14);
         font-variant-numeric: tabular-nums;
       }
 
@@ -266,7 +269,7 @@
       }
 
       .medidor b {
-        font-size: 15px;
+        font-size: var(--t-16);
         font-weight: var(--peso-fuerte);
       }
 
@@ -290,10 +293,10 @@
 
       .head h1 {
         margin: 0;
-        font-size: 28px;
-        line-height: 34px;
-        font-weight: var(--peso-bold);
-        letter-spacing: -0.01em;
+        font-size: var(--t-24);
+        line-height: var(--i-32);
+        font-weight: var(--peso-fuerte);
+        letter-spacing: 0;
       }
 
       .head .marca {
@@ -304,13 +307,16 @@
         border-radius: var(--r-full);
         background: var(--br-soft);
         color: var(--br-text);
-        font-size: 14px;
+        font-size: var(--t-14);
+        line-height: var(--i-20);
+        letter-spacing: var(--track-14);
         font-weight: var(--peso-fuerte);
       }
 
       .head .conteo {
         color: var(--tx-lo);
-        font-size: 15px;
+        font-size: var(--t-14);
+        letter-spacing: var(--track-14);
       }
 
       /* ---------------- Lista ---------------- */
@@ -347,12 +353,12 @@
       .tiempo {
         font-variant-numeric: tabular-nums slashed-zero;
         font-weight: var(--peso-bold);
-        letter-spacing: -0.01em;
+        letter-spacing: var(--track-28);
         white-space: nowrap;
       }
 
       .tiempo small {
-        font-size: 0.62em;
+        font-size: var(--t-14);
         font-weight: var(--peso-normal);
         color: var(--tx-lo);
         margin-left: var(--space-2);
@@ -361,12 +367,14 @@
       .folio {
         font-variant-numeric: tabular-nums slashed-zero;
         color: var(--tx-lo);
-        font-size: 14px;
+        font-size: var(--t-14);
+        letter-spacing: var(--track-14);
         font-weight: var(--peso-normal);
       }
 
       .titulo {
         font-weight: var(--peso-fuerte);
+        letter-spacing: var(--track-18);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -374,8 +382,9 @@
 
       .sub {
         color: var(--tx-lo);
-        font-size: 15px;
-        line-height: 20px;
+        font-size: var(--t-14);
+        line-height: var(--i-20);
+        letter-spacing: var(--track-14);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -389,7 +398,9 @@
         gap: var(--space-4);
         padding: var(--space-4) var(--space-12);
         border-radius: var(--r-full);
-        font-size: 16px;
+        font-size: var(--t-16);
+        line-height: var(--i-20);
+        letter-spacing: 0;
         font-weight: var(--peso-fuerte);
         white-space: nowrap;
       }
@@ -435,7 +446,8 @@
         display: inline-flex;
         align-items: center;
         gap: var(--space-4);
-        font-size: 14px;
+        font-size: var(--t-14);
+        letter-spacing: var(--track-14);
         font-weight: var(--peso-fuerte);
         color: var(--tx-lo);
         white-space: nowrap;
@@ -455,7 +467,7 @@
          vistazo. */
 
       [data-densidad='a'] .fila {
-        grid-template-columns: 6rem 5.5rem 1fr auto auto;
+        grid-template-columns: 7rem 5.5rem 1fr auto auto;
         min-height: var(--fila-a);
         padding: 0 var(--space-16);
         border-radius: 0;
@@ -472,7 +484,8 @@
       }
 
       [data-densidad='a'] .tiempo {
-        font-size: 22px;
+        font-size: var(--t-28);
+        line-height: var(--i-32);
       }
 
       [data-densidad='a'] .sub,
@@ -501,7 +514,8 @@
 
       [data-densidad='b'] .tiempo {
         grid-area: tiempo;
-        font-size: 26px;
+        font-size: var(--t-28);
+        line-height: var(--i-32);
       }
       [data-densidad='b'] .col-titulo {
         grid-area: titulo;
@@ -564,13 +578,16 @@
       }
 
       [data-densidad='c'] .tiempo {
-        font-size: 32px;
-        line-height: 36px;
+        font-size: var(--t-36);
+        line-height: var(--i-40);
       }
 
       [data-densidad='c'] .col-titulo {
         grid-area: titulo;
-        font-size: 20px;
+        font-size: var(--t-20);
+        line-height: var(--i-28);
+        font-weight: var(--peso-fuerte);
+        letter-spacing: 0;
       }
 
       [data-densidad='c'] .sub {
@@ -584,8 +601,9 @@
         padding-top: var(--space-8);
         border-top: 1px solid var(--bd-soft);
         color: var(--tx-lo);
-        font-size: 16px;
-        line-height: 22px;
+        font-size: var(--t-18);
+        line-height: var(--i-24);
+        letter-spacing: var(--track-18);
       }
 
       [data-densidad='a'] .fila-cabecera,
@@ -599,8 +617,8 @@
         border-left: 3px solid var(--br-solid);
         background: var(--sf-2);
         border-radius: 0 var(--r-8) var(--r-8) 0;
-        font-size: 15px;
-        line-height: 22px;
+        font-size: var(--t-16);
+        line-height: var(--i-24);
         color: var(--tx-lo);
         max-width: 66ch;
       }
