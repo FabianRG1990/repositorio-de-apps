@@ -128,21 +128,41 @@
            recoge #18 reserva la saturación a la condición anormal, para que
            una alarma salte contra una pantalla por lo demás tranquila. Si la
            marca pudiera pintarlos, "atrasado" dejaría de saltar. */
-        --ok: #0f7a4a;
-        --ok-soft: #e3f5eb;
-        --wait: #8a5a00;
-        --wait-soft: #fdf1dc;
-        --risk: #a8242c;
-        --risk-soft: #fbe6e7;
+        /* La L de cada rol está resuelta contra su objetivo, no elegida a
+           ojo: el texto da 7:1 sobre el fondo del propio chip y el borde 3:1
+           sobre la ficha. #18 §6.7 pide las dos cosas y el borde no existía,
+           así que la píldora —que es la mitad "forma" del color+forma+texto—
+           era invisible como forma. El tema claro era el peor de los dos. */
+        --ok: oklch(0.423 0.101 156.8);
+        --ok-soft: oklch(0.954 0.023 156.8);
+        --ok-bd: oklch(0.645 0.09 156.8);
+        --wait: oklch(0.442 0.094 73.3);
+        --wait-soft: oklch(0.962 0.031 73.3);
+        --wait-bd: oklch(0.659 0.09 73.3);
+        --risk: oklch(0.443 0.167 23.4);
+        --risk-soft: oklch(0.942 0.023 23.4);
+        --risk-bd: oklch(0.666 0.09 23.4);
+
+        /* Especialidad: es una categoría, no un estado ni una identidad. La L
+           se separa por tema como los semánticos — en oscuro los tres se
+           quedaban por debajo de 4,5:1 y la eléctrica rozaba el mínimo. */
+        --esp-l: 0.545;
+        --esp-c: 0.09;
       }
 
       :root[data-tema='oscuro'] {
-        --ok-soft: #0d2a1d;
-        --wait-soft: #2b2007;
-        --risk-soft: #2e1113;
-        --ok: #5cd39a;
-        --wait: #e0a94a;
-        --risk: #f2848c;
+        --ok: oklch(0.737 0.136 159.9);
+        --ok-soft: oklch(0.258 0.043 159.9);
+        --ok-bd: oklch(0.521 0.09 159.9);
+        --wait: oklch(0.746 0.128 78.3);
+        --wait-soft: oklch(0.251 0.042 78.3);
+        --wait-bd: oklch(0.535 0.09 78.3);
+        --risk: oklch(0.736 0.134 16.3);
+        --risk-soft: oklch(0.223 0.048 16.3);
+        --risk-bd: oklch(0.543 0.09 16.3);
+
+        --esp-l: 0.635;
+        --esp-c: 0.106;
       }
 
       * {
@@ -467,18 +487,24 @@
         letter-spacing: 0;
         font-weight: var(--peso-fuerte);
         white-space: nowrap;
+        border: 1px solid transparent;
       }
 
+      /* ANSI/HFES 100-2007 §7.2.6.2: un carácter se lee COMO color a partir
+         de 20 minutos de arco y solo se DISCRIMINA a partir de 30. A 45 cm eso
+         son ~15-20 px y ~23-30 px. Con 10 px el triángulo, el rombo y el
+         círculo que distinguen los tres estados no se distinguían de nada. */
       .estado::before {
         content: '';
-        width: 10px;
-        height: 10px;
+        width: var(--space-20);
+        height: var(--space-20);
         flex: none;
       }
 
       .estado[data-tono='ok'] {
         background: var(--ok-soft);
         color: var(--ok);
+        border-color: var(--ok-bd);
       }
       .estado[data-tono='ok']::before {
         background: currentColor;
@@ -488,6 +514,7 @@
       .estado[data-tono='wait'] {
         background: var(--wait-soft);
         color: var(--wait);
+        border-color: var(--wait-bd);
       }
       .estado[data-tono='wait']::before {
         background: currentColor;
@@ -497,6 +524,7 @@
       .estado[data-tono='risk'] {
         background: var(--risk-soft);
         color: var(--risk);
+        border-color: var(--risk-bd);
       }
       .estado[data-tono='risk']::before {
         background: currentColor;
@@ -519,10 +547,10 @@
 
       .esp::before {
         content: '';
-        width: 8px;
-        height: 8px;
-        border-radius: 2px;
-        background: var(--esp);
+        width: var(--space-20);
+        height: var(--space-20);
+        border-radius: var(--r-4);
+        background: oklch(var(--esp-l) var(--esp-c) var(--esp-h));
       }
 
       /* ================= DENSIDAD A — Compacta =================
@@ -942,11 +970,15 @@
           sf3: { L: 0.918, c: 0.006 },
           sfSel: { L: 0.932, c: 0.045 },
           sfSelHover: { L: 0.906, c: 0.045 },
-          // Medido: con L 0.72 el borde daba 2,5:1 y no llegaba al mínimo
-          // duro de 3:1. Bajarlo a 0.62 es lo que lo hace visible de verdad.
-          bd: { L: 0.62, c: 0.014 },
+          // Resuelto contra el OBJETIVO de 4,5:1, no contra el mínimo de 3:1
+          // con el que se había calibrado. Los valores son el peor caso sobre
+          // los 360 matices de marca posibles, no sobre el azul por defecto.
+          bd: { L: 0.56, c: 0.014 },
           txHi: { L: 0.22, c: 0.01 },
-          txLo: { L: 0.47, c: 0.012 },
+          // 0.47 daba 6,83:1 contra un objetivo de 7:1, y el cliente de ese
+          // paso es texto de datos. El paso respecto al primario se compra
+          // subiendo el primario, no bajando este (§5.1).
+          txLo: { L: 0.46, c: 0.012 },
           brText: { L: 0.45, c: null },
           brSolid: { L: 0.52, c: null },
           brSoft: { L: 0.94, c: 0.05 },
@@ -962,8 +994,8 @@
           sf3: { L: 0.311, c: 0.012 },
           sfSel: { L: 0.3, c: 0.045 },
           sfSelHover: { L: 0.322, c: 0.045 },
-          // Mismo ajuste que en claro: 0.46 daba 2,3:1 contra la ficha.
-          bd: { L: 0.6, c: 0.018 },
+          // Mismo ajuste que en claro, contra el objetivo de 4,5:1.
+          bd: { L: 0.62, c: 0.018 },
           txHi: { L: 0.96, c: 0.006 },
           txLo: { L: 0.74, c: 0.012 },
           brText: { L: 0.8, c: null },
@@ -1024,10 +1056,14 @@
       // El panel muestra los ratios reales contra los objetivos de #18:
       // 7:1 en cuerpo y datos, 4,5:1 en bordes e indicadores.
       function medir(hex) {
+        // La tabla de #18 §6.2 tiene dos columnas, objetivo y mínimo tolerado.
+        // El medidor usaba la segunda: daba por aprobado un 6,8:1 en texto de
+        // datos cuyo objetivo declarado era 7:1, y un borde de 3,6:1 contra un
+        // objetivo de 4,5. Se compara contra el objetivo.
         const filas = [
           ['Texto', contraste(hex.txHi, hex.sf1), 7],
-          ['Secundario', contraste(hex.txLo, hex.sf1), 4.5],
-          ['Borde', contraste(hex.bd, hex.sf1), 3],
+          ['Secundario', contraste(hex.txLo, hex.sf1), 7],
+          ['Borde', contraste(hex.bd, hex.sf1), 4.5],
           ['Marca', contraste(hex.brSolid, hex.sf1), 4.5],
         ];
         document.getElementById('medidor').innerHTML = filas
@@ -1058,7 +1094,7 @@
             </span>
             <span class="col-titulo titulo">${o.vehiculo} · ${o.placa}</span>
             <span class="sub">${o.cliente}</span>
-            <span class="esp" style="--esp: oklch(0.55 0.14 ${ESPECIALIDAD[o.espKey]})">${o.esp}</span>
+            <span class="esp" style="--esp-h: ${ESPECIALIDAD[o.espKey]}">${o.esp}</span>
             <span class="estado" data-tono="${o.tono}">${o.estado}</span>
             <span class="detalle">${o.detalle}</span>
           </button>`,
