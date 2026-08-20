@@ -332,7 +332,6 @@
         align-items: center;
         gap: var(--space-16);
         background: var(--sf-1);
-        border: 1px solid var(--bd-soft);
         color: inherit;
         text-align: left;
         font: inherit;
@@ -466,17 +465,22 @@
          desplazar. Para el asesor que quiere el taller entero de un
          vistazo. */
 
+      /* Sin borde, lo que separa una fila de la siguiente es el fondo que
+         asoma por el hueco: el escalón ficha/fondo mide 1,11:1, casi el mismo
+         `surface`→`surface-container` de Material 3. Dos píxeles bastan. */
+      [data-densidad='a'] .lista {
+        gap: var(--space-2);
+      }
+
       [data-densidad='a'] .fila {
         grid-template-columns: 7rem 5.5rem 1fr auto auto;
         min-height: var(--fila-a);
         padding: 0 var(--space-16);
         border-radius: 0;
-        margin-top: -1px;
       }
 
       [data-densidad='a'] .fila:first-child {
         border-radius: var(--r-8) var(--r-8) 0 0;
-        margin-top: 0;
       }
 
       [data-densidad='a'] .fila:last-child {
@@ -553,7 +557,10 @@
         padding: var(--space-16);
         border-radius: var(--r-12);
         gap: var(--space-8);
-        border-width: 2px;
+        /* Fórmula concéntrica (§7.4): radio_interno = radio_externo − padding.
+           Acá 12 − 16 < 0, así que todo lo que se anide va a esquina recta.
+           Hoy no hay nada rectangular dentro; queda fijado antes de que lo haya. */
+        --r-anidado: max(0px, calc(var(--r-12) - var(--space-16)));
       }
 
       /* Sin esto el chip se estira a todo el ancho de la tarjeta y deja de
@@ -598,8 +605,9 @@
       [data-densidad='c'] .detalle {
         grid-area: detalle;
         display: block;
-        padding-top: var(--space-8);
-        border-top: 1px solid var(--bd-soft);
+        /* §7.3: la sección se separa con espacio, no con regla. El salto de
+           8 px de gap a 16 px de padding es la proporción que hace el corte. */
+        padding-top: var(--space-16);
         color: var(--tx-lo);
         font-size: var(--t-18);
         line-height: var(--i-24);
@@ -614,9 +622,8 @@
       .nota {
         margin: 0 var(--space-24) var(--space-32);
         padding: var(--space-16);
-        border-left: 3px solid var(--br-solid);
-        background: var(--sf-2);
-        border-radius: 0 var(--r-8) var(--r-8) 0;
+        background: var(--br-soft);
+        border-radius: var(--r-8);
         font-size: var(--t-16);
         line-height: var(--i-24);
         color: var(--tx-lo);
@@ -854,7 +861,6 @@
           // Medido: con L 0.72 el borde daba 2,5:1 y no llegaba al mínimo
           // duro de 3:1. Bajarlo a 0.62 es lo que lo hace visible de verdad.
           bd: { L: 0.62, c: 0.014 },
-          bdSoft: { L: 0.62, c: 0.014 },
           txHi: { L: 0.22, c: 0.01 },
           txLo: { L: 0.47, c: 0.012 },
           brText: { L: 0.45, c: null },
@@ -869,7 +875,6 @@
           sf2: { L: 0.28, c: 0.012 },
           // Mismo ajuste que en claro: 0.46 daba 2,3:1 contra la ficha.
           bd: { L: 0.6, c: 0.018 },
-          bdSoft: { L: 0.6, c: 0.018 },
           txHi: { L: 0.96, c: 0.006 },
           txLo: { L: 0.74, c: 0.012 },
           brText: { L: 0.8, c: null },
@@ -909,7 +914,6 @@
           '--sf-1': hex.sf1,
           '--sf-2': hex.sf2,
           '--bd': hex.bd,
-          '--bd-soft': hex.bdSoft,
           '--tx-hi': hex.txHi,
           '--tx-lo': hex.txLo,
           '--br-text': hex.brText,
