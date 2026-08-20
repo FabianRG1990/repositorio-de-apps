@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+/* Tema base de Angular Material. Los valores concretos —paleta, densidad,
+   tipografía— los fija el ticket de la doble piel (#79); esto es solo lo
+   mínimo para que los componentes de Material tengan tokens y no salgan sin
+   estilar. Moofy VIP declara aquí `typography: Roboto` y `density: 0`. */
+html {
+  @include mat.theme(
+    (
+      // Sin la clave `color`, mat.theme() emite SOLO tokens de tipografía y
+      // ningún --mat-sys-surface / --mat-sys-primary: los componentes salen
+      // con fondo transparente y parece que el tema no cargó. La paleta
+      // concreta la elige #79; esta es un valor de arranque, no una decisión.
+      color: (primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+      typography: Roboto,
+      density: 0
+    )
+  );
+
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-family: var(--mat-sys-body-medium-font, Roboto, sans-serif);
+}

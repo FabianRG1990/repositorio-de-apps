@@ -1,0 +1,19 @@
+/* Placeholder: el sistema visual lo fija #79. Solo lo justo para que las
+   filas del diagnóstico se lean. */
+.diagnostico {
+  max-width: 34rem;
+  margin: 1.5rem;
+}
+
+.diagnostico__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.diagnostico__fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
