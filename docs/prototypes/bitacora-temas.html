@@ -4,13 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Bitácora — temas, densidad y marca del taller</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- crossorigin es obligatorio aunque el archivo sea del mismo origen: las
+         fuentes se piden siempre en modo CORS anónimo y sin el atributo el
+         preload no coincide con la petición real, así que se descarga dos veces. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      href="./fonts/InterVariable-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
     <style>
+      /* Inter Variable 4.1 · self-hosted · subset latin (87 544 B).
+         Ver docs/prototypes/fonts/README.md para el porqué y el comando. */
+      @font-face {
+        font-family: 'InterVariable';
+        font-style: normal;
+        /* El RANGO es obligatorio. CSS Fonts 4 §7.2 recorta el peso pedido al
+           descriptor del @font-face: con un valor único, `font-weight: 590`
+           se convierte en 400 en silencio. */
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('./fonts/InterVariable-latin.woff2') format('woff2');
+      }
       /* ------------------------------------------------------------------
          PROTOTIPO DESECHABLE — ticket #70. No es código de producción.
          Responde tres preguntas: ¿cómo se ven claro y oscuro?, ¿qué separa
@@ -31,7 +47,18 @@
          de color (OKLCH es perceptualmente uniforme en L). */
 
       :root {
-        --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font:
+          'InterVariable', system-ui, -apple-system, 'Segoe UI', Roboto,
+          sans-serif;
+
+        /* Escala de pesos de #18 §6.1. El 510/590/680 sale de Linear; ojo con
+           la etiqueta: son los pesos de su SITIO, no de su aplicación, que
+           declara 300/450/500/600/700. El 590 se conserva como opción a
+           decidir mirándolo en pantalla, no por respaldo citable. */
+        --peso-normal: 400;
+        --peso-medio: 510;
+        --peso-fuerte: 590;
+        --peso-bold: 680;
 
         /* Escala de espaciado base 8 (#18 §6.3) */
         --e1: 4px;
@@ -72,6 +99,9 @@
       body {
         margin: 0;
         font-family: var(--font);
+        /* Sin negritas sintéticas: si la fuente no carga, el fallback usa sus
+           propios pesos reales en vez de engordar los trazos por software. */
+        font-synthesis-weight: none;
         background: var(--bg-1);
         color: var(--tx-hi);
         font-size: 18px;
@@ -106,7 +136,7 @@
       .panel__label {
         font-size: 13px;
         line-height: 16px;
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--tx-lo);
@@ -138,7 +168,7 @@
       .seg button[aria-pressed='true'] {
         background: var(--br-solid);
         color: var(--br-on);
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
       }
 
       .swatches {
@@ -192,7 +222,7 @@
 
       .medidor b {
         font-size: 15px;
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
       }
 
       .pasa {
@@ -217,7 +247,7 @@
         margin: 0;
         font-size: 28px;
         line-height: 34px;
-        font-weight: 700;
+        font-weight: var(--peso-bold);
         letter-spacing: -0.01em;
       }
 
@@ -230,7 +260,7 @@
         background: var(--br-soft);
         color: var(--br-text);
         font-size: 14px;
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
       }
 
       .head .conteo {
@@ -271,14 +301,14 @@
       /* El tiempo parado es el dato de vistazo: ordena la lista (ADR 0003) */
       .tiempo {
         font-variant-numeric: tabular-nums slashed-zero;
-        font-weight: 700;
+        font-weight: var(--peso-bold);
         letter-spacing: -0.01em;
         white-space: nowrap;
       }
 
       .tiempo small {
         font-size: 0.62em;
-        font-weight: 500;
+        font-weight: var(--peso-normal);
         color: var(--tx-lo);
         margin-left: 2px;
       }
@@ -287,11 +317,11 @@
         font-variant-numeric: tabular-nums slashed-zero;
         color: var(--tx-lo);
         font-size: 14px;
-        font-weight: 500;
+        font-weight: var(--peso-normal);
       }
 
       .titulo {
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -315,7 +345,7 @@
         padding: 4px 12px;
         border-radius: var(--r-full);
         font-size: 16px;
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
         white-space: nowrap;
       }
 
@@ -361,7 +391,7 @@
         align-items: center;
         gap: 6px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: var(--peso-fuerte);
         color: var(--tx-lo);
         white-space: nowrap;
       }
