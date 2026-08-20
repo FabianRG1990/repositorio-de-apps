@@ -443,6 +443,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@angular/cdk@npm:~22.0.7":
+  version: 22.0.7
+  resolution: "@angular/cdk@npm:22.0.7"
+  dependencies:
+    parse5: "npm:^8.0.0"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/common": ^22.0.0 || ^23.0.0
+    "@angular/core": ^22.0.0 || ^23.0.0
+    "@angular/platform-browser": ^22.0.0 || ^23.0.0
+    rxjs: ^6.5.3 || ^7.4.0
+  checksum: 10c0/e2bfa35f37cc7afac66748e3a323acf3e89949130f1b94e2106df66edcb5f6d0cecb7382b71d9fdf634ae8375255471eaa79e6b31a23733d2a53cf10131e4c56
+  languageName: node
+  linkType: hard
+
 "@angular/cli@npm:~22.0.4":
   version: 22.0.9
   resolution: "@angular/cli@npm:22.0.9"
@@ -555,6 +570,22 @@ __metadata:
   version: 22.0.8
   resolution: "@angular/language-service@npm:22.0.8"
   checksum: 10c0/1037ea98f4fdff1208d291c4f354089abeabc1d6860bfcaf08a9d0c02a3d4d0a040c2f5720126a5323fba9527026c2930dc90c066f2d610760af86ca13933182
+  languageName: node
+  linkType: hard
+
+"@angular/material@npm:~22.0.7":
+  version: 22.0.7
+  resolution: "@angular/material@npm:22.0.7"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/cdk": 22.0.7
+    "@angular/common": ^22.0.0 || ^23.0.0
+    "@angular/core": ^22.0.0 || ^23.0.0
+    "@angular/forms": ^22.0.0 || ^23.0.0
+    "@angular/platform-browser": ^22.0.0 || ^23.0.0
+    rxjs: ^6.5.3 || ^7.4.0
+  checksum: 10c0/cc5aa81b1cba3a63dd309ad7654975d22c945055890de38d23a0cd4e85aebae0db6e25758219da0b455d08267e9aedbae626cecab6a6f7a07d3814d9f3df6543
   languageName: node
   linkType: hard
 
@@ -2278,6 +2309,70 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fortawesome/angular-fontawesome@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "@fortawesome/angular-fontawesome@npm:5.1.0"
+  dependencies:
+    "@fortawesome/fontawesome-svg-core": "npm:^7.3.0"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    "@angular/core": ^22.0.0
+  checksum: 10c0/84656b44192b8d5176ecd4d09de1e429c41ba9301e582e4591446e5612daa7fa3c709dcadd9d51a6ef582cac7c33467863ebd465162d66bd21d2ea2f7d97125e
+  languageName: node
+  linkType: hard
+
+"@fortawesome/fontawesome-common-types@npm:7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/fontawesome-common-types@npm:7.3.1"
+  checksum: 10c0/f443a0109773e57ceab3c35021c4f26baf8c29afc79efbea2324bcd9f7dd326f5ac415e46ead17eaf6e935bc23fce83993d4211a4cff375c19100ee65ea9e5cc
+  languageName: node
+  linkType: hard
+
+"@fortawesome/fontawesome-svg-core@npm:^7.3.0, @fortawesome/fontawesome-svg-core@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/fontawesome-svg-core@npm:7.3.1"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:7.3.1"
+  checksum: 10c0/07c84a5751999d13d875f63e059ec2b0ab6dbed9cfe363fe8a870fd64e045c049367ae55bdee18973b38255967593d6eef403170a1e70cf4400de8216a932654
+  languageName: node
+  linkType: hard
+
+"@fortawesome/free-brands-svg-icons@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/free-brands-svg-icons@npm:7.3.1"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:7.3.1"
+  checksum: 10c0/ae9049f450a64166f02e6a199b0c87786899a0d49e114994da85b8ccf906466543510d0e3e63fdb945eac00e0b81b0c2e274d54f06a605767a1e8503bdea344e
+  languageName: node
+  linkType: hard
+
+"@fortawesome/pro-light-svg-icons@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/pro-light-svg-icons@npm:7.3.1"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:7.3.1"
+  checksum: 10c0/9dc810b9a989206bac0ed31dcc85c112e87b2de56443514c17e8f87718b2144d675220a45690fa4d8f7647b23dc52ea1e49503a401bdf9001ba3ec476593bbbd
+  languageName: node
+  linkType: hard
+
+"@fortawesome/pro-regular-svg-icons@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/pro-regular-svg-icons@npm:7.3.1"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:7.3.1"
+  checksum: 10c0/8c5d0999d151d45deed034340c0aca46ee28dafd78617ded8d2fb0facc0e6b4232318ce3627b151d418b075b59868691a84f45616c97997831aa75e349421221
+  languageName: node
+  linkType: hard
+
+"@fortawesome/pro-solid-svg-icons@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@fortawesome/pro-solid-svg-icons@npm:7.3.1"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": "npm:7.3.1"
+  checksum: 10c0/ff091d713aeebb5d826b73a6db184899ce1789ae7aadbe858e85cba363bcd9f98e20408bb1d78eb38af04ecf778e751ea54d9d7c9dcaa1f671523f7bbdaaf3fa
+  languageName: node
+  linkType: hard
+
 "@gar/promise-retry@npm:^1.0.0, @gar/promise-retry@npm:^1.0.2":
   version: 1.0.3
   resolution: "@gar/promise-retry@npm:1.0.3"
@@ -3293,6 +3388,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ng-icons/core@npm:^35.0.1":
+  version: 35.0.1
+  resolution: "@ng-icons/core@npm:35.0.1"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular-devkit/schematics": ">=22.0.0"
+    "@angular/common": ">=22.0.0"
+    "@angular/core": ">=22.0.0"
+    "@schematics/angular": ">=22.0.0"
+    rxjs: ^6.5.3 || ^7.4.0
+  checksum: 10c0/927fc6ffbad092f50b6814e724f758e9d9db6376df6451e98a53a063569ae41e3d1988e2bbaba6f9f09f5b52c72f6cc86d29f6c236022970339e5a9b8a682acc
+  languageName: node
+  linkType: hard
+
+"@ng-icons/phosphor-icons@npm:^35.0.1":
+  version: 35.0.1
+  resolution: "@ng-icons/phosphor-icons@npm:35.0.1"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  checksum: 10c0/495ed1e01d8115bb1089d9ac51a2ca21d7e2ad7d6b3c2e37b3c1ca3cddaeafda6a1e47d958c948d37dea34b2840fc3ae0f6850439165474c00d4600fb641bb38
+  languageName: node
+  linkType: hard
+
 "@ngrx/signals@npm:22.0.0-beta.0":
   version: 22.0.0-beta.0
   resolution: "@ngrx/signals@npm:22.0.0-beta.0"
@@ -4128,6 +4247,7 @@ __metadata:
     "@angular-devkit/core": "npm:~22.0.4"
     "@angular-devkit/schematics": "npm:~22.0.4"
     "@angular/build": "npm:~22.0.4"
+    "@angular/cdk": "npm:~22.0.7"
     "@angular/cli": "npm:~22.0.4"
     "@angular/common": "npm:~22.0.4"
     "@angular/compiler": "npm:~22.0.4"
@@ -4135,9 +4255,18 @@ __metadata:
     "@angular/core": "npm:~22.0.4"
     "@angular/forms": "npm:~22.0.4"
     "@angular/language-service": "npm:~22.0.4"
+    "@angular/material": "npm:~22.0.7"
     "@angular/platform-browser": "npm:~22.0.4"
     "@angular/router": "npm:~22.0.4"
     "@eslint/js": "npm:^9.8.0"
+    "@fortawesome/angular-fontawesome": "npm:^5.1.0"
+    "@fortawesome/fontawesome-svg-core": "npm:^7.3.1"
+    "@fortawesome/free-brands-svg-icons": "npm:^7.3.1"
+    "@fortawesome/pro-light-svg-icons": "npm:^7.3.1"
+    "@fortawesome/pro-regular-svg-icons": "npm:^7.3.1"
+    "@fortawesome/pro-solid-svg-icons": "npm:^7.3.1"
+    "@ng-icons/core": "npm:^35.0.1"
+    "@ng-icons/phosphor-icons": "npm:^35.0.1"
     "@ngrx/signals": "npm:22.0.0-beta.0"
     "@nx/angular": "npm:23.1.0"
     "@nx/devkit": "npm:23.1.0"
