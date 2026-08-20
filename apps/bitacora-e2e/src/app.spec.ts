@@ -58,4 +58,31 @@ test.describe('diagnóstico de la pila de UI', () => {
     );
     expect(fondo).not.toBe('rgba(0, 0, 0, 0)');
   });
+
+  test('PrimeNG renderiza con el preset Aura', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.locator('[data-prueba="p-tag"]')).toBeVisible();
+    const boton = page.locator('[data-prueba="p-button"] button');
+    await expect(boton).toBeVisible();
+
+    // Sin preset, el botón de PrimeNG queda sin fondo.
+    const fondo = await boton.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+    expect(fondo).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  // Se habilita en cuanto haya clave de licencia. PrimeNG 22 inyecta un banner
+  // rojo fijo "Invalid PrimeUI License" abajo a la derecha cuando no la
+  // encuentra —en shadow root cerrado y con z-index máximo, hecho a propósito
+  // para que no se pueda ocultar por CSS—. En una demo de venta eso no puede
+  // aparecer, así que la ausencia del banner merece prueba permanente.
+  test.fixme('no aparece el banner de licencia de PrimeUI', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    await expect(page.locator('#p-license-host')).toHaveCount(0);
+  });
 });

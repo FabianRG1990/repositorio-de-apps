@@ -63,7 +63,9 @@
     "@ng-icons/core": "^35.0.1",
     "@ng-icons/phosphor-icons": "^35.0.1",
     "@ngrx/signals": "22.0.0-beta.0",
+    "@primeuix/themes": "3.0.0",
     "idb": "8.0.3",
+    "primeng": "22.0.0",
     "rxjs": "~7.8.0"
   }
 }
