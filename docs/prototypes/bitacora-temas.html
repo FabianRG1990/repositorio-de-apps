@@ -60,16 +60,61 @@
         --peso-fuerte: 590;
         --peso-bold: 680;
 
-        /* Escala de espaciado base 8 (#18 §6.3) */
-        --e1: 4px;
-        --e2: 8px;
-        --e3: 16px;
-        --e4: 24px;
-        --e5: 32px;
+        /* Perilla del "modo taller" (#18 §6.1). Multiplica la base SIN pisar
+           la preferencia del navegador: `100%` es lo que el usuario tenga
+           configurado, así que el zoom del 200 % sigue funcionando encima. */
+        --scale: 1;
+        font-size: calc(100% * var(--scale));
 
-        --r-sm: 8px;
-        --r-md: 12px;
+        /* Escala tipográfica de #18 §6.1, en rem sobre base 16 px. En px el
+           texto no crecía al subir el tamaño base: fallo de SC 1.4.4 (200 %). */
+        --t-14: 0.875rem;
+        --t-16: 1rem;
+        --t-18: 1.125rem;
+        --t-20: 1.25rem;
+        --t-24: 1.5rem;
+        --t-28: 1.75rem;
+        --t-36: 2.25rem;
+
+        --i-16: 1rem;
+        --i-20: 1.25rem;
+        --i-24: 1.5rem;
+        --i-28: 1.75rem;
+        --i-32: 2rem;
+        --i-40: 2.5rem;
+
+        /* Tracking (#18 §6.1): positivo en tamaños chicos, cero de 20 a 24,
+           negativo solo a partir de 28. Expresado en em para que acompañe al
+           tamaño. +0,16 px sobre 14 = 0,0114 em; +0,1 px sobre 18 = 0,0056 em. */
+        --track-14: 0.0114em;
+        --track-18: 0.0056em;
+        --track-28: -0.02em;
+
+        /* Escala de espaciado base 4 (#18 §6.3), nombrada por valor */
+        --space-2: 0.125rem;
+        --space-4: 0.25rem;
+        --space-8: 0.5rem;
+        --space-12: 0.75rem;
+        --space-16: 1rem;
+        --space-20: 1.25rem;
+        --space-24: 1.5rem;
+        --space-32: 2rem;
+        --space-40: 2.5rem;
+        --space-48: 3rem;
+
+        /* Radios (#18 §6.4). La píldora es otro tipo de forma, no un
+           rectángulo de radio grande: no participa de la concentricidad. */
+        --r-4: 0.25rem;
+        --r-8: 0.5rem;
+        --r-12: 0.75rem;
         --r-full: 999px;
+
+        /* Alturas de fila (#18 §6.5) y piso de control táctil */
+        --fila-a: 3.5rem;
+        --fila-b: 4.5rem;
+        --fila-c: 6rem;
+        --control-min: 3rem;
+        --control: 3.5rem;
 
         /* Semánticos: NO se personalizan nunca. El principio ISA-101 que
            recoge #18 reserva la saturación a la condición anormal, para que
@@ -104,8 +149,8 @@
         font-synthesis-weight: none;
         background: var(--bg-1);
         color: var(--tx-hi);
-        font-size: 18px;
-        line-height: 24px;
+        font-size: var(--t-18);
+        line-height: var(--i-24);
         -webkit-font-smoothing: antialiased;
         transition:
           background 120ms linear,
@@ -120,9 +165,9 @@
         z-index: 20;
         display: flex;
         flex-wrap: wrap;
-        gap: var(--e3);
+        gap: var(--space-16);
         align-items: center;
-        padding: var(--e3) var(--e4);
+        padding: var(--space-16) var(--space-24);
         background: var(--bg-2);
         border-bottom: 1px solid var(--bd);
       }
@@ -130,7 +175,7 @@
       .panel__grupo {
         display: flex;
         align-items: center;
-        gap: var(--e2);
+        gap: var(--space-8);
       }
 
       .panel__label {
@@ -145,7 +190,7 @@
       .seg {
         display: flex;
         border: 1px solid var(--bd);
-        border-radius: var(--r-sm);
+        border-radius: var(--r-8);
         overflow: hidden;
       }
 
@@ -153,7 +198,7 @@
         font: inherit;
         font-size: 15px;
         line-height: 20px;
-        padding: 8px 14px;
+        padding: var(--space-8) var(--space-12);
         min-height: 40px;
         border: 0;
         background: var(--sf-1);
@@ -173,13 +218,13 @@
 
       .swatches {
         display: flex;
-        gap: var(--e1);
+        gap: var(--space-4);
       }
 
       .swatch {
         width: 34px;
         height: 34px;
-        border-radius: var(--r-sm);
+        border-radius: var(--r-8);
         border: 2px solid transparent;
         cursor: pointer;
         padding: 0;
@@ -194,7 +239,7 @@
         height: 34px;
         padding: 0;
         border: 1px solid var(--bd);
-        border-radius: var(--r-sm);
+        border-radius: var(--r-8);
         background: none;
         cursor: pointer;
       }
@@ -204,7 +249,7 @@
       .medidor {
         margin-left: auto;
         display: flex;
-        gap: var(--e3);
+        gap: var(--space-16);
         font-size: 13px;
         line-height: 16px;
         font-variant-numeric: tabular-nums;
@@ -213,7 +258,7 @@
       .medidor div {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: var(--space-2);
       }
 
       .medidor span:first-child {
@@ -236,10 +281,10 @@
       /* ---------------- Cabecera ---------------- */
 
       .head {
-        padding: var(--e4) var(--e4) var(--e3);
+        padding: var(--space-24) var(--space-24) var(--space-16);
         display: flex;
         align-items: baseline;
-        gap: var(--e3);
+        gap: var(--space-16);
         flex-wrap: wrap;
       }
 
@@ -254,8 +299,8 @@
       .head .marca {
         display: inline-flex;
         align-items: center;
-        gap: var(--e2);
-        padding: 6px 12px;
+        gap: var(--space-8);
+        padding: var(--space-4) var(--space-12);
         border-radius: var(--r-full);
         background: var(--br-soft);
         color: var(--br-text);
@@ -271,7 +316,7 @@
       /* ---------------- Lista ---------------- */
 
       .lista {
-        padding: 0 var(--e4) var(--e5);
+        padding: 0 var(--space-24) var(--space-32);
         display: flex;
         flex-direction: column;
       }
@@ -279,7 +324,7 @@
       .fila {
         display: grid;
         align-items: center;
-        gap: var(--e3);
+        gap: var(--space-16);
         background: var(--sf-1);
         border: 1px solid var(--bd-soft);
         color: inherit;
@@ -310,7 +355,7 @@
         font-size: 0.62em;
         font-weight: var(--peso-normal);
         color: var(--tx-lo);
-        margin-left: 2px;
+        margin-left: var(--space-2);
       }
 
       .folio {
@@ -341,8 +386,8 @@
       .estado {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
+        gap: var(--space-4);
+        padding: var(--space-4) var(--space-12);
         border-radius: var(--r-full);
         font-size: 16px;
         font-weight: var(--peso-fuerte);
@@ -389,7 +434,7 @@
       .esp {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--space-4);
         font-size: 14px;
         font-weight: var(--peso-fuerte);
         color: var(--tx-lo);
@@ -410,20 +455,20 @@
          vistazo. */
 
       [data-densidad='a'] .fila {
-        grid-template-columns: 96px 88px 1fr auto auto;
-        min-height: 56px;
-        padding: 0 var(--e3);
+        grid-template-columns: 6rem 5.5rem 1fr auto auto;
+        min-height: var(--fila-a);
+        padding: 0 var(--space-16);
         border-radius: 0;
         margin-top: -1px;
       }
 
       [data-densidad='a'] .fila:first-child {
-        border-radius: var(--r-sm) var(--r-sm) 0 0;
+        border-radius: var(--r-8) var(--r-8) 0 0;
         margin-top: 0;
       }
 
       [data-densidad='a'] .fila:last-child {
-        border-radius: 0 0 var(--r-sm) var(--r-sm);
+        border-radius: 0 0 var(--r-8) var(--r-8);
       }
 
       [data-densidad='a'] .tiempo {
@@ -440,17 +485,17 @@
          Es el punto medio y el predeterminado. */
 
       [data-densidad='b'] .lista {
-        gap: var(--e2);
+        gap: var(--space-8);
       }
 
       [data-densidad='b'] .fila {
-        grid-template-columns: 108px 1fr auto auto;
+        grid-template-columns: 6.75rem 1fr auto auto;
         grid-template-areas:
           'tiempo titulo esp estado'
           'tiempo sub    esp estado';
-        min-height: 72px;
-        padding: var(--e2) var(--e3);
-        border-radius: var(--r-md);
+        min-height: var(--fila-b);
+        padding: var(--space-8) var(--space-16);
+        border-radius: var(--r-12);
         row-gap: 0;
       }
 
@@ -479,7 +524,7 @@
          48/56/72–80 px de área táctil con guante. Para tablet en el patio. */
 
       [data-densidad='c'] .lista {
-        gap: var(--e3);
+        gap: var(--space-16);
       }
 
       [data-densidad='c'] .fila {
@@ -490,10 +535,10 @@
           'sub      sub'
           'esp      estado'
           'detalle  detalle';
-        min-height: 96px;
-        padding: var(--e3);
-        border-radius: var(--r-md);
-        gap: var(--e2);
+        min-height: var(--fila-c);
+        padding: var(--space-16);
+        border-radius: var(--r-12);
+        gap: var(--space-8);
         border-width: 2px;
       }
 
@@ -514,7 +559,7 @@
         grid-area: cabecera;
         display: flex;
         align-items: center;
-        gap: var(--e3);
+        gap: var(--space-16);
         flex-wrap: wrap;
       }
 
@@ -536,7 +581,7 @@
       [data-densidad='c'] .detalle {
         grid-area: detalle;
         display: block;
-        padding-top: var(--e2);
+        padding-top: var(--space-8);
         border-top: 1px solid var(--bd-soft);
         color: var(--tx-lo);
         font-size: 16px;
@@ -549,11 +594,11 @@
       }
 
       .nota {
-        margin: 0 var(--e4) var(--e5);
-        padding: var(--e3);
+        margin: 0 var(--space-24) var(--space-32);
+        padding: var(--space-16);
         border-left: 3px solid var(--br-solid);
         background: var(--sf-2);
-        border-radius: 0 var(--r-sm) var(--r-sm) 0;
+        border-radius: 0 var(--r-8) var(--r-8) 0;
         font-size: 15px;
         line-height: 22px;
         color: var(--tx-lo);
@@ -588,6 +633,14 @@
           </button>
           <button type="button" data-v="b" aria-pressed="true">Cómoda</button>
           <button type="button" data-v="c" aria-pressed="false">Amplia</button>
+        </div>
+      </div>
+
+      <div class="panel__grupo">
+        <span class="panel__label">Modo taller</span>
+        <div class="seg" id="escala">
+          <button type="button" data-v="1" aria-pressed="true">100 %</button>
+          <button type="button" data-v="1.25" aria-pressed="false">125 %</button>
         </div>
       </div>
 
@@ -810,7 +863,12 @@
 
       const ESPECIALIDAD = { mec: 210, ele: 295, pin: 185 };
 
-      let estado = { tema: 'claro', densidad: 'b', marca: '#0047c7' };
+      let estado = {
+        tema: 'claro',
+        densidad: 'b',
+        escala: '1',
+        marca: '#0047c7',
+      };
 
       function aplicar() {
         const { H, C } = rgbToOklch(hexToRgb(estado.marca));
@@ -818,6 +876,7 @@
         const raiz = document.documentElement;
         raiz.dataset.tema = estado.tema;
         raiz.dataset.densidad = estado.densidad;
+        raiz.style.setProperty('--scale', estado.escala);
 
         const hex = {};
         for (const [rol, def] of Object.entries(t)) {
@@ -905,6 +964,7 @@
       }
       grupo('tema', 'tema');
       grupo('densidad', 'densidad');
+      grupo('escala', 'escala');
 
       const marcas = document.getElementById('marcas');
       marcas.innerHTML = MARCAS.map(
