@@ -1,4 +1,11 @@
-import { deleteDB, DBSchema, IDBPDatabase, openDB } from 'idb';
+import {
+  deleteDB,
+  DBSchema,
+  IDBPDatabase,
+  IDBPTransaction,
+  openDB,
+  StoreNames,
+} from 'idb';
 import { Cliente } from '../models/cliente.model';
 import { Factura } from '../models/factura.model';
 import { OrdenTrabajo } from '../models/orden-trabajo.model';
@@ -35,6 +42,11 @@ const DB_VERSION = 3;
 // cada navegador es un puesto.
 const PUESTO_ACTUAL = 'actual';
 
+// Código atribuido a los folios que ya existían antes de que hubiera puestos.
+// Es el mismo que usa el seed, porque representan lo que emitió el taller
+// hasta ahora.
+const PUESTO_HISTORICO = 'A1';
+
 // Dos caracteres base36 en mayúscula — 1296 combinaciones. Corto para dictarlo
 // por teléfono junto al folio, que es como se usa en la práctica.
 function generarCodigoPuesto(): string {
@@ -43,6 +55,37 @@ function generarCodigoPuesto(): string {
       .toString(36)
       .toUpperCase();
   return `${parte()}${parte()}`;
+}
+
+// Antepone el puesto histórico a los folios que no lo llevan. Conserva el
+// número: `OT-0140` queda `OT-A1-0140`. Los que ya tienen puesto no se tocan,
+// así que volver a correrla no hace daño.
+async function migrarFoliosSinPuesto(
+  transaction: IDBPTransaction<
+    BahiaDbSchema,
+    ArrayLike<StoreNames<BahiaDbSchema>>,
+    'versionchange'
+  >,
+): Promise<void> {
+  const ordenes = transaction.objectStore('ordenes');
+  for (const orden of await ordenes.getAll()) {
+    if (/^OT-\d+$/.test(orden.numero)) {
+      await ordenes.put({
+        ...orden,
+        numero: orden.numero.replace(/^OT-/, `OT-${PUESTO_HISTORICO}-`),
+      });
+    }
+  }
+
+  const facturas = transaction.objectStore('facturas');
+  for (const factura of await facturas.getAll()) {
+    if (/^FA-\d+$/.test(factura.numero)) {
+      await facturas.put({
+        ...factura,
+        numero: factura.numero.replace(/^FA-/, `FA-${PUESTO_HISTORICO}-`),
+      });
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<BahiaDbSchema>> | undefined;
@@ -57,7 +100,7 @@ let dbPromise: Promise<IDBPDatabase<BahiaDbSchema>> | undefined;
 // tal como quedaron persistidos.
 export function getBahiaDb(): Promise<IDBPDatabase<BahiaDbSchema>> {
   dbPromise ??= openDB<BahiaDbSchema>(DB_NAME, DB_VERSION, {
-    async upgrade(db, oldVersion) {
+    async upgrade(db, oldVersion, _newVersion, transaction) {
       if (oldVersion < 1) {
         const talleres = db.createObjectStore('talleres', { keyPath: 'id' });
         await talleres.put(SEED_TALLER);
@@ -99,6 +142,18 @@ export function getBahiaDb(): Promise<IDBPDatabase<BahiaDbSchema>> {
           id: PUESTO_ACTUAL,
           codigo: generarCodigoPuesto(),
         });
+
+        // Una base que ya existía trae folios del formato viejo, sin puesto
+        // ("OT-0140"). Se les antepone el código histórico A1 —el mismo que
+        // usa el seed— para que no convivan dos formatos en pantalla.
+        //
+        // Esto NO renumera nada: `OT-0140` pasa a `OT-A1-0140`, conserva su
+        // número y solo gana la atribución del puesto que lo emitió.
+        // Renumerar sí sería inaceptable, porque estos folios pueden estar
+        // impresos en una factura ya entregada (ver issue #46).
+        if (oldVersion >= 1) {
+          await migrarFoliosSinPuesto(transaction);
+        }
       }
     },
   });

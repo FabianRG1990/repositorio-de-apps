@@ -1,3 +1,4 @@
+import { openDB } from 'idb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getBahiaDb, getCodigoPuesto, resetBahiaDbForTests } from './bahia-db';
 
@@ -39,6 +40,30 @@ describe('código de puesto', () => {
     });
 
     expect(await getCodigoPuesto()).toBe(antes);
+  });
+
+  // Una base que ya estaba instalada trae folios sin puesto. Se simula
+  // creando una v2 a mano, con el esquema y los datos del formato viejo, y
+  // luego abriendo la base normal para que dispare el upgrade a v3.
+  it('atribuye el puesto histórico a los folios que ya existían', async () => {
+    const vieja = await openDB('bahia-db', 2, {
+      upgrade(db) {
+        db.createObjectStore('ordenes', { keyPath: 'id' });
+        db.createObjectStore('facturas', { keyPath: 'id' });
+      },
+    });
+    await vieja.put('ordenes', { id: 'orden-vieja', numero: 'OT-0140' });
+    await vieja.put('facturas', { id: 'factura-vieja', numero: 'FA-0001' });
+    vieja.close();
+
+    const db = await getBahiaDb();
+
+    // Conserva el número y solo gana la atribución del puesto: renumerar
+    // sería inaceptable con documentos ya entregados.
+    expect((await db.get('ordenes', 'orden-vieja'))?.numero).toBe('OT-A1-0140');
+    expect((await db.get('facturas', 'factura-vieja'))?.numero).toBe(
+      'FA-A1-0001',
+    );
   });
 
   // La razón de existir de todo esto: dos instalaciones distintas no pueden
