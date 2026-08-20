@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faCarWrench } from '@fortawesome/pro-solid-svg-icons';
 import { faClock } from '@fortawesome/pro-regular-svg-icons';
@@ -27,6 +29,8 @@ import { phosphorWrench } from '@ng-icons/phosphor-icons/regular';
     MatChipsModule,
     FontAwesomeModule,
     NgIcon,
+    ButtonModule,
+    TagModule,
   ],
   providers: [provideIcons({ phosphorWrench })],
   templateUrl: './diagnostico-pila.html',
