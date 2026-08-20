@@ -8,9 +8,7 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/bitacora",
@@ -23,9 +21,7 @@
             "input": "apps/bitacora/public"
           }
         ],
-        "styles": [
-          "apps/bitacora/src/styles.scss"
-        ]
+        "styles": ["apps/bitacora/src/styles.scss"]
       },
       "configurations": {
         "production": {
@@ -75,9 +71,7 @@
         "{workspaceRoot}/eslint.config.mjs",
         "{workspaceRoot}/tools/eslint-rules/**/*",
         {
-          "externalDependencies": [
-            "eslint"
-          ]
+          "externalDependencies": ["eslint"]
         }
       ]
     },
