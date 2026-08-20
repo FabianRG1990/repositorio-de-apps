@@ -332,15 +332,53 @@
         align-items: center;
         gap: var(--space-16);
         background: var(--sf-1);
-        color: inherit;
+        /* §5.1: la fila en reposo va un paso por detrás. Lo que hace que una
+           lista "responda" no es el cambio de fondo, es que la fila apuntada
+           se oscurece tipográficamente mientras el resto se queda atrás. Los
+           metadatos (.sub, .folio, .esp) declaran su propio color y no suben:
+           así el paso existe sin aplanar la jerarquía interna de la fila. */
+        color: var(--tx-lo);
         text-align: left;
         font: inherit;
         width: 100%;
         cursor: pointer;
+        position: relative;
+        /* Asimetría de #18 §6.8: aparecer instantáneo, desaparecer en 100 ms.
+           La duración 0 se declara en los propios estados, más abajo. */
+        transition:
+          background 100ms linear,
+          color 100ms linear;
       }
 
-      .fila:hover {
-        background: var(--sf-2);
+      /* B14b: en táctil el :hover se queda pegado a la última fila tocada y la
+         lista muestra una fila resaltada que no corresponde a nada. La consulta
+         de capacidad es la que Linear usa en producción. El :active queda
+         FUERA, con el mismo color, para que la tableta reciba feedback igual. */
+      @media (any-hover: hover) and (any-pointer: fine) {
+        .fila:hover {
+          background: var(--sf-2);
+          color: var(--tx-hi);
+          transition-duration: 0s;
+        }
+
+        .fila[aria-current='true']:hover {
+          background: var(--sf-sel-hover);
+        }
+      }
+
+      /* En tableta es el único feedback que existe antes de que cambie la
+         pantalla: MIL-STD-1472F §5.4.6.4 pide respuesta visible en ≤ 100 ms. */
+      .fila:active {
+        background: var(--sf-3);
+        color: var(--tx-hi);
+        transition-duration: 0s;
+      }
+
+      /* El seleccionado es una superficie, no un contorno: si se marcara con
+         borde competiría con el anillo de foco, y además movería el layout. */
+      .fila[aria-current='true'] {
+        background: var(--sf-sel);
+        color: var(--tx-hi);
       }
 
       .fila:focus-visible {
@@ -633,6 +671,19 @@
       .nota b {
         color: var(--tx-hi);
       }
+
+      /* #18 §6.8. No es solo una preferencia estética: para quien tiene
+         trastorno vestibular el movimiento no pedido produce malestar real. */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0s !important;
+          animation-duration: 0s !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+        }
+      }
     </style>
   </head>
 
@@ -857,7 +908,13 @@
           bg1: { L: 0.965, c: 0.004 },
           bg2: { L: 0.94, c: 0.005 },
           sf1: { L: 1.0, c: 0 },
+          // Escalera de estados medida contra la ficha: hover 1,14:1 (capa 0,08
+          // de M3), seleccionado 1,23:1, pressed 1,27:1 (capa 0,12), sel+hover
+          // 1,32:1. El seleccionado lleva croma de marca; los otros dos no.
           sf2: { L: 0.955, c: 0.006 },
+          sf3: { L: 0.918, c: 0.006 },
+          sfSel: { L: 0.932, c: 0.045 },
+          sfSelHover: { L: 0.906, c: 0.045 },
           // Medido: con L 0.72 el borde daba 2,5:1 y no llegaba al mínimo
           // duro de 3:1. Bajarlo a 0.62 es lo que lo hace visible de verdad.
           bd: { L: 0.62, c: 0.014 },
@@ -872,7 +929,12 @@
           bg1: { L: 0.18, c: 0.008 },
           bg2: { L: 0.22, c: 0.01 },
           sf1: { L: 0.235, c: 0.01 },
+          // En oscuro los deltas de L son mayores para las MISMAS relaciones:
+          // cerca del negro la misma diferencia de tono rinde menos contraste.
           sf2: { L: 0.28, c: 0.012 },
+          sf3: { L: 0.311, c: 0.012 },
+          sfSel: { L: 0.3, c: 0.045 },
+          sfSelHover: { L: 0.322, c: 0.045 },
           // Mismo ajuste que en claro: 0.46 daba 2,3:1 contra la ficha.
           bd: { L: 0.6, c: 0.018 },
           txHi: { L: 0.96, c: 0.006 },
@@ -891,6 +953,7 @@
         densidad: 'b',
         escala: '1',
         marca: '#0047c7',
+        seleccion: null,
       };
 
       function aplicar() {
@@ -913,6 +976,9 @@
           '--bg-2': hex.bg2,
           '--sf-1': hex.sf1,
           '--sf-2': hex.sf2,
+          '--sf-3': hex.sf3,
+          '--sf-sel': hex.sfSel,
+          '--sf-sel-hover': hex.sfSelHover,
           '--bd': hex.bd,
           '--tx-hi': hex.txHi,
           '--tx-lo': hex.txLo,
@@ -957,7 +1023,7 @@
 
         document.getElementById('lista').innerHTML = ORDENES.map(
           (o) => `
-          <button type="button" class="fila">
+          <button type="button" class="fila" aria-current="${o.folio === estado.seleccion}">
             <span class="fila-cabecera">
               <span class="tiempo">${tiempoHtml(o.horas)}</span>
               <span class="folio">${o.folio}</span>
@@ -970,6 +1036,17 @@
           </button>`,
         ).join('');
       }
+
+      // La selección es el estado que faltaba: en la app de venta la lista es
+      // el único componente, así que llegar a la demo sin seleccionado es
+      // llegar sin el componente. Se marca con aria-current, no solo con color.
+      document.getElementById('lista').addEventListener('click', (e) => {
+        const fila = e.target.closest('.fila');
+        if (!fila) return;
+        const folio = fila.querySelector('.folio').textContent;
+        estado.seleccion = estado.seleccion === folio ? null : folio;
+        render();
+      });
 
       // ---------- Controles ----------
       function grupo(id, clave) {
