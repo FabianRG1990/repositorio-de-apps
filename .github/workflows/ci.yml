@@ -40,6 +40,14 @@ jobs:
           node-version: 24
           cache: 'yarn'
 
+      # Los paquetes @fortawesome/pro-* vienen de un registro privado. El token
+      # se escribe a nivel de HOME, nunca en el .yarnrc.yml del repo: este
+      # repositorio es público y ese archivo está versionado. La dirección del
+      # registro sí vive allí, porque no es secreta.
+      - run: yarn config set npmRegistries --home --json "{\"//npm.fontawesome.com/\":{\"npmAuthToken\":\"$FONTAWESOME_NPM_TOKEN\"}}"
+        env:
+          FONTAWESOME_NPM_TOKEN: ${{ secrets.FONTAWESOME_NPM_TOKEN }}
+
       - run: yarn install --immutable
 
       # Los navegadores de Playwright no vienen con la instalación de paquetes.
