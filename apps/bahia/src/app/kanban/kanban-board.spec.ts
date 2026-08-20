@@ -67,7 +67,7 @@ describe('KanbanBoard', () => {
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
     );
     const fichaConVisita = fichas.find((el) =>
-      el.textContent?.includes('OT-0148'),
+      el.textContent?.includes('OT-A1-0148'),
     );
     expect(fichaConVisita?.textContent).toMatch(/Visitas previas\s*1/);
   });
@@ -86,17 +86,17 @@ describe('KanbanBoard', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // orden-3 (OT-0151) arranca en Ingresado
+    // orden-3 (OT-A1-0151) arranca en Ingresado
     const ordenId = ordenesStore
       .entities()
-      .find((o) => o.numero === 'OT-0151')?.id;
+      .find((o) => o.numero === 'OT-A1-0151')?.id;
     expect(ordenId).toBeTruthy();
 
     const compiled = fixture.nativeElement as HTMLElement;
     const fichas = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
     );
-    const ficha = fichas.find((el) => el.textContent?.includes('OT-0151'));
+    const ficha = fichas.find((el) => el.textContent?.includes('OT-A1-0151'));
     const boton = ficha?.querySelector<HTMLButtonElement>('.ficha__avanzar');
     expect(boton).toBeTruthy();
     boton?.click();
@@ -132,7 +132,7 @@ describe('KanbanBoard', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const ficha = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-    ).find((el) => el.textContent?.includes('OT-0148')); // seed: estado Diagnostico
+    ).find((el) => el.textContent?.includes('OT-A1-0148')); // seed: estado Diagnostico
     expect(ficha?.querySelector('.ficha__diagnostico-texto')).toBeNull();
   });
 
@@ -153,7 +153,7 @@ describe('KanbanBoard', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const ficha = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-    ).find((el) => el.textContent?.includes('OT-0148'));
+    ).find((el) => el.textContent?.includes('OT-A1-0148'));
     const textarea = ficha?.querySelector<HTMLTextAreaElement>(
       '.ficha__diagnostico-texto',
     );
@@ -167,8 +167,9 @@ describe('KanbanBoard', () => {
       ?.querySelector<HTMLButtonElement>('.ficha__diagnostico-guardar')
       ?.click();
 
-    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-0148')
-      ?.id as string;
+    const ordenId = ordenesStore
+      .entities()
+      .find((o) => o.numero === 'OT-A1-0148')?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.diagnostico !== undefined,
     );
@@ -185,12 +186,12 @@ describe('KanbanBoard', () => {
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    // orden-1 (OT-0140) ya está Entregado y trae una factura sembrada
+    // orden-1 (OT-A1-0140) ya está Entregado y trae una factura sembrada
     const ficha = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-    ).find((el) => el.textContent?.includes('OT-0140'));
+    ).find((el) => el.textContent?.includes('OT-A1-0140'));
     expect(ficha?.querySelector('.ficha__concepto-agregar')).toBeNull();
-    expect(ficha?.textContent).toContain('FA-0001');
+    expect(ficha?.textContent).toContain('FA-A1-0001');
   });
 
   it('lets a usuario with permiso facturar invoice an orden recién Entregado', async () => {
@@ -208,16 +209,17 @@ describe('KanbanBoard', () => {
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    // orden-5 (OT-0153) arranca en Listo — la avanzamos a Entregado primero
+    // orden-5 (OT-A1-0153) arranca en Listo — la avanzamos a Entregado primero
     const buscarFicha = () =>
       Array.from(
         compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-      ).find((el) => el.textContent?.includes('OT-0153'));
+      ).find((el) => el.textContent?.includes('OT-A1-0153'));
 
     buscarFicha()?.querySelector<HTMLButtonElement>('.ficha__avanzar')?.click();
 
-    const ordenId = ordenesStore.entities().find((o) => o.numero === 'OT-0153')
-      ?.id as string;
+    const ordenId = ordenesStore
+      .entities()
+      .find((o) => o.numero === 'OT-A1-0153')?.id as string;
     await waitFor(
       () => ordenesStore.entityMap()[ordenId]?.estado === 'Entregado',
     );
@@ -277,18 +279,18 @@ describe('KanbanBoard', () => {
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    // orden-1 (OT-0140) ya tiene una factura sembrada — debe seguir visible
+    // orden-1 (OT-A1-0140) ya tiene una factura sembrada — debe seguir visible
     const fichaConFactura = Array.from(
       compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-    ).find((el) => el.textContent?.includes('OT-0140'));
-    expect(fichaConFactura?.textContent).toContain('FA-0001');
+    ).find((el) => el.textContent?.includes('OT-A1-0140'));
+    expect(fichaConFactura?.textContent).toContain('FA-A1-0001');
 
-    // orden-5 (OT-0153) está en Listo — la avanzamos a Entregado, no debe
+    // orden-5 (OT-A1-0153) está en Listo — la avanzamos a Entregado, no debe
     // ofrecer el formulario de factura nueva con la función desactivada
     const buscarFicha = () =>
       Array.from(
         compiled.querySelectorAll<HTMLElement>('app-ticket-card'),
-      ).find((el) => el.textContent?.includes('OT-0153'));
+      ).find((el) => el.textContent?.includes('OT-A1-0153'));
     buscarFicha()?.querySelector<HTMLButtonElement>('.ficha__avanzar')?.click();
     fixture.detectChanges();
     await fixture.whenStable();

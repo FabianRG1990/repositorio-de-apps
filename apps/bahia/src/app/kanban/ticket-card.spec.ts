@@ -22,7 +22,7 @@ const vehiculo: Vehiculo = {
 
 const ordenBase: OrdenTrabajo = {
   id: 'orden-2',
-  numero: 'OT-0148',
+  numero: 'OT-A1-0148',
   tallerId: 'taller-1',
   clienteId: 'cliente-1',
   vehiculoId: 'vehiculo-1',
@@ -45,7 +45,7 @@ describe('TicketCard', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('María Fernández');
-    expect(compiled.textContent).toContain('OT-0148');
+    expect(compiled.textContent).toContain('OT-A1-0148');
     expect(compiled.textContent).toContain('PBH-3321');
     expect(compiled.textContent).toContain('84,500 km');
     expect(compiled.querySelector('[title="Dictado por voz"]')).toBeTruthy();
@@ -231,7 +231,7 @@ describe('TicketCard', () => {
     const factura: Factura = {
       id: 'factura-1',
       ordenId: 'orden-2',
-      numero: 'FA-0001',
+      numero: 'FA-A1-0001',
       fecha: '2026-08-01T12:00:00',
       conceptos: [{ descripcion: 'Mano de obra', monto: 200 }],
     };
@@ -249,7 +249,7 @@ describe('TicketCard', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.ficha__concepto-agregar')).toBeNull();
     const textoFactura = compiled.querySelector('.ficha__factura')?.textContent;
-    expect(textoFactura).toContain('FA-0001');
+    expect(textoFactura).toContain('FA-A1-0001');
     expect(textoFactura).toContain('200');
   });
 });

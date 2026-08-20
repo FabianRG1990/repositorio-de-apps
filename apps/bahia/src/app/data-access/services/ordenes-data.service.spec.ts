@@ -35,7 +35,7 @@ describe('OrdenesDataService', () => {
   it('creates an orden with a generated id', async () => {
     const creada = await firstValueFrom(
       service.create({
-        numero: 'OT-0999',
+        numero: 'OT-A1-0999',
         tallerId: 'taller-1',
         clienteId: 'cliente-1',
         vehiculoId: 'vehiculo-1',
