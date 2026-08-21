@@ -1,29 +1,88 @@
 @use '@angular/material' as mat;
 
-/* Tema base de Angular Material. Los valores concretos —paleta, densidad,
-   tipografía— los fija el ticket de la doble piel (#79); esto es solo lo
-   mínimo para que los componentes de Material tengan tokens y no salgan sin
-   estilar. Moofy VIP declara aquí `typography: Roboto` y `density: 0`. */
+/* ---------------------------------------------------------------------------
+   Piel de Bitácora. Réplica del estándar visual de Moofy VIP
+   (`apps/moofyvip/src/styles.scss` de claudio-andrade-solutions).
+
+   Los tokens `--app-*` son la capa propia; Material vive debajo con sus
+   `--mat-sys-*`. Los componentes leen SIEMPRE los `--app-*`, para que cambiar
+   de piel sea cambiar este bloque y nada más — que es lo que #79 necesita para
+   el modo taller.
+   --------------------------------------------------------------------------- */
+
 html {
   @include mat.theme(
     (
-      // Sin la clave `color`, mat.theme() emite SOLO tokens de tipografía y
-      // ningún --mat-sys-surface / --mat-sys-primary: los componentes salen
-      // con fondo transparente y parece que el tema no cargó. La paleta
-      // concreta la elige #79; esta es un valor de arranque, no una decisión.
-      color: (primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$azure-palette,
+      ),
       typography: Roboto,
-      density: 0
+      density: 0,
     )
   );
 
   height: 100%;
+
+  /* Piel oscura, predeterminada. Es la de Moofy tal cual. */
+  --app-canvas-top: #14283b;
+  --app-canvas-bottom: #04090f;
+  --app-surface: rgba(9, 18, 29, 0.78);
+  --app-surface-strong: rgba(7, 14, 23, 0.92);
+  --app-surface-soft: rgba(244, 250, 255, 0.045);
+  --app-surface-soft-strong: rgba(244, 250, 255, 0.08);
+  --app-border: rgba(132, 165, 188, 0.18);
+  --app-border-strong: rgba(132, 165, 188, 0.28);
+  --app-text: #edf5fa;
+  --app-text-muted: rgba(237, 245, 250, 0.72);
+  --app-text-soft: rgba(237, 245, 250, 0.56);
+  --app-accent: #8ac8d4;
+  --app-accent-strong: #3da5c2;
+  --app-accent-soft: rgba(138, 200, 212, 0.16);
+  --app-accent-glow: rgba(138, 200, 212, 0.22);
+  --app-success: #8fd1ab;
+  --app-warning: #e7bf7f;
+  --app-danger: #ec9a85;
+  --app-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+  --app-shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.3);
+  --app-focus-ring: rgba(138, 200, 212, 0.68);
+
+  /* Medidas del shell, tomadas de las de Moofy. */
+  --app-shell-radio: 1.25rem;
+
+  color-scheme: dark;
+  background-color: var(--app-canvas-bottom);
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font-family: var(--mat-sys-body-medium-font, Roboto, sans-serif);
+  padding: 0;
+  height: 100%;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top, rgba(97, 148, 182, 0.2), transparent 32%),
+    radial-gradient(
+      circle at 80% 18%,
+      rgba(61, 165, 194, 0.16),
+      transparent 24%
+    ),
+    linear-gradient(
+      180deg,
+      var(--app-canvas-top),
+      #0a1520 44%,
+      var(--app-canvas-bottom)
+    );
+  background-attachment: scroll;
+  font-family: Roboto, Avenir, Helvetica, Arial, sans-serif;
+  color: var(--app-text);
+  color-scheme: dark;
+}
+
+/* Fondo fijo solo con puntero fino y pantalla grande: en táctil el
+   `background-attachment: fixed` fuerza repintado en cada scroll. Misma
+   consulta que usa Moofy. */
+@media (hover: hover) and (pointer: fine) and (min-width: 960px) {
+  body {
+    background-attachment: fixed;
+  }
 }
