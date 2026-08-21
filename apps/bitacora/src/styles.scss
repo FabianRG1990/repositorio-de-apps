@@ -3,10 +3,14 @@
 /* ---------------------------------------------------------------------------
    Las dos pieles de Bitácora (#79).
 
-   `moofy` — la del estándar visual: oscura, translúcida, con sombras y acento
-   teal. Es la predeterminada.
-   `taller` — claro de alto contraste, para el patio: sol, guantes y una
-   tableta. Se enciende con `data-piel="taller"` en <html>.
+   `oficina` — bajo techo: oscura, translúcida, con sombras y acento teal. Es
+   la que replica el estándar visual de referencia y la predeterminada.
+   `taller` — al sol: clara y de alto contraste, para el patio con guantes y
+   una tableta. Se enciende con `data-piel="taller"` en <html>.
+
+   Los nombres dicen DÓNDE se usa cada una, no de dónde salió el diseño ni a
+   qué se parece: es lo que sigue teniendo sentido cuando cambie cualquiera de
+   las dos cosas.
 
    EL CORTE: los componentes no nombran colores ni efectos, nombran ROLES. Un
    componente escribe `background: var(--app-capa-reposo)` y nunca
@@ -48,14 +52,15 @@ html {
   background-color: var(--app-canvas-bottom);
 }
 
-/* --------------------------------- moofy ---------------------------------
-   La piel del estándar, tal cual. Medida sobre la app: cumple AA en todo el
-   texto, y llega al objetivo 7:1 del proyecto en todo menos donde usa
-   opacidad 0,56 (secundario 5,43:1, etiquetas 5,81:1, insignias 5,45–6,87:1).
-   Se conserva como está: es la piel de oficina y ese es su contexto.
+/* -------------------------------- oficina --------------------------------
+   La piel del estándar visual de referencia, tal cual. Medida sobre la app:
+   cumple AA en todo el texto, y llega al objetivo 7:1 del proyecto en todo
+   menos donde usa opacidad 0,56 (secundario 5,43:1, etiquetas 5,81:1,
+   insignias 5,45–6,87:1). Se conserva como está: se usa bajo techo y ese es
+   su contexto.
    ------------------------------------------------------------------------- */
 html,
-html[data-piel='moofy'] {
+html[data-piel='oficina'] {
   color-scheme: dark;
 
   --app-canvas-top: #14283b;
@@ -286,7 +291,7 @@ body {
 
 /* Fondo fijo solo con puntero fino y pantalla grande: en táctil el
    `background-attachment: fixed` fuerza repintado en cada scroll. Misma
-   consulta que usa Moofy. */
+   consulta que usa el diseño de referencia. */
 @media (hover: hover) and (pointer: fine) and (min-width: 960px) {
   body {
     background-attachment: fixed;

@@ -1,10 +1,14 @@
 # Dos pieles conmutables por tokens de color y de efecto
 
-Bitácora tiene que verse como el estándar visual de Moofy VIP —oscuro, translúcido, con sombras y acento teal— y además ofrecer un **modo taller** claro y de alto contraste para el patio. **Decidimos sostener las dos con un único juego de tokens `--app-*` en el que la piel cambia VALORES y nunca REGLAS**, y que ese juego incluya los **efectos** (vidrio, velo, sombras) y no solo los colores.
+Bitácora tiene que verse como el estándar visual de referencia —oscuro, translúcido, con sombras y acento teal— y además ofrecer un **modo taller** claro y de alto contraste para el patio. **Decidimos sostener las dos con un único juego de tokens `--app-*` en el que la piel cambia VALORES y nunca REGLAS**, y que ese juego incluya los **efectos** (vidrio, velo, sombras) y no solo los colores.
 
 La comprobación de que el corte está bien puesto es mecánica y se lee en el diff: fuera de `apps/bitacora/src/styles.scss` no existe **ningún** selector condicionado a la piel. Ningún `[data-piel='taller'] .fila`, ninguna clase `--claro` en un componente.
 
 Esto sale del prototipo de [#79](https://github.com/FabianRG1990/repositorio-de-apps/issues/79), que montó las dos pieles conmutables sobre la lista de Órdenes real.
+
+## Cómo se llaman
+
+`oficina` y `taller`. Los nombres dicen **dónde se usa** cada piel —bajo techo y al sol—, no de dónde salió el diseño ni a qué se parece. Nombrar una piel por el producto de otro cliente ata el vocabulario de Bitácora a algo que no le pertenece y que puede cambiar o dejar de ser una referencia válida; nombrarla por su apariencia envejece mal el día que haya una tercera. El contexto de uso es lo único de los tres que no se mueve.
 
 ## El corte: los componentes nombran roles, no colores
 
@@ -40,7 +44,7 @@ La sombra sigue estando disponible para lo que **flota** —hoja, menú, diálog
 
 Medido sobre la app corriendo, componiendo cada color con su alfa sobre el fondo real tomado del render (no del CSS):
 
-|                                      | moofy         | taller         |
+|                                      | oficina       | taller         |
 | ------------------------------------ | ------------- | -------------- |
 | Puntos de texto que llegan a **7:1** | **6 de 14**   | **14 de 14**   |
 | Texto de cuerpo                      | 14,29:1       | 13,31:1        |
@@ -49,7 +53,7 @@ Medido sobre la app corriendo, componiendo cada color con su alfa sobre el fondo
 | Insignias de estado                  | 5,45 – 6,87:1 | 7,27 – 7,46:1  |
 | Item de menú: reposo → activo        | 5,55 → 7,97:1 | 8,16 → 11,53:1 |
 
-**El objetivo 7:1 se le exige al modo taller y no a la piel de Moofy.** Las dos cumplen AA (4,5:1) en todo el texto medido; lo que separa a una de otra es el margen que #18 §5.1 compra para el sol, el reflejo y la película de grasa sobre el vidrio, y ese margen solo hace falta donde está el sol. Moofy es la piel de oficina y se conserva tal cual, con su texto a opacidad 0,56 y sus 5,4:1: cambiarla sería dejar de replicar el estándar, que es su único motivo de existir.
+**El objetivo 7:1 se le exige al modo taller y no a la piel de oficina.** Las dos cumplen AA (4,5:1) en todo el texto medido; lo que separa a una de otra es el margen que #18 §5.1 compra para el sol, el reflejo y la película de grasa sobre el vidrio, y ese margen solo hace falta donde está el sol. La de oficina se usa bajo techo y se conserva tal cual, con su texto a opacidad 0,56 y sus 5,4:1: cambiarla sería dejar de replicar el estándar visual de referencia, que es su único motivo de existir.
 
 Lo demás de #72 vale para las dos pieles y así queda:
 
@@ -64,7 +68,7 @@ Lo demás de #72 vale para las dos pieles y así queda:
 
 La decisión de tipografía **no la cierra este ADR**. Lo que sí queda decidido es el marco:
 
-- **Google Sans Flex no entra por la puerta de atrás.** Si se adopta la de Moofy, va self-hosted como cualquier otra: Bitácora es PWA offline-first y una fuente que se pide a un CDN no está cuando no hay red.
+- **Google Sans Flex no entra por la puerta de atrás.** Si se adopta la del diseño de referencia, va self-hosted como cualquier otra: Bitácora es PWA offline-first y una fuente que se pide a un CDN no está cuando no hay red.
 - **Inter sigue siendo la candidata con trabajo hecho**: subset latino de 87 544 B ya en `docs/prototypes/fonts/`, y la razón por la que se eligió — el cero cortado — **no la ofrece el build que sirve Google Fonts** ([#72](https://github.com/FabianRG1990/repositorio-de-apps/issues/72) §6.3).
 - **590 vs. 600 se decide mirándolos en pantalla**, no citando a nadie: #72 §6.6 desarmó las dos justificaciones que se le daban al 590.
 - La piel **no depende** de esto. `font-family` es un token más el día que se resuelva, y ninguna de las dos pieles cambia por él.
