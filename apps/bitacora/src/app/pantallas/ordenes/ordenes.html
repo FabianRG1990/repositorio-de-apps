@@ -1,0 +1,63 @@
+<div class="raiz">
+  <app-lista-pestanas
+    [pestanas]="pestanas"
+    [activa]="activa()"
+    etiqueta="Vistas de órdenes"
+    (elegida)="activa.set($event)"
+  />
+
+  <div class="paneles">
+    @switch (activa()) {
+      @case ('en-taller') {
+        <section
+          role="tabpanel"
+          id="panel-en-taller"
+          aria-labelledby="pestana-en-taller"
+          class="panel"
+        >
+          <ul class="tarjetas">
+            @for (orden of store.ordenes(); track orden.folio) {
+              <li>
+                <button
+                  type="button"
+                  class="tarjeta"
+                  [attr.aria-current]="store.folioSeleccionado() === orden.folio"
+                  (click)="store.seleccionar(orden.folio)"
+                >
+                  <span class="tarjeta__tiempo">{{
+                    tiempo(orden.tiempoParado)
+                  }}</span>
+                  <span class="tarjeta__titulo">{{ orden.vehiculo }}</span>
+                  <span class="tarjeta__sub">{{ orden.detalle }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      @case ('por-entregar') {
+        <section
+          role="tabpanel"
+          id="panel-por-entregar"
+          aria-labelledby="pestana-por-entregar"
+          class="panel panel--vacio"
+        >
+          <p>Ninguna Orden esperando entrega.</p>
+        </section>
+      }
+      @case ('declinado') {
+        <section
+          role="tabpanel"
+          id="panel-declinado"
+          aria-labelledby="pestana-declinado"
+          class="panel panel--vacio"
+        >
+          <p>
+            El trabajo declinado reaparece solo al recibir el Vehículo, con
+            motivo y monto.
+          </p>
+        </section>
+      }
+    }
+  </div>
+</div>
