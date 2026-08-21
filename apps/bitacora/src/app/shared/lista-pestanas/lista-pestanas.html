@@ -1,19 +1,19 @@
 <div class="pestanas" role="tablist" [attr.aria-label]="etiqueta()">
   @for (pestana of pestanas(); track pestana.id; let i = $index) {
-    <button
-      type="button"
-      role="tab"
-      class="pestana"
-      [class.pestana--activa]="activa() === pestana.id"
-      [attr.id]="'pestana-' + pestana.id"
-      [attr.aria-controls]="'panel-' + pestana.id"
-      [attr.aria-selected]="activa() === pestana.id"
-      [attr.tabindex]="activa() === pestana.id ? 0 : -1"
-      (click)="elegida.emit(pestana.id)"
-      (keydown)="alPresionarTecla($event, i)"
-    >
-      <fa-icon [icon]="pestana.icon" class="pestana__icono fa-xl" />
-      <span>{{ pestana.label }}</span>
-    </button>
+  <button
+    type="button"
+    role="tab"
+    class="pestana"
+    [class.pestana--activa]="activa() === pestana.id"
+    [attr.id]="'pestana-' + pestana.id"
+    [attr.aria-controls]="'panel-' + pestana.id"
+    [attr.aria-selected]="activa() === pestana.id"
+    [attr.tabindex]="activa() === pestana.id ? 0 : -1"
+    (click)="elegida.emit(pestana.id)"
+    (keydown)="alPresionarTecla($event, i)"
+  >
+    <fa-icon [icon]="pestana.icon" class="pestana__icono fa-xl" />
+    <span>{{ pestana.label }}</span>
+  </button>
   }
 </div>

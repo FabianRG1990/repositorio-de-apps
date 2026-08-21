@@ -68,11 +68,7 @@ export class Shell {
   readonly panelFijado = signal(true);
 
   readonly anchoMenu = computed(() =>
-    this.esEstrecho()
-      ? '260px'
-      : this.colapsado()
-        ? '6.062rem'
-        : '14.625rem',
+    this.esEstrecho() ? '260px' : this.colapsado() ? '6.062rem' : '14.625rem',
   );
   readonly anchoPanel = computed(() =>
     this.esEstrecho() ? '260px' : '14.625rem',
@@ -110,9 +106,7 @@ export class Shell {
   });
 
   alPulsarMenu(menu: MatSidenav) {
-    return this.esEstrecho()
-      ? menu.toggle()
-      : this.colapsado.update((v) => !v);
+    return this.esEstrecho() ? menu.toggle() : this.colapsado.update((v) => !v);
   }
 
   /** En estrecho el cajón tapa el contenido, así que se cierra al elegir. */

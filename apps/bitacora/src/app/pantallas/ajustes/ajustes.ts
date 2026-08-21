@@ -6,7 +6,11 @@ import {
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'taller', label: 'Taller', icon: ['fas', 'shop'] },
-  { id: 'especialidades', label: 'Especialidades', icon: ['fas', 'screwdriver-wrench'] },
+  {
+    id: 'especialidades',
+    label: 'Especialidades',
+    icon: ['fas', 'screwdriver-wrench'],
+  },
   { id: 'apariencia', label: 'Apariencia', icon: ['fas', 'sliders'] },
 ];
 

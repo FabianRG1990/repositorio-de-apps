@@ -7,40 +7,36 @@
   />
 
   <div class="paneles">
-    @switch (activa()) {
-      @case ('taller') {
-        <section
-          role="tabpanel"
-          id="panel-taller"
-          aria-labelledby="pestana-taller"
-          class="panel"
-        >
-          <p>Datos del Taller, Puestos y Tarifas. Solo lo configura el Dueño.</p>
-        </section>
-      }
-      @case ('especialidades') {
-        <section
-          role="tabpanel"
-          id="panel-especialidades"
-          aria-labelledby="pestana-especialidades"
-          class="panel"
-        >
-          <p>
-            Qué Especialidades ofrece el Taller. Un Taller de una sola
-            Especialidad no muestra el filtro del tablero.
-          </p>
-        </section>
-      }
-      @case ('apariencia') {
-        <section
-          role="tabpanel"
-          id="panel-apariencia"
-          aria-labelledby="pestana-apariencia"
-          class="panel"
-        >
-          <p>Tema, densidad y color de marca. Lo llena #80.</p>
-        </section>
-      }
-    }
+    @switch (activa()) { @case ('taller') {
+    <section
+      role="tabpanel"
+      id="panel-taller"
+      aria-labelledby="pestana-taller"
+      class="panel"
+    >
+      <p>Datos del Taller, Puestos y Tarifas. Solo lo configura el Dueño.</p>
+    </section>
+    } @case ('especialidades') {
+    <section
+      role="tabpanel"
+      id="panel-especialidades"
+      aria-labelledby="pestana-especialidades"
+      class="panel"
+    >
+      <p>
+        Qué Especialidades ofrece el Taller. Un Taller de una sola Especialidad
+        no muestra el filtro del tablero.
+      </p>
+    </section>
+    } @case ('apariencia') {
+    <section
+      role="tabpanel"
+      id="panel-apariencia"
+      aria-labelledby="pestana-apariencia"
+      class="panel"
+    >
+      <p>Tema, densidad y color de marca. Lo llena #80.</p>
+    </section>
+    } }
   </div>
 </div>

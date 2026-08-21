@@ -35,7 +35,11 @@ const SEMILLA: readonly Orden[] = [
     tiempoParado: 52,
     detalle: 'Bomba de agua pedida a San José — sin fecha de llegada',
     lineas: [
-      { descripcion: 'Cambio de bomba de agua', especialidad: 'mecanica', horas: 4 },
+      {
+        descripcion: 'Cambio de bomba de agua',
+        especialidad: 'mecanica',
+        horas: 4,
+      },
       { descripcion: 'Purga del sistema', especialidad: 'mecanica', horas: 1 },
     ],
   },
@@ -49,7 +53,11 @@ const SEMILLA: readonly Orden[] = [
     tiempoParado: 28,
     detalle: 'Guardabarros derecho, segunda mano de color',
     lineas: [
-      { descripcion: 'Guardabarros derecho', especialidad: 'pintura', horas: 6 },
+      {
+        descripcion: 'Guardabarros derecho',
+        especialidad: 'pintura',
+        horas: 6,
+      },
     ],
   },
   {
@@ -62,7 +70,11 @@ const SEMILLA: readonly Orden[] = [
     tiempoParado: 6,
     detalle: 'Alternador no carga en frío',
     lineas: [
-      { descripcion: 'Diagnóstico de carga', especialidad: 'electricidad', horas: 2 },
+      {
+        descripcion: 'Diagnóstico de carga',
+        especialidad: 'electricidad',
+        horas: 2,
+      },
     ],
   },
   {
@@ -75,7 +87,11 @@ const SEMILLA: readonly Orden[] = [
     tiempoParado: 3,
     detalle: 'Avisado por WhatsApp hace 1 h',
     lineas: [
-      { descripcion: 'Cambio de pastillas', especialidad: 'mecanica', horas: 1.5 },
+      {
+        descripcion: 'Cambio de pastillas',
+        especialidad: 'mecanica',
+        horas: 1.5,
+      },
     ],
   },
 ];
@@ -99,7 +115,8 @@ export class OrdenesStore {
 
   readonly seleccionada = computed(
     () =>
-      this.#ordenes().find((o) => o.folio === this.#folioSeleccionado()) ?? null,
+      this.#ordenes().find((o) => o.folio === this.#folioSeleccionado()) ??
+      null,
   );
 
   seleccionar(folio: string) {

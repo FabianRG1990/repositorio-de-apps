@@ -51,22 +51,22 @@
         </div>
 
         @if (!esCompacto()) {
-          <fa-icon
-            [icon]="['fas', 'table-columns']"
-            class="cuadro__alternar-panel fa-lg"
-            role="button"
-            tabindex="0"
-            [class.cuadro__alternar-panel--apagado]="
+        <fa-icon
+          [icon]="['fas', 'table-columns']"
+          class="cuadro__alternar-panel fa-lg"
+          role="button"
+          tabindex="0"
+          [class.cuadro__alternar-panel--apagado]="
               !esEstrecho() && !panelFijado()
             "
-            [attr.aria-label]="
+          [attr.aria-label]="
               panelFijado() ? 'Ocultar el panel de detalle' : 'Mostrar el panel de detalle'
             "
-            [attr.aria-pressed]="panelFijado()"
-            (click)="alAlternarPanel(panel)"
-            (keydown.enter)="alAlternarPanel(panel)"
-            (keydown.space)="alAlternarPanel(panel)"
-          />
+          [attr.aria-pressed]="panelFijado()"
+          (click)="alAlternarPanel(panel)"
+          (keydown.enter)="alAlternarPanel(panel)"
+          (keydown.space)="alAlternarPanel(panel)"
+        />
         }
       </div>
 
