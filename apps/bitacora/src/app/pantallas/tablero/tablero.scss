@@ -1,0 +1,158 @@
+/* La cadena de `min-height: 0` sigue desde .cuadro__ranura hasta acá: es lo
+   que mantiene el scroll dentro del cuadro y no en la ventana. */
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.pantalla__conteo {
+  margin: 0 0 1rem;
+  color: var(--app-text-soft);
+  font-size: 0.85rem;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fila {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 6rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--app-text-muted);
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .fila:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
+  }
+}
+
+.fila:active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.fila[aria-current='true'] {
+  color: var(--app-text);
+  border-color: var(--app-accent-strong);
+  background: linear-gradient(
+    90deg,
+    rgba(61, 165, 194, 0.2),
+    rgba(255, 255, 255, 0.02) 72%
+  );
+}
+
+.fila:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.fila__tiempo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.fila__centro {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fila__titulo,
+.fila__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fila__sub {
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+}
+
+.fila__identificador {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.fila__estado {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.fila__estado[data-tono='ok'] {
+  color: var(--app-success);
+  border-color: color-mix(in oklab, var(--app-success) 45%, transparent);
+  background: color-mix(in oklab, var(--app-success) 14%, transparent);
+}
+
+.fila__estado[data-tono='espera'] {
+  color: var(--app-warning);
+  border-color: color-mix(in oklab, var(--app-warning) 45%, transparent);
+  background: color-mix(in oklab, var(--app-warning) 14%, transparent);
+}
+
+.fila__estado[data-tono='riesgo'] {
+  color: var(--app-danger);
+  border-color: color-mix(in oklab, var(--app-danger) 45%, transparent);
+  background: color-mix(in oklab, var(--app-danger) 14%, transparent);
+}
+
+/* En angosto la fila de tres columnas no cabe: con el tiempo a 6rem y la
+   insignia a ancho natural, al centro le quedan ~80 px y "Toyota Hilux 2019"
+   se corta en "Toyot…". La insignia baja a una segunda línea y el tiempo pasa
+   a ocupar las dos, que es el reflow habitual de un list item de dos líneas
+   con metadato. */
+@media (max-width: 640px) {
+  .fila {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'tiempo centro'
+      'tiempo estado';
+    gap: 0.35rem 0.9rem;
+  }
+
+  .fila__tiempo {
+    grid-area: tiempo;
+    font-size: 1.35rem;
+  }
+
+  .fila__centro {
+    grid-area: centro;
+  }
+
+  .fila__estado {
+    grid-area: estado;
+    justify-self: start;
+  }
+}
