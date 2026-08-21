@@ -571,3 +571,200 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
     expect(sitios.espIzq).toBeCloseTo(sitios.cuerpoIzq, 0);
   });
 });
+
+/* ---------------------------------------------------------------------------
+   El Perfil (ADR 0005 / #90).
+
+   Lo que se comprueba acá es la frontera del ADR: el Perfil decide qué pantalla
+   se abre y qué se ofrece, y NO decide qué está permitido.
+   --------------------------------------------------------------------------- */
+test.describe('el Perfil', () => {
+  /* Este bloque necesita justo lo contrario que el resto: un aparato donde
+     nadie ha elegido todavía.
+
+     El borrado tiene que pasar SOLO en la primera carga. `addInitScript` corre
+     en cada navegación, así que la versión ingenua volvía a borrar el Perfil
+     después de elegirlo y las pruebas que navegan o recargan veían siempre la
+     pantalla de entrada. La marca va en `sessionStorage`, que sobrevive a la
+     recarga sin ensuciar lo que se está midiendo. */
+  const sinElegir = async (page: Page) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('e2e.sin-perfil', '1');
+      if (sessionStorage.getItem('e2e.perfil-borrado')) return;
+      sessionStorage.setItem('e2e.perfil-borrado', '1');
+      localStorage.removeItem('bitacora.perfil');
+    });
+  };
+
+  test('sin Perfil elegido, la app manda a elegirlo', async ({ page }) => {
+    await sinElegir(page);
+    await page.goto('/');
+
+    await expect(page).toHaveURL(/\/entrar$/);
+    await expect(
+      page.getByRole('heading', { name: /Quién está usando/ }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /Asesor/ })).toBeVisible();
+  });
+
+  /* No es un login y el vocabulario tiene que dejarlo claro: nadie escribe
+     nada, y elegir mal no cuesta nada porque se cambia en un clic. */
+  test('la pantalla de entrada no se parece a un inicio de sesión', async ({
+    page,
+  }) => {
+    await sinElegir(page);
+    await page.goto('/');
+
+    const texto = (await page.locator('.entrada').textContent()) ?? '';
+    expect(texto).not.toMatch(/sesión|contraseña|usuario|ingresar|login/i);
+    // Y no hay nada donde escribir.
+    await expect(page.locator('input, [contenteditable]')).toHaveCount(0);
+  });
+
+  /* La mitad del ADR que hasta ahora no se ejercía: "el Perfil determina qué
+     pantalla se abre". Va como tres pruebas y no como un bucle: cada una
+     necesita un aparato recién instalado, y eso es una página limpia. */
+  for (const [nombre, url] of [
+    ['Asesor', '/'],
+    ['Técnico', '/ordenes'],
+    ['Dueño', '/ajustes'],
+  ] as const) {
+    test(`el ${nombre} entra por ${url}`, async ({ page }) => {
+      await sinElegir(page);
+      await page.goto('/');
+
+      await page.getByRole('button', { name: new RegExp(nombre) }).click();
+
+      await expect(page).toHaveURL(
+        url === '/' ? /\/$/ : new RegExp(url.replace('/', '\/') + '$'),
+      );
+    });
+  }
+
+  test('lo elegido sobrevive a recargar y no vuelve a preguntar', async ({
+    page,
+  }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+    await expect(page).toHaveURL(/\/ordenes$/);
+
+    await page.reload();
+
+    await expect(page).toHaveURL(/\/ordenes$/);
+    await expect(page.locator('.menu__perfil-nombre')).toHaveText('Técnico');
+  });
+
+  /* La otra mitad: "qué se ofrece hacer". El menú cambia; nada se prohíbe. */
+  test('el menú ofrece cosas distintas según el Perfil', async ({ page }) => {
+    const delMenu = () =>
+      page.locator('.menu__item .mdc-list-item__primary-text').allInnerTexts();
+
+    await page.goto('/');
+    await expect.poll(delMenu).toEqual(['Tablero', 'Órdenes', 'Ajustes']);
+
+    await page.locator('.menu__perfil').click();
+    await page.getByRole('menuitem', { name: /Técnico/ }).click();
+
+    await expect.poll(delMenu).toEqual(['Órdenes', 'Tablero']);
+  });
+
+  /* EL corazón del ADR: el Perfil ofrece y no prohíbe. Ajustes no está en el
+     menú del Técnico y aun así se abre entera escribiendo la URL — no hay
+     guarda, no hay redirección, no hay pantalla de "no tenés permiso". */
+  test('lo que no se ofrece sigue abriéndose por URL', async ({ page }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+    await expect(page).toHaveURL(/\/ordenes$/);
+
+    await page.goto('/ajustes');
+
+    await expect(page).toHaveURL(/\/ajustes$/);
+    await expect(page.locator('.cuadro__titulo')).toHaveText('Ajustes');
+    expect(await page.locator('.raiz').textContent()).not.toMatch(/permiso/i);
+  });
+
+  /* Y si la pantalla abierta no está en el menú de ese Perfil, se AÑADE en vez
+     de desaparecer: cambiar de Perfil no puede dejar al usuario sin rastro de
+     dónde está. */
+  test('la pantalla abierta nunca desaparece del menú', async ({ page }) => {
+    await page.goto('/proximas-visitas');
+
+    const delMenu = () =>
+      page.locator('.menu__item .mdc-list-item__primary-text').allInnerTexts();
+
+    // El Dueño no tiene Próximas visitas en su lista, pero la tiene abierta.
+    await expect.poll(delMenu).toContain('Próximas visitas');
+    await expect(
+      page.getByRole('link', { name: 'Próximas visitas' }),
+    ).toHaveAttribute('aria-current', 'page');
+  });
+
+  /* "Cambiar de Perfil en vivo es gratis y no pierde estado" — así que no
+     navega. El destino de entrada se usa al entrar y solo ahí. */
+  test('cambiar de Perfil no se lleva al usuario de la pantalla', async ({
+    page,
+  }) => {
+    await page.goto('/ordenes');
+    await page.getByRole('tab', { name: 'Declinado' }).click();
+
+    await page.locator('.menu__perfil').click();
+    await page.getByRole('menuitem', { name: /Asesor/ }).click();
+
+    await expect(page).toHaveURL(/\/ordenes$/);
+    // Ni siquiera se perdió la pestaña abierta dentro de la pantalla.
+    await expect(page.locator('[role="tabpanel"]')).toHaveAttribute(
+      'id',
+      'panel-declinado',
+    );
+    await expect(page.locator('.menu__perfil-nombre')).toHaveText('Asesor');
+  });
+
+  test('el desplegable marca cuál es el Perfil de ahora', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('.menu__perfil').click();
+
+    await expect(page.getByRole('menuitem', { name: /Dueño/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    await expect(
+      page.getByRole('menuitem', { name: /Asesor/ }),
+    ).not.toHaveAttribute('aria-current', 'true');
+  });
+
+  /* #18 §6.4 otra vez, sobre la pantalla nueva: 2 px de trazo y 2 px de hueco,
+     y por teclado. */
+  test('las tarjetas de Perfil se enfocan con anillo de 2+2 px', async ({
+    page,
+  }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    /* Sin foco dentro del documento, el primer Tab no mueve nada: se pulsa un
+       elemento NO enfocable —el rótulo— para fijar desde dónde empieza el
+       recorrido, y el Tab siguiente cae en la primera tarjeta. Tiene que ser
+       con TECLADO: `focus()` no enciende `:focus-visible`, así que probaría
+       otra cosa. */
+    await page.locator('.entrada__marca').click();
+    await page.keyboard.press('Tab');
+
+    const anillo = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const s = getComputedStyle(el);
+      return {
+        clase: el.className,
+        trazo: s.outlineWidth,
+        hueco: s.outlineOffset,
+        visible: el.matches(':focus-visible'),
+      };
+    });
+
+    expect(anillo).toMatchObject({
+      clase: 'perfil',
+      trazo: '2px',
+      hueco: '2px',
+      visible: true,
+    });
+  });
+});
