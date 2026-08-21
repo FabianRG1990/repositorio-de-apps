@@ -163,3 +163,17 @@ test('en móvil la fila del tablero no corta el nombre del vehículo', async ({
   );
   expect(cortado).toBe(false);
 });
+
+test('el item raíz sigue activo aunque la URL lleve un query param', async ({
+  page,
+}) => {
+  // `exact: true` a secas compara la URL entera, así que cualquier parámetro
+  // apagaba el item del tablero (issue #86). El parámetro de acá es uno
+  // cualquiera a propósito: la prueba es de la app, no del prototipo de #79.
+  await page.goto('/?desde=prueba');
+
+  await expect(page.getByRole('link', { name: 'Tablero' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+});
