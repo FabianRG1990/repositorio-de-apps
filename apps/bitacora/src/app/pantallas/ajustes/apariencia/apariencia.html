@@ -1,0 +1,99 @@
+<div class="apariencia">
+  <!-- Un `radiogroup` y no botones sueltos: son opciones excluyentes, y así
+       las flechas recorren el grupo y el lector de pantalla anuncia "2 de 3". -->
+  <section class="ajuste">
+    <h3 class="ajuste__titulo" id="titulo-piel">Piel</h3>
+    <p class="ajuste__nota">
+      Cómo se ve la app en todo el Taller. La de taller sube el contraste para
+      el sol del patio.
+    </p>
+
+    @if (puedeEditar()) {
+    <div class="opciones" role="radiogroup" aria-labelledby="titulo-piel">
+      @for (piel of pieles; track piel.id) {
+      <button
+        type="button"
+        role="radio"
+        class="opcion"
+        [class.opcion--activa]="config.piel() === piel.id"
+        [attr.aria-checked]="config.piel() === piel.id"
+        [attr.tabindex]="config.piel() === piel.id ? 0 : -1"
+        (click)="config.cambiarPiel(piel.id)"
+      >
+        <span class="opcion__nombre">{{ piel.nombre }}</span>
+        <span class="opcion__para">{{ piel.para }}</span>
+      </button>
+      }
+    </div>
+    } @else {
+    <p class="ajuste__valor">
+      {{ config.piel() === 'taller' ? 'Taller' : 'Oficina' }}
+    </p>
+    }
+  </section>
+
+  <section class="ajuste">
+    <h3 class="ajuste__titulo" id="titulo-densidad">Tamaño</h3>
+    <p class="ajuste__nota">
+      Mueve el texto y el alto de las filas a la vez. Con guantes puestos, hay
+      que subirlo.
+    </p>
+
+    @if (puedeEditar()) {
+    <div class="opciones" role="radiogroup" aria-labelledby="titulo-densidad">
+      @for (densidad of densidades; track densidad.id) {
+      <button
+        type="button"
+        role="radio"
+        class="opcion"
+        [class.opcion--activa]="config.densidad() === densidad.id"
+        [attr.aria-checked]="config.densidad() === densidad.id"
+        [attr.tabindex]="config.densidad() === densidad.id ? 0 : -1"
+        (click)="config.cambiarDensidad(densidad.id)"
+      >
+        <span class="opcion__nombre">{{ densidad.nombre }}</span>
+        <span class="opcion__para">{{ densidad.para }}</span>
+      </button>
+      }
+    </div>
+    } @else {
+    <p class="ajuste__valor">{{ config.densidad() }}</p>
+    }
+  </section>
+
+  <section class="ajuste">
+    <h3 class="ajuste__titulo">
+      <label for="marca">Color de marca</label>
+    </h3>
+    <p class="ajuste__nota">
+      De la marca se toma el matiz; la claridad la pone la piel, para que ningún
+      color deje el texto por debajo del contraste que la app garantiza.
+    </p>
+
+    @if (puedeEditar()) {
+    <div class="marca">
+      <input
+        id="marca"
+        class="marca__entrada"
+        type="color"
+        [value]="config.marca()"
+        (change)="config.cambiarMarca($any($event.target).value)"
+      />
+      <span class="marca__valor">{{ config.marca() }}</span>
+    </div>
+    } @else {
+    <div class="marca">
+      <span
+        class="marca__muestra"
+        [style.background]="config.marca()"
+        aria-hidden="true"
+      ></span>
+      <span class="marca__valor">{{ config.marca() }}</span>
+    </div>
+    }
+  </section>
+
+  @if (!puedeEditar()) {
+  <p class="apariencia__pie">La apariencia del Taller la configura el Dueño.</p>
+  }
+</div>

@@ -3,6 +3,7 @@ import {
   ListaPestanas,
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
+import { Apariencia } from './apariencia/apariencia';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'taller', label: 'Taller', icon: ['fas', 'shop'] },
@@ -15,15 +16,15 @@ const PESTANAS: readonly Pestana[] = [
 ];
 
 /**
- * Ajustes con pestañas, igual que en el estándar. La pestaña de apariencia es
- * la que #80 tiene que llenar con tema, densidad y color de marca.
+ * Ajustes con pestañas, igual que en el estándar. La pestaña de apariencia
+ * lleva los tres ajustes del Taller: piel, tamaño y color de marca (#80).
  */
 @Component({
   selector: 'app-ajustes',
   templateUrl: './ajustes.html',
   styleUrl: './ajustes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListaPestanas],
+  imports: [ListaPestanas, Apariencia],
 })
 export class Ajustes {
   readonly pestanas = PESTANAS;
