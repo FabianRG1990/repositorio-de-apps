@@ -8,10 +8,8 @@ import {
   ListaPestanas,
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
-import {
-  OrdenesStore,
-  tiempoParadoLegible,
-} from '../../data-access/ordenes.store';
+import { FilaOrden } from '../../shared/fila-orden/fila-orden';
+import { OrdenesStore } from '../../data-access/ordenes.store';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'en-taller', label: 'En el taller', icon: ['fas', 'warehouse'] },
@@ -29,11 +27,10 @@ const PESTANAS: readonly Pestana[] = [
   templateUrl: './ordenes.html',
   styleUrl: './ordenes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListaPestanas],
+  imports: [ListaPestanas, FilaOrden],
 })
 export class Ordenes {
   readonly store = inject(OrdenesStore);
   readonly pestanas = PESTANAS;
   readonly activa = signal<string>('en-taller');
-  protected readonly tiempo = tiempoParadoLegible;
 }

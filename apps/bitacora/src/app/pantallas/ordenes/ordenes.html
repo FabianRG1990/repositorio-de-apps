@@ -14,22 +14,14 @@
       aria-labelledby="pestana-en-taller"
       class="panel"
     >
-      <ul class="tarjetas">
+      <ul class="lista">
         @for (orden of store.ordenes(); track orden.folio) {
-        <li>
-          <button
-            type="button"
-            class="tarjeta"
-            [attr.aria-current]="store.folioSeleccionado() === orden.folio"
-            (click)="store.seleccionar(orden.folio)"
-          >
-            <span class="tarjeta__tiempo"
-              >{{ tiempo(orden.tiempoParado) }}</span
-            >
-            <span class="tarjeta__titulo">{{ orden.vehiculo }}</span>
-            <span class="tarjeta__sub">{{ orden.detalle }}</span>
-          </button>
-        </li>
+        <li
+          app-fila-orden
+          [orden]="orden"
+          [seleccionada]="store.folioSeleccionado() === orden.folio"
+          (elegida)="store.seleccionar(orden.folio)"
+        ></li>
         }
       </ul>
     </section>

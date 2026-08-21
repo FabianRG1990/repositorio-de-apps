@@ -1,33 +1,23 @@
 <div class="pantalla">
-  <p class="pantalla__conteo">
-    {{ store.ordenes().length }} vehículos · ordenados por tiempo parado
-  </p>
+  <div class="pantalla__cabecera">
+    <p class="pantalla__conteo">
+      {{ store.ordenes().length }} vehículos · ordenados por tiempo parado
+    </p>
+
+    <button matButton="filled" type="button" class="pantalla__accion">
+      <fa-icon [icon]="['fas', 'car-side']" />
+      Recibir vehículo
+    </button>
+  </div>
 
   <ul class="lista">
     @for (orden of store.ordenes(); track orden.folio) {
-    <li>
-      <button
-        type="button"
-        class="fila"
-        [attr.aria-current]="store.folioSeleccionado() === orden.folio"
-        (click)="store.seleccionar(orden.folio)"
-      >
-        <span class="fila__tiempo">{{ tiempo(orden.tiempoParado) }}</span>
-        <span class="fila__centro">
-          <span class="fila__titulo"
-            >{{ orden.vehiculo }} ·
-            <span class="fila__identificador">{{ orden.placa }}</span></span
-          >
-          <span class="fila__sub"
-            >{{ orden.cliente }} ·
-            <span class="fila__identificador">{{ orden.folio }}</span></span
-          >
-        </span>
-        <span class="fila__estado" [attr.data-tono]="orden.tono"
-          >{{ orden.estado }}</span
-        >
-      </button>
-    </li>
+    <li
+      app-fila-orden
+      [orden]="orden"
+      [seleccionada]="store.folioSeleccionado() === orden.folio"
+      (elegida)="store.seleccionar(orden.folio)"
+    ></li>
     }
   </ul>
 </div>
