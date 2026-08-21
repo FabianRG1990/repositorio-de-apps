@@ -1,22 +1,26 @@
 @use '@angular/material' as mat;
 
 /* ---------------------------------------------------------------------------
-   La piel de Bitácora, escrita como vocabulario de ROLES.
+   Las dos pieles de Bitácora (#79).
 
-   Los componentes no nombran colores ni efectos: nombran para qué sirven. Un
+   `moofy` — la del estándar visual: oscura, translúcida, con sombras y acento
+   teal. Es la predeterminada.
+   `taller` — claro de alto contraste, para el patio: sol, guantes y una
+   tableta. Se enciende con `data-piel="taller"` en <html>.
+
+   EL CORTE: los componentes no nombran colores ni efectos, nombran ROLES. Un
    componente escribe `background: var(--app-capa-reposo)` y nunca
    `rgba(255,255,255,0.02)`; escribe `backdrop-filter: var(--app-vidrio)` y
-   nunca `blur(18px)`.
+   nunca `blur(18px)`. Por eso cambiar de piel es reescribir los dos bloques de
+   abajo y NINGUNA regla: no hay un solo selector condicionado a la piel fuera
+   de este archivo. Esa es la propiedad que #79 tenía que comprobar, y es
+   comprobable leyendo el diff.
 
-   Esto no cambia nada de lo que se ve —los valores son los mismos de antes—,
-   pero es lo que hace posible la segunda piel de #79: si el nombre dice el
-   papel y no el tono, cambiar de piel puede ser cambiar valores y ninguna
-   regla. En oscuro `--app-capa-reposo` es un velo de luz y en claro tendrá que
-   ser un escalón de superficie: dos cosas distintas con el mismo papel, y solo
-   un nombre de rol las abarca.
-
-   Los efectos entran al vocabulario junto con los colores, porque el vidrio no
-   es un tono: es una caja.
+   Los efectos son tokens igual que los colores. Es lo que hace que la piel
+   clara sea posible: el vidrio no es un tono, es una caja — apagarlo obliga a
+   volver opaca la superficie que había debajo (MDN: sin transparencia el
+   `backdrop-filter` no tiene nada que hacer), y quitar la sombra deja los
+   planos sin separación si no ocupa su lugar un escalón de superficie.
    --------------------------------------------------------------------------- */
 
 html {
@@ -50,14 +54,14 @@ html {
    opacidad 0,56 (secundario 5,43:1, etiquetas 5,81:1, insignias 5,45–6,87:1).
    Se conserva como está: es la piel de oficina y ese es su contexto.
    ------------------------------------------------------------------------- */
-html {
+html,
+html[data-piel='moofy'] {
   color-scheme: dark;
 
   --app-canvas-top: #14283b;
   --app-canvas-bottom: #04090f;
 
-  /* El lienzo es una imagen completa, no un color, para que una piel pueda
-     cambiarlo por un plano sin tocar la regla del `body`. */
+  /* El lienzo es una imagen completa, no un color: en taller pasa a plano. */
   --app-lienzo:
     radial-gradient(circle at top, rgba(97, 148, 182, 0.2), transparent 32%),
     radial-gradient(
@@ -79,8 +83,9 @@ html {
 
   --app-border: rgba(132, 165, 188, 0.18);
   --app-border-strong: rgba(132, 165, 188, 0.28);
-  /* Delimitar un plano grande no es lo mismo que separar filas de una lista:
-     hoy valen igual, pero son dos roles y por eso son dos tokens. */
+  /* Delimitar un plano grande no es lo mismo que separar filas de una lista.
+     En oscuro el mismo valor sirve para ambos; en claro un borde a 3:1 por
+     fila convierte la lista en una hoja de cálculo (#72 §5.2 y §5.9). */
   --app-border-lista: rgba(132, 165, 188, 0.18);
 
   --app-text: #edf5fa;
@@ -93,8 +98,8 @@ html {
   --app-accent-glow: rgba(138, 200, 212, 0.22);
 
   /* Cada estado va en tres piezas —texto, píldora y borde— en vez de un solo
-     color con `color-mix` dentro del componente: así el componente no calcula
-     color, solo lo usa. */
+     color con `color-mix` en el componente. En oscuro el mismo tono sirve
+     para las tres; en claro no, y ese es justamente el motivo de separarlas. */
   --app-success: #8fd1ab;
   --app-success-fondo: color-mix(in oklab, #8fd1ab 14%, transparent);
   --app-success-borde: color-mix(in oklab, #8fd1ab 45%, transparent);
@@ -105,13 +110,14 @@ html {
   --app-danger-fondo: color-mix(in oklab, #ec9a85 14%, transparent);
   --app-danger-borde: color-mix(in oklab, #ec9a85 45%, transparent);
 
-  /* Capas de estado de una superficie: reposo, hover, pulsado. */
+  /* Capas de estado de una superficie: reposo, hover, pulsado. En oscuro son
+     velos de luz; en claro tienen que ser el escalón de superficie de M3. */
   --app-capa-reposo: rgba(255, 255, 255, 0.02);
   --app-capa-hover: rgba(255, 255, 255, 0.05);
   --app-capa-activa: rgba(255, 255, 255, 0.07);
   --app-capa-plana: rgba(255, 255, 255, 0.03);
 
-  /* Efectos. Son tokens para que una piel pueda apagarlos. */
+  /* Efectos. Son tokens porque la piel clara los apaga. */
   --app-vidrio: blur(18px);
   --app-velo: linear-gradient(
     180deg,
@@ -141,7 +147,8 @@ html {
     rgba(61, 165, 194, 0.38)
   );
 
-  /* Lo seleccionado y lo activo. */
+  /* Lo seleccionado y lo activo: en oscuro son lavados de acento sobre la
+     superficie; en claro, una superficie de acento plana. */
   --app-seleccion: linear-gradient(
     90deg,
     rgba(61, 165, 194, 0.2),
@@ -171,6 +178,99 @@ html {
   );
 
   --app-focus-ring: rgba(138, 200, 212, 0.68);
+}
+
+/* --------------------------------- taller ---------------------------------
+   Polaridad positiva —texto oscuro sobre fondo claro— porque es lo que manda
+   MIL-STD-1472F §5.2.5.2.4 para condiciones adversas, y objetivo 7:1 en todo
+   el texto porque el sol, el reflejo y la película de grasa sobre el vidrio
+   actúan sobre el ojo igual que una pérdida de sensibilidad al contraste
+   (#18 §5.1 y §5.4).
+
+   Los valores no están elegidos a ojo. Las superficies son la escalera
+   `surface-container-*` de Material 3 en claro (tonos HCT 100/98/96/94/92),
+   que avanza ~1,05:1 por escalón; la tinta y los bordes se calcularon
+   buscando el color MÁS CLARO que todavía alcanza el objetivo sobre el plano
+   MÁS OSCURO en el que puede aparecer, para que el número se cumpla también
+   en el peor caso y no solo sobre blanco.
+
+   Medido: texto 12,81:1 · atenuado 9,49:1 · secundario 7,40:1 · bordes
+   3,03:1 · texto de cada estado 7,0x:1 sobre su píldora.
+   ------------------------------------------------------------------------- */
+html[data-piel='taller'] {
+  color-scheme: light;
+
+  --app-canvas-top: #edeeee;
+  --app-canvas-bottom: #edeeee;
+
+  /* Sin gradientes: un fondo plano no compite con el texto ni cambia el
+     contraste según en qué parte de la pantalla caiga la fila. */
+  --app-lienzo: #edeeee;
+
+  --app-surface: #ffffff;
+  --app-surface-strong: #ffffff;
+  --app-surface-soft: #f9f9f9;
+  --app-surface-soft-strong: #f3f3f4;
+
+  --app-border: #7c8a9c;
+  --app-border-strong: #5f6c7e;
+  --app-border-lista: #dce0e5;
+
+  --app-text: #212830;
+  --app-text-muted: #333d4a;
+  --app-text-soft: #414d5d;
+
+  --app-accent: #09556d;
+  --app-accent-strong: #2e97b8;
+  --app-accent-soft: #e5f5fa;
+  --app-accent-glow: #e5f5fa;
+
+  --app-success: #075c2f;
+  --app-success-fondo: #e5faef;
+  --app-success-borde: #28a161;
+  --app-warning: #714609;
+  --app-warning-fondo: #faf1e5;
+  --app-warning-borde: #ba802e;
+  --app-danger: #921e0c;
+  --app-danger-fondo: #fae8e5;
+  --app-danger-borde: #d56756;
+
+  /* El velo de luz no existe en claro: un blanco sobre blanco no separa nada.
+     Su trabajo lo hace el escalón de superficie, que es lo que M3 mide. */
+  --app-capa-reposo: #f9f9f9;
+  --app-capa-hover: #f3f3f4;
+  --app-capa-activa: #e7e8e8;
+  --app-capa-plana: #f9f9f9;
+
+  /* Los efectos se apagan, no se atenúan. Las sombras desaparecen al sol
+     (#18 §5.4), así que en planos permanentes no separan: separa el escalón. */
+  --app-vidrio: none;
+  --app-velo: none;
+  --app-velo-cabecera: none;
+  --app-shadow: none;
+  --app-shadow-soft: none;
+  --app-sombra-menu-activo: none;
+  --app-sombra-pestana-hover: none;
+  --app-sombra-pestana-activa: none;
+
+  --app-esquina: #7c8a9c;
+  --app-esquina-activa: #2e97b8;
+
+  --app-seleccion: #e5f5fa;
+  --app-seleccion-vertical: #e5f5fa;
+  --app-menu-activo: #e5f5fa;
+  --app-icono-activo: #095971;
+
+  --app-pestanas-fondo: #edeeee;
+  --app-pestana-reposo: #f3f3f4;
+  --app-pestana-hover: #e7e8e8;
+  /* La pestaña activa ES la superficie del panel que abre: sin sombra ni
+     tinte, la continuidad de plano es lo que dice cuál está abierta. */
+  --app-pestana-activa: #ffffff;
+
+  /* El anillo de foco va oscuro sobre claro; el hueco del `outline-offset`
+     sigue haciendo de segundo anillo con la superficie de debajo. */
+  --app-focus-ring: #212830;
 }
 
 body {
