@@ -615,8 +615,11 @@ test.describe('el Perfil', () => {
     await sinElegir(page);
     await page.goto('/');
 
-    const texto = (await page.locator('.entrada').textContent()) ?? '';
-    expect(texto).not.toMatch(/sesión|contraseña|usuario|ingresar|login/i);
+    // Aserción web-first: reintenta y además evita el `?? ''` que hacía falta
+    // para el caso de que `textContent` viniera nulo.
+    await expect(page.locator('.entrada')).not.toContainText(
+      /sesión|contraseña|usuario|ingresar|login/i,
+    );
     // Y no hay nada donde escribir.
     await expect(page.locator('input, [contenteditable]')).toHaveCount(0);
   });
@@ -635,9 +638,11 @@ test.describe('el Perfil', () => {
 
       await page.getByRole('button', { name: new RegExp(nombre) }).click();
 
-      await expect(page).toHaveURL(
-        url === '/' ? /\/$/ : new RegExp(url.replace('/', '\/') + '$'),
-      );
+      /* Se compara el `pathname` en vez de montar una expresión regular con la
+         URL dentro: la versión con `RegExp` necesitaba escapar las barras y un
+         condicional para el caso de la raíz, y las dos cosas son ruido en una
+         prueba que solo quiere saber dónde acabó. */
+      await expect.poll(() => new URL(page.url()).pathname).toBe(url);
     });
   }
 
