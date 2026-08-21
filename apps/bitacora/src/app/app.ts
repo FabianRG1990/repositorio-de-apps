@@ -17,14 +17,12 @@ import {
   faTableColumns,
   faWarehouse,
 } from '@fortawesome/pro-solid-svg-icons';
-import { ConmutadorPieles } from './prototipo/conmutador-pieles';
+import { ConfiguracionTallerStore } from './data-access/configuracion-taller.store';
 
 @Component({
-  imports: [RouterOutlet, ConmutadorPieles],
+  imports: [RouterOutlet],
   selector: 'app-root',
-  // El conmutador es del prototipo de #79 y se borra con él; en producción no
-  // se dibuja (ver `isDevMode()` en el componente).
-  template: '<router-outlet /><app-conmutador-pieles />',
+  template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
@@ -33,6 +31,11 @@ export class App {
      componente. Es el patrón de la librería, y evita que cada pantalla arrastre
      su propio bloque de imports de iconos. */
   constructor() {
+    /* Se pide acá para que exista desde el arranque: es quien escribe la piel
+       y la densidad del Taller en <html>. Si solo lo inyectara la pantalla de
+       Ajustes, la apariencia no se aplicaría hasta abrirla. */
+    inject(ConfiguracionTallerStore);
+
     inject(FaIconLibrary).addIcons(
       faBars,
       faCalendarCheck,
