@@ -288,36 +288,50 @@
   letter-spacing: 0.0056em;
 }
 
-/* Cuando la rejilla de cuatro columnas no cabe, la fila se apila. El umbral lo
-   decide el ANCHO DE LA LISTA y no el de la ventana, por dos motivos que se
-   miden:
+/* Cuando la rejilla de cuatro columnas no cabe, la fila cede en DOS pasos. El
+   umbral lo decide el ancho de LA LISTA y no el de la ventana, por dos motivos
+   que se miden:
 
    1. `@media (max-width: …)` mira la ventana, así que no ve que el panel de
-      detalle abierto le quita 234 px a la lista.
-   2. Con el zoom por tamaño de fuente que pide SC 1.4.4, la ventana sigue
+      detalle abierto le quita 234 px a la lista. Medido: a 1280 px de ventana
+      la lista mide 740, y a 1024 mide 958 —más ancha con menos ventana—,
+      porque el shell colapsa el menú y el panel.
+   2. Con el zoom por tamaño de letra que pide SC 1.4.4 la ventana sigue
       midiendo lo mismo y la consulta nunca dispara: al 200 % las columnas
       fijas sumaban más de lo que quedaba y la lista desbordaba en horizontal.
-      Medido antes del cambio: `scrollWidth > clientWidth` en `.pantalla`.
 
-   El umbral va en `rem` a propósito: es lo que hace que al doblar el tamaño de
-   la raíz el corte llegue a la mitad de ancho. */
+   Los umbrales van en `rem` a propósito: es lo que hace que al doblar el
+   tamaño de la raíz el corte llegue con la mitad de ancho.
+
+   Un solo escalón no bastaba. Con el corte único en 52 rem, todo el tramo de
+   1152 a 1366 px —las portátiles más comunes— saltaba de golpe a la fila
+   apilada de 179 px, que es convertir una lista densa en tarjetas por 40 px de
+   diferencia. En el primer paso solo se apila el centro y el alto queda a
+   medio camino; el apilado completo se guarda para cuando de verdad no cabe.
+   ------------------------------------------------------------------------- */
 @container (max-width: 52rem) {
-  :host {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    padding: 0.75rem 1rem;
-    gap: 0.75rem;
-  }
-
   .fila__cuerpo,
   :host(.fila--compacta) .fila__cuerpo {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto auto minmax(0, 1fr);
     grid-template-areas:
-      'cabecera titulo'
-      'cabecera sub'
-      'especialidades estado';
-    row-gap: 0.5rem;
-    padding: 0;
+      'cabecera titulo titulo'
+      'cabecera sub    sub'
+      'cabecera esp    estado';
+    row-gap: 0.35rem;
+    padding: 0.5rem 0;
+  }
+
+  /* Las dos insignias bajan a una tercera línea y dejan de ser columnas de la
+     fila: es lo que libera el ancho que el título necesita para no cortarse.
+     Van en CELDAS distintas y no en la misma área, o se dibujan una encima de
+     la otra y la especialidad desaparece. */
+  .fila__especialidades {
+    grid-area: esp;
+  }
+
+  .fila__estado {
+    grid-area: estado;
+    justify-self: start;
   }
 
   :host(.fila--compacta) .fila__cabecera {
@@ -327,10 +341,59 @@
   :host(.fila--compacta) .fila__sub {
     display: block;
   }
+}
+
+/* Segundo paso: ya no caben ni la cabecera al lado ni el botón a la derecha,
+   así que la rejilla se suelta del todo y cada pieza ocupa su línea.
+
+   Medido a 360 px —el ancho que SC 1.4.10 pone como piso de reflujo—: con la
+   cabecera todavía al lado, la columna del tiempo y la de la especialidad no
+   encogen, y entre las dos dejaban al título menos de lo que mide, así que el
+   modelo se cortaba Y la pantalla desbordaba en horizontal. */
+@container (max-width: 34rem) {
+  :host {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .fila__cuerpo,
+  :host(.fila--compacta) .fila__cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+    /* La especialidad y el estado van en LÍNEAS distintas. Juntas medían 370
+       px contra los 342 que hay a 360 de ventana —"Esperando repuesto" solo
+       ya son 204—, y eso desbordaba en horizontal. Partir el texto de la
+       insignia en dos líneas era la alternativa, pero un chip de dos líneas
+       deja de leerse como insignia. */
+    grid-template-areas:
+      'cabecera'
+      'titulo'
+      'sub'
+      'esp'
+      'estado';
+    row-gap: 0.4rem;
+  }
 
   .fila__especialidades,
   .fila__estado {
     justify-self: start;
+  }
+
+  .fila__cabecera,
+  :host(.fila--compacta) .fila__cabecera {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Con el ancho justo, lo que baja de línea es la placa entera y no un
+     pedazo del modelo: cortar "Toyota Hilux 2019" para que quepa la placa
+     deja dos datos a medias en vez de uno completo. */
+  .fila__titulo {
+    flex-wrap: wrap;
   }
 
   .fila__accion {
