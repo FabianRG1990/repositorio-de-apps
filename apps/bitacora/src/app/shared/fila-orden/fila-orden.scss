@@ -310,7 +310,11 @@
    medio camino; el apilado completo se guarda para cuando de verdad no cabe.
    ------------------------------------------------------------------------- */
 @container (max-width: 52rem) {
-  .fila__cuerpo,
+  /* Todo este bloque deja fuera a la fila amplia. En guantes la fila YA es una
+     tarjeta de una columna, y el reflujo le reasignaba las áreas: la
+     especialidad se quedaba sin celda en la plantilla de la tarjeta y se
+     auto-colocaba en una fila implícita, debajo del detalle. */
+  :host(:not(.fila--amplia)) .fila__cuerpo,
   :host(.fila--compacta) .fila__cuerpo {
     grid-template-columns: auto auto minmax(0, 1fr);
     grid-template-areas:
@@ -325,11 +329,11 @@
      fila: es lo que libera el ancho que el título necesita para no cortarse.
      Van en CELDAS distintas y no en la misma área, o se dibujan una encima de
      la otra y la especialidad desaparece. */
-  .fila__especialidades {
+  :host(:not(.fila--amplia)) .fila__especialidades {
     grid-area: esp;
   }
 
-  .fila__estado {
+  :host(:not(.fila--amplia)) .fila__estado {
     grid-area: estado;
     justify-self: start;
   }
@@ -358,7 +362,7 @@
     gap: 0.75rem;
   }
 
-  .fila__cuerpo,
+  :host(:not(.fila--amplia)) .fila__cuerpo,
   :host(.fila--compacta) .fila__cuerpo {
     grid-template-columns: minmax(0, 1fr);
     /* La especialidad y el estado van en LÍNEAS distintas. Juntas medían 370
@@ -375,12 +379,12 @@
     row-gap: 0.4rem;
   }
 
-  .fila__especialidades,
-  .fila__estado {
+  :host(:not(.fila--amplia)) .fila__especialidades,
+  :host(:not(.fila--amplia)) .fila__estado {
     justify-self: start;
   }
 
-  .fila__cabecera,
+  :host(:not(.fila--amplia)) .fila__cabecera,
   :host(.fila--compacta) .fila__cabecera {
     display: flex;
     flex-direction: row;
@@ -392,7 +396,7 @@
   /* Con el ancho justo, lo que baja de línea es la placa entera y no un
      pedazo del modelo: cortar "Toyota Hilux 2019" para que quepa la placa
      deja dos datos a medias en vez de uno completo. */
-  .fila__titulo {
+  :host(:not(.fila--amplia)) .fila__titulo {
     flex-wrap: wrap;
   }
 
