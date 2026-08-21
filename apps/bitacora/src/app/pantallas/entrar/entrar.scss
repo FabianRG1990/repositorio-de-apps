@@ -1,0 +1,125 @@
+.entrada {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.5rem;
+}
+
+.entrada__cuadro {
+  width: min(56rem, 100%);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border-radius: var(--app-shell-radio);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  backdrop-filter: var(--app-vidrio);
+  box-shadow: var(--app-shadow);
+  text-align: center;
+}
+
+.entrada__marca {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--app-accent);
+}
+
+.entrada__titulo {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  font-weight: 680;
+  letter-spacing: -0.01em;
+  color: var(--app-text);
+}
+
+/* Lo que separa esto de una pantalla de login se dice con todas las letras:
+   el Perfil ofrece y no prohíbe, y equivocarse no cuesta nada. */
+.entrada__ayuda {
+  margin: 0 auto 2.5rem;
+  max-width: 34rem;
+  color: var(--app-text-soft);
+  line-height: 1.5;
+}
+
+.entrada__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* Tres columnas donde caben; una sola en cuanto no. El `auto-fit` con
+     `minmax` evita una consulta de medio para algo que la rejilla ya sabe. */
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.perfil {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  /* Muy por encima del piso táctil de #18 §5.2: es el objetivo más grande de
+     la app y se pulsa una vez, con guante, de pie y con prisa. */
+  min-height: 11rem;
+  padding: 2rem 1.25rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background 100ms linear,
+    border-color 100ms linear,
+    color 100ms linear;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .perfil:hover {
+    background: var(--app-capa-hover);
+    border-color: var(--app-accent-strong);
+    color: var(--app-text);
+    transition-duration: 0s;
+  }
+}
+
+.perfil:active {
+  background: var(--app-capa-activa);
+  color: var(--app-text);
+  transition-duration: 0s;
+}
+
+.perfil:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perfil {
+    transition: none;
+  }
+}
+
+.perfil__icono {
+  font-size: 2rem;
+  color: var(--app-accent);
+  margin-bottom: 0.5rem;
+}
+
+.perfil__nombre {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 590;
+  color: var(--app-text);
+}
+
+.perfil__oficio {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-soft);
+  text-wrap: balance;
+}

@@ -1,0 +1,22 @@
+<main class="entrada">
+  <div class="entrada__cuadro">
+    <p class="entrada__marca">Bitácora</p>
+    <h1 class="entrada__titulo">¿Quién está usando Bitácora?</h1>
+    <p class="entrada__ayuda">
+      Cambia lo que la app te pone delante, no lo que podés hacer. Se cambia
+      cuando quieras desde el menú.
+    </p>
+
+    <ul class="entrada__lista">
+      @for (perfil of perfiles; track perfil) {
+      <li>
+        <button type="button" class="perfil" (click)="elegir(perfil)">
+          <fa-icon class="perfil__icono" [icon]="icono[perfil]" />
+          <span class="perfil__nombre">{{ etiqueta[perfil] }}</span>
+          <span class="perfil__oficio">{{ oficio[perfil] }}</span>
+        </button>
+      </li>
+      }
+    </ul>
+  </div>
+</main>

@@ -8,8 +8,19 @@ import { Shell } from './shell/shell';
  *
  * El `title` de cada ruta es lo que lee la cabecera del cuadro, así que no hay
  * que mantener el nombre de la pantalla en dos sitios.
+ *
+ * `entrar` va FUERA del Shell y no lleva guarda. Sin Perfil elegido todavía no
+ * hay menú que ofrecer —el menú es una de las cosas que el Perfil decide—, y
+ * una guarda de ruta sería justo lo que el ADR 0005 descarta: acá nada está
+ * prohibido, así que `/entrar` se abre siempre y el resto también.
  */
 export const appRoutes: Route[] = [
+  {
+    path: 'entrar',
+    title: 'Elegir Perfil',
+    loadComponent: () =>
+      import('./pantallas/entrar/entrar').then((m) => m.Entrar),
+  },
   {
     path: '',
     component: Shell,
