@@ -1,0 +1,52 @@
+@let o = orden();
+
+<button
+  type="button"
+  class="fila__cuerpo"
+  [attr.aria-current]="seleccionada()"
+  (click)="elegida.emit()"
+>
+  <!-- El tiempo parado y el folio se apilan en su propia columna. En la fila
+       cómoda no pueden ir con `display: contents`: sin área asignada el folio
+       se auto-colocaba en una fila implícita y la fila medía 88 px en vez de
+       los 72 de la escalera. -->
+  <span class="fila__cabecera">
+    <span class="fila__tiempo">{{ tiempo() }}</span>
+    <span class="fila__folio identificador">{{ o.folio }}</span>
+  </span>
+
+  <!-- La placa sale del título y va aparte por dos motivos: es un
+       identificador, y necesita cifras tabulares y cero cortado para que 0 no
+       se lea como O; y NO puede ser lo que se corta cuando el título no cabe.
+       Con una sola cadena, "Hyundai Elantra 2018 · TSJ 1204" se cortaba en
+       "TSJ 1…" y se perdía justo el dato que identifica el carro. Acá se
+       trunca el modelo y la placa se queda entera. -->
+  <span class="fila__titulo">
+    <span class="fila__modelo">{{ o.vehiculo }}</span>
+    <span class="fila__sep" aria-hidden="true">·</span>
+    <span class="fila__placa identificador">{{ o.placa }}</span>
+  </span>
+
+  <span class="fila__sub">{{ o.cliente }}</span>
+
+  <!-- El nombre solo cabe cuando hay UNA especialidad. Con dos o tres se
+       queda la marca de color y el nombre pasa al árbol de accesibilidad: si
+       se dejara el texto, la columna la fijaría la Orden más larga y las de
+       las demás filas dejarían de alinearse. -->
+  <span class="fila__especialidades">
+    @for (esp of o.especialidades; track esp) {
+    <app-etiqueta-especialidad
+      [especialidad]="esp"
+      [soloMarca]="compacta() || o.especialidades.length > 1"
+    />
+    }
+  </span>
+
+  <app-insignia-estado
+    class="fila__estado"
+    [texto]="o.estado"
+    [tono]="o.tono"
+  />
+
+  <span class="fila__detalle">{{ o.detalle }}</span>
+</button>

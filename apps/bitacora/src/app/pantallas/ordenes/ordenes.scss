@@ -20,6 +20,9 @@
   min-height: 0;
   overflow: hidden auto;
   padding: 1rem 1.5rem 1.5rem;
+  /* La fila de pestañas se queda fija arriba: sin esto, saltar a una Orden con
+     el teclado la deja debajo y el anillo de foco no se ve (F110). */
+  scroll-padding-top: 1rem;
 }
 
 .panel--vacio {
@@ -30,62 +33,14 @@
   text-align: center;
 }
 
-.tarjetas {
+.lista {
+  /* La fila se reordena según lo que mide ESTA lista, no la ventana: acá está
+     el contenedor que sus `@container` consultan. */
+  container-type: inline-size;
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 0.75rem;
-}
-
-.tarjeta {
-  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-
-  padding: 1rem;
-  border: 1px solid var(--app-border-lista);
-  border-radius: 0.95rem;
-  background: var(--app-capa-reposo);
-  color: var(--app-text-muted);
-  transition:
-    background 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease;
-}
-
-@media (any-hover: hover) and (any-pointer: fine) {
-  .tarjeta:hover {
-    background: var(--app-capa-hover);
-    border-color: var(--app-border-strong);
-    color: var(--app-text);
-  }
-}
-
-.tarjeta[aria-current='true'] {
-  color: var(--app-text);
-  border-color: var(--app-accent-strong);
-  background: var(--app-seleccion-vertical);
-}
-
-.tarjeta:focus-visible {
-  outline: 2px solid var(--app-focus-ring);
-  outline-offset: 2px;
-}
-
-.tarjeta__tiempo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.tarjeta__sub {
-  font-size: 0.8rem;
-  color: var(--app-text-soft);
+  gap: 0.5rem;
 }

@@ -1,0 +1,321 @@
+/* La caja visual es el <li> y no el botón de dentro: el fondo, el radio y los
+   estados tienen que abarcar la fila entera. */
+:host {
+  display: grid;
+  align-items: center;
+  padding: 0 1rem;
+  min-height: var(--app-fila-alto);
+  border-radius: 0.75rem;
+  background: var(--app-capa-reposo);
+  /* #72 §5.1: la fila en reposo va un paso por detrás. Lo que hace que una
+     lista responda no es que cambie de fondo, es que la fila apuntada se
+     oscurece tipográficamente mientras el resto se queda atrás. Los metadatos
+     declaran su propio color y no suben: así el paso existe sin aplanar la
+     jerarquía interna de la fila. */
+  color: var(--app-text-muted);
+  /* Asimetría de #18 §6.8: aparecer instantáneo, desaparecer en 100 ms. La
+     duración 0 se declara en los propios estados. */
+  transition:
+    background 100ms linear,
+    color 100ms linear;
+}
+
+/* En táctil el :hover se queda pegado a la última fila tocada y la lista
+   muestra una fila resaltada que no corresponde a nada. El :active queda
+   FUERA de la consulta, con su propio color, para que la tableta reciba
+   respuesta igual. */
+@media (any-hover: hover) and (any-pointer: fine) {
+  :host(:hover) {
+    background: var(--app-capa-hover);
+    color: var(--app-text);
+    transition-duration: 0s;
+  }
+}
+
+/* En tableta es el único aviso que existe antes de que cambie la pantalla:
+   MIL-STD-1472F §5.4.6.4 pide respuesta visible en ≤ 100 ms. */
+:host(:active) {
+  background: var(--app-capa-activa);
+  color: var(--app-text);
+  transition-duration: 0s;
+}
+
+/* Lo seleccionado es una superficie, no un contorno: con borde competiría con
+   el anillo de foco y además movería el layout de las filas vecinas. */
+:host(.fila--seleccionada) {
+  background: var(--app-seleccion);
+  color: var(--app-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}
+
+.fila__cuerpo {
+  display: grid;
+  align-items: center;
+  gap: 0 1rem;
+  /* Las dos últimas columnas van a ancho FIJO y no `auto`. Cada fila es su
+     propia rejilla —el grid del <ul> no llega hasta acá—, así que con `auto`
+     el ancho lo decidía el texto de cada Orden y los chips caían en una x
+     distinta en cada fila: la columna dejaba de existir y la lista dejaba de
+     escanearse de arriba abajo. */
+  grid-template-columns: 6.5rem minmax(0, 1fr) 7rem 13rem;
+  grid-template-areas:
+    'cabecera titulo especialidades estado'
+    'cabecera sub    especialidades estado';
+  min-width: 0;
+  /* Un <button> sin esto recupera el `border: 2px outset` de la hoja del
+     navegador, que es el borde de caja que #77 acaba de quitar. */
+  border: 0;
+  padding: 0.5rem 0;
+  margin: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+
+/* #18 §6.4: 2 px de trazo con 2 px de hueco. Los 3 px no están en la escala.
+   El hueco deja ver la superficie de debajo y ES el segundo anillo: por eso
+   funciona sobre cualquier fondo, incluido el de la fila seleccionada. */
+.fila__cuerpo:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.fila__cabecera {
+  grid-area: cabecera;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* El tiempo parado es el dato de vistazo: es lo que ordena la lista (ADR 0003). */
+.fila__tiempo {
+  font-size: 1.75rem;
+  line-height: 2rem;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.fila__folio {
+  font-size: 0.875rem;
+  letter-spacing: 0.0114em;
+  font-weight: 400;
+  color: var(--app-text-soft);
+}
+
+.fila__titulo {
+  grid-area: titulo;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+  font-weight: 590;
+  letter-spacing: 0.0056em;
+}
+
+/* El modelo es lo único que cede: la placa lleva `flex: none`. */
+.fila__modelo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fila__sep,
+.fila__placa {
+  flex: none;
+}
+
+.fila__sep {
+  color: var(--app-text-soft);
+}
+
+.fila__sub {
+  grid-area: sub;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fila__especialidades {
+  grid-area: especialidades;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: start;
+  min-width: 0;
+}
+
+.fila__estado {
+  grid-area: estado;
+  justify-self: start;
+}
+
+.fila__detalle {
+  display: none;
+}
+
+/* Placa, folio, VIN y número de parte: se leen como palabra, así que van
+   alineados a la izquierda, pero necesitan que el 0 no se confunda con la O ni
+   la I con la l. `cv08`, `cv05` y `case` no tienen equivalente de alto nivel;
+   el cero cortado sí, y por eso va por `font-variant-numeric` (#72 §7.5). */
+.identificador {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings:
+    'cv08' 1,
+    'cv05' 1,
+    'case' 1;
+}
+
+/* ================== COMPACTA — una línea, 56 px ==================
+   Máximo de Órdenes a la vista sin desplazar. Para el asesor que quiere el
+   taller entero de un vistazo: se van el cliente y el detalle, y la
+   especialidad se queda en su cuadro de color. */
+:host(.fila--compacta) .fila__cuerpo {
+  grid-template-columns: 6.5rem 5.5rem minmax(0, 1fr) 7rem 13rem;
+  grid-template-areas: 'tiempo folio titulo especialidades estado';
+  padding: 0;
+}
+
+:host(.fila--compacta) .fila__cabecera {
+  display: contents;
+}
+
+:host(.fila--compacta) .fila__tiempo {
+  grid-area: tiempo;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+:host(.fila--compacta) .fila__folio {
+  grid-area: folio;
+}
+
+:host(.fila--compacta) .fila__sub {
+  display: none;
+}
+
+/* ================== GUANTES — tarjeta, 96 px ==================
+   Área táctil grande y el detalle a la vista sin abrir la Orden: en el patio,
+   abrir una Orden con guante para leer una línea de texto es un viaje. */
+:host(.fila--amplia) {
+  align-items: start;
+  padding: 1rem;
+}
+
+:host(.fila--amplia) .fila__cuerpo {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'cabecera       cabecera'
+    'titulo         titulo'
+    'sub            sub'
+    'especialidades estado'
+    'detalle        detalle';
+  gap: 0.5rem 1rem;
+  padding: 0;
+  justify-items: start;
+}
+
+:host(.fila--amplia) .fila__cabecera {
+  flex-direction: row;
+  /* Sin esto el `justify-content: center` de la columna sigue vigente y, con
+     el eje girado, centra el tiempo y el folio en mitad de la tarjeta. */
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+:host(.fila--amplia) .fila__tiempo {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+:host(.fila--amplia) .fila__titulo {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  letter-spacing: 0;
+}
+
+:host(.fila--amplia) .fila__sub {
+  white-space: normal;
+}
+
+/* Sin esto los chips se estiran a todo el ancho de la tarjeta y dejan de
+   leerse como etiqueta: parecen una barra de progreso. */
+:host(.fila--amplia) .fila__especialidades,
+:host(.fila--amplia) .fila__estado {
+  justify-self: start;
+}
+
+:host(.fila--amplia) .fila__detalle {
+  grid-area: detalle;
+  display: block;
+  /* #72 §7.3: la sección se separa con espacio, no con regla. El salto de
+     0,5 rem de gap a 1 rem de relleno es la proporción que hace el corte. */
+  padding-top: 0.5rem;
+  color: var(--app-text-soft);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  letter-spacing: 0.0056em;
+}
+
+/* Cuando la rejilla de cuatro columnas no cabe, la fila se apila. El umbral lo
+   decide el ANCHO DE LA LISTA y no el de la ventana, por dos motivos que se
+   miden:
+
+   1. `@media (max-width: …)` mira la ventana, así que no ve que el panel de
+      detalle abierto le quita 234 px a la lista.
+   2. Con el zoom por tamaño de fuente que pide SC 1.4.4, la ventana sigue
+      midiendo lo mismo y la consulta nunca dispara: al 200 % las columnas
+      fijas sumaban más de lo que quedaba y la lista desbordaba en horizontal.
+      Medido antes del cambio: `scrollWidth > clientWidth` en `.pantalla`.
+
+   El umbral va en `rem` a propósito: es lo que hace que al doblar el tamaño de
+   la raíz el corte llegue a la mitad de ancho. */
+@container (max-width: 52rem) {
+  :host {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .fila__cuerpo,
+  :host(.fila--compacta) .fila__cuerpo {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'cabecera titulo'
+      'cabecera sub'
+      'especialidades estado';
+    row-gap: 0.5rem;
+    padding: 0;
+  }
+
+  :host(.fila--compacta) .fila__cabecera {
+    display: flex;
+  }
+
+  :host(.fila--compacta) .fila__sub {
+    display: block;
+  }
+
+  .fila__especialidades,
+  .fila__estado {
+    justify-self: start;
+  }
+}

@@ -7,148 +7,47 @@
   min-height: 0;
   overflow: hidden auto;
   padding: 1rem 1.5rem 1.5rem;
+  /* La cabecera del cuadro es pegajosa: sin esto, saltar a una fila con el
+     teclado la deja debajo del encabezado y el anillo de foco no se ve. Es el
+     fallo AA F110 de SC 2.4.11 que #77 encontró en el prototipo. */
+  scroll-padding-top: 4.5rem;
+}
+
+.pantalla__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
 .pantalla__conteo {
-  margin: 0 0 1rem;
+  margin: 0;
   color: var(--app-text-soft);
   font-size: 0.85rem;
 }
 
+/* La acción primaria de la pantalla. Va más alta que la secundaria de la
+   fila: #18 §5.2 pide 72 px para la acción principal con guante. */
+.pantalla__accion {
+  --mat-button-filled-container-height: calc(var(--app-boton-alto) + 8px);
+  --mat-button-filled-label-text-weight: 590;
+  --mat-button-filled-container-color: var(--app-boton-fondo);
+  --mat-button-filled-label-text-color: var(--app-boton-tinta);
+}
+
 .lista {
+  /* La fila se reordena según lo que mide ESTA lista, no la ventana: acá está
+     el contenedor que sus `@container` consultan. */
+  container-type: inline-size;
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
+  /* Sin borde: lo que separa una fila de la siguiente es el fondo que asoma
+     por el hueco. Un borde a 3:1 por fila convierte la lista en una hoja de
+     cálculo (#72 §5.2). */
   gap: 0.5rem;
-}
-
-.fila {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 6rem 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-
-  padding: var(--app-fila-relleno) 1rem;
-  border: 1px solid var(--app-border-lista);
-  border-radius: 0.95rem;
-  background: var(--app-capa-reposo);
-  color: var(--app-text-muted);
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-@media (any-hover: hover) and (any-pointer: fine) {
-  .fila:hover {
-    background: var(--app-capa-hover);
-    border-color: var(--app-border-strong);
-    color: var(--app-text);
-  }
-}
-
-.fila:active {
-  background: var(--app-capa-activa);
-}
-
-.fila[aria-current='true'] {
-  color: var(--app-text);
-  border-color: var(--app-accent-strong);
-  background: var(--app-seleccion);
-}
-
-.fila:focus-visible {
-  outline: 2px solid var(--app-focus-ring);
-  outline-offset: 2px;
-}
-
-.fila__tiempo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-.fila__centro {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.fila__titulo,
-.fila__sub {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.fila__sub {
-  font-size: 0.8rem;
-  color: var(--app-text-soft);
-}
-
-.fila__identificador {
-  font-variant-numeric: tabular-nums slashed-zero;
-}
-
-.fila__estado {
-  padding: 0.2rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  border: 1px solid transparent;
-}
-
-.fila__estado[data-tono='ok'] {
-  color: var(--app-success);
-  border-color: var(--app-success-borde);
-  background: var(--app-success-fondo);
-}
-
-.fila__estado[data-tono='espera'] {
-  color: var(--app-warning);
-  border-color: var(--app-warning-borde);
-  background: var(--app-warning-fondo);
-}
-
-.fila__estado[data-tono='riesgo'] {
-  color: var(--app-danger);
-  border-color: var(--app-danger-borde);
-  background: var(--app-danger-fondo);
-}
-
-/* En angosto la fila de tres columnas no cabe: con el tiempo a 6rem y la
-   insignia a ancho natural, al centro le quedan ~80 px y "Toyota Hilux 2019"
-   se corta en "Toyot…". La insignia baja a una segunda línea y el tiempo pasa
-   a ocupar las dos, que es el reflow habitual de un list item de dos líneas
-   con metadato. */
-@media (max-width: 640px) {
-  .fila {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      'tiempo centro'
-      'tiempo estado';
-    gap: 0.35rem 0.9rem;
-  }
-
-  .fila__tiempo {
-    grid-area: tiempo;
-    font-size: 1.35rem;
-  }
-
-  .fila__centro {
-    grid-area: centro;
-  }
-
-  .fila__estado {
-    grid-area: estado;
-    justify-self: start;
-  }
 }
