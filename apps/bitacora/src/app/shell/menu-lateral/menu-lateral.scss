@@ -7,6 +7,13 @@
   transition: all 100ms ease-in-out;
   --mat-list-list-item-one-line-container-height: 3.25rem;
   --mat-list-list-item-hover-label-text-color: var(--app-text-muted);
+  /* El puente entre las dos capas. Material pinta la etiqueta del item con SU
+     token, no con el `color` que hereda de `.menu__item`, así que sin esta
+     línea la piel no llega hasta acá: medido, el item en reposo salía a
+     12,73:1 y el activo a 7,97:1 — la jerarquía al revés, el elemento que no
+     está seleccionado gritando más que el que sí. Se apunta el token de
+     Material al nuestro y la piel vuelve a mandar, en las dos. */
+  --mat-list-list-item-label-text-color: var(--app-text-soft);
 }
 
 .menu__encabezado {
