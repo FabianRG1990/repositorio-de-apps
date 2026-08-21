@@ -1,4 +1,3 @@
-import 'fake-indexeddb/auto';
 import { ABIERTO, BitacoraDb, NO_BORRADO } from './esquema';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
 
