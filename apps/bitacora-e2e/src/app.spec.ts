@@ -177,3 +177,69 @@ test('el item raíz sigue activo aunque la URL lleve un query param', async ({
     'page',
   );
 });
+
+test.describe('ajustes de apariencia', () => {
+  test.beforeEach(async ({ page }) => {
+    // Cada prueba arranca sin nada elegido, como un Taller recién instalado.
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+  });
+
+  test('la piel elegida se aplica y sobrevive a recargar', async ({ page }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('tab', { name: 'Apariencia' }).click();
+    await page.getByRole('radio', { name: /Taller/ }).click();
+
+    await expect(page.locator('html')).toHaveAttribute('data-piel', 'taller');
+
+    // "Persiste entre sesiones" es el criterio del ticket, así que se recarga.
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-piel', 'taller');
+  });
+
+  test('el tamaño mueve el alto de la fila del tablero', async ({ page }) => {
+    const altoDeFila = () =>
+      page
+        .locator('.fila')
+        .first()
+        .evaluate((el) => el.getBoundingClientRect().height);
+
+    await page.goto('/');
+    const normal = await altoDeFila();
+
+    await page.goto('/ajustes');
+    await page.getByRole('tab', { name: 'Apariencia' }).click();
+    await page.getByRole('radio', { name: /Guantes/ }).click();
+    await page.goto('/');
+
+    // La escalera de #18 §6.5 es 56 / 72 / 96: con guantes la fila crece.
+    expect(await altoDeFila()).toBeGreaterThan(normal);
+  });
+
+  test('el color de marca tiñe la app entera, no solo Ajustes', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('tab', { name: 'Apariencia' }).click();
+
+    const acento = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--app-accent-strong')
+          .trim(),
+      );
+    const antes = await acento();
+
+    await page.locator('#marca').evaluate((el: HTMLInputElement) => {
+      el.value = '#c23d5a';
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    await expect.poll(acento).not.toBe(antes);
+
+    // El acento lo escribe el store en <html>, así que viaja a las demás
+    // pantallas sin que cada una tenga que enterarse.
+    await page.goto('/');
+    expect(await acento()).not.toBe(antes);
+  });
+});
