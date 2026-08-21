@@ -9,6 +9,7 @@ import {
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
 import { FilaOrden } from '../../shared/fila-orden/fila-orden';
+import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
 
 const PESTANAS: readonly Pestana[] = [
@@ -31,6 +32,14 @@ const PESTANAS: readonly Pestana[] = [
 })
 export class Ordenes {
   readonly store = inject(OrdenesStore);
+  readonly #detalle = inject(DetalleStore);
   readonly pestanas = PESTANAS;
   readonly activa = signal<string>('en-taller');
+
+  protected verOrden(folio: string) {
+    if (this.store.folioSeleccionado() !== folio) {
+      this.store.seleccionar(folio);
+    }
+    this.#detalle.pedir();
+  }
 }

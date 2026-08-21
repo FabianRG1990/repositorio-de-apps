@@ -50,3 +50,12 @@
 
   <span class="fila__detalle">{{ o.detalle }}</span>
 </button>
+
+<button
+  matButton="outlined"
+  type="button"
+  class="fila__accion"
+  (click)="detallePedido.emit()"
+>
+  Ver orden<span class="solo-lectores"> {{ o.folio }}</span>
+</button>

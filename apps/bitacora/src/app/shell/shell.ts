@@ -2,8 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -11,6 +14,7 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { filter, startWith } from 'rxjs';
+import { DetalleStore } from '../data-access/detalle.store';
 import { MenuLateral } from './menu-lateral/menu-lateral';
 import { PanelDetalle } from './panel-detalle/panel-detalle';
 
@@ -40,6 +44,7 @@ const APAISADO_BAJO = '(max-height: 520px) and (orientation: landscape)';
 })
 export class Shell {
   readonly #router = inject(Router);
+  readonly #detalle = inject(DetalleStore);
 
   readonly #medios = toSignal(
     inject(BreakpointObserver).observe([ESTRECHO, MOVIL, APAISADO_BAJO]),
@@ -105,6 +110,24 @@ export class Shell {
     while (ruta.firstChild) ruta = ruta.firstChild;
     return ruta.title ?? 'Bitácora';
   });
+
+  /* `viewChild` no puede ir en un campo `#privado`: el compilador lo lee desde
+     fuera de la clase para conectarlo con la plantilla (NG1053). */
+  protected readonly panelDetalle = viewChild.required<MatSidenav>('panel');
+
+  constructor() {
+    /* Ver orden PIDE el detalle; cómo se enseña lo decide el shell, porque
+       depende de la anchura y eso una fila de la lista no lo sabe. El contador
+       arranca en 0 y ese primer valor no abre nada: si no, el panel se abriría
+       solo al cargar la app en una tableta. */
+    effect(() => {
+      if (this.#detalle.peticiones() === 0) return;
+      untracked(() => {
+        if (this.esEstrecho()) void this.panelDetalle().open();
+        else this.panelFijado.set(true);
+      });
+    });
+  }
 
   alPulsarMenu(menu: MatSidenav) {
     return this.esEstrecho() ? menu.toggle() : this.colapsado.update((v) => !v);

@@ -1,8 +1,11 @@
-/* La caja visual es el <li> y no el botón de dentro: el fondo, el radio y los
-   estados tienen que abarcar la fila entera. */
+/* La caja visual es el <li>, no el botón: dentro conviven dos objetivos —el
+   cuerpo, que selecciona, y Ver orden—, y el fondo, el radio y los estados
+   tienen que abarcar a los dos. */
 :host {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 1rem;
   padding: 0 1rem;
   min-height: var(--app-fila-alto);
   border-radius: 0.75rem;
@@ -83,7 +86,8 @@
 /* #18 §6.4: 2 px de trazo con 2 px de hueco. Los 3 px no están en la escala.
    El hueco deja ver la superficie de debajo y ES el segundo anillo: por eso
    funciona sobre cualquier fondo, incluido el de la fila seleccionada. */
-.fila__cuerpo:focus-visible {
+.fila__cuerpo:focus-visible,
+.fila__accion:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
   z-index: 1;
@@ -179,6 +183,16 @@
     'cv08' 1,
     'cv05' 1,
     'case' 1;
+}
+
+/* La acción secundaria mantiene el piso táctil de #18 §5.2, que es más alto
+   que los 40 px del token de Material. */
+.fila__accion {
+  --mat-button-outlined-container-height: var(--app-boton-alto);
+  --mat-button-outlined-label-text-weight: 590;
+  --mat-button-outlined-outline-color: var(--app-border-strong);
+  --mat-button-outlined-label-text-color: var(--app-accent);
+  flex: none;
 }
 
 /* ================== COMPACTA — una línea, 56 px ==================
@@ -317,5 +331,9 @@
   .fila__especialidades,
   .fila__estado {
     justify-self: start;
+  }
+
+  .fila__accion {
+    justify-self: stretch;
   }
 }

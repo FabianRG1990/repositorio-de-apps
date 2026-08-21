@@ -17,6 +17,7 @@
       [orden]="orden"
       [seleccionada]="store.folioSeleccionado() === orden.folio"
       (elegida)="store.seleccionar(orden.folio)"
+      (detallePedido)="verOrden(orden.folio)"
     ></li>
     }
   </ul>
