@@ -1,0 +1,73 @@
+.pestanas {
+  display: flex;
+  width: 100%;
+  gap: 0.35rem;
+  padding: 0.35rem 0.35rem 0;
+  border-bottom: 1px solid var(--app-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+    rgba(5, 12, 20, 0.5);
+}
+
+.pestana {
+  position: relative;
+  flex: 1 1 0;
+  height: 3.5rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  font-size: 0.85rem;
+  font-family: inherit;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 1rem 1rem 0 0;
+  background: rgba(255, 255, 255, 0.012);
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
+}
+
+.pestana__icono {
+  color: inherit;
+}
+
+.pestana:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--app-border-strong);
+  color: var(--app-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 22px rgba(0, 0, 0, 0.12);
+}
+
+.pestana:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -3px;
+}
+
+.pestana--activa {
+  color: var(--app-text);
+  border-color: var(--app-border-strong);
+  background: linear-gradient(
+    180deg,
+    rgba(61, 165, 194, 0.22),
+    rgba(255, 255, 255, 0.02)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  .pestana span {
+    display: none;
+  }
+}
