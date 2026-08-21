@@ -31,9 +31,7 @@
 
     <div class="panel__dato">
       <span class="panel__etiqueta">Estado</span>
-      <span class="panel__estado" [attr.data-tono]="orden.tono"
-        >{{ orden.estado }}</span
-      >
+      <app-insignia-estado [texto]="orden.estado" [tono]="orden.tono" />
     </div>
 
     <div class="panel__dato">
@@ -44,9 +42,10 @@
         @for (linea of orden.lineas; track linea.descripcion) {
         <li class="panel__linea">
           <span>{{ linea.descripcion }}</span>
-          <span class="panel__linea-meta"
-            >{{ especialidad[linea.especialidad] }} · {{ linea.horas }} h</span
-          >
+          <span class="panel__linea-meta">
+            <app-etiqueta-especialidad [especialidad]="linea.especialidad" />
+            · {{ linea.horas }} h
+          </span>
         </li>
         }
       </ul>

@@ -26,7 +26,21 @@ export interface Orden {
   readonly tiempoParado: number;
   readonly detalle: string;
   readonly lineas: readonly LineaServicio[];
+  /* Las Especialidades que toca la Orden, sin repetir y en orden fijo. Se
+     derivan de las Líneas y no se guardan en la Orden: la Especialidad es de
+     la Línea (ADR 0001), así que una Orden puede tocar tres. El prototipo
+     mostraba una sola porque no tenía Líneas. */
+  readonly especialidades: readonly ClaveEspecialidad[];
 }
+
+/* El orden en que salen los chips es fijo y no el de captura: si dependiera de
+   qué Línea se escribió primero, dos Órdenes con el mismo trabajo pondrían los
+   colores en distinto sitio y la lista dejaría de escanearse. */
+const ORDEN_ESPECIALIDADES: readonly ClaveEspecialidad[] = [
+  'mecanica',
+  'electricidad',
+  'pintura',
+];
 
 /* El estado es un dato del dominio; el tono y la etiqueta son presentación.
    Viven acá y no en la base para que cambiar cómo se ve un estado no sea una
@@ -105,6 +119,7 @@ export class OrdenesStore {
         ]);
 
         const presentacion = PRESENTACION[orden.estado];
+        const tocadas = new Set(lineas.map((l) => l.especialidad));
 
         return {
           folio: orden.folio,
@@ -127,6 +142,7 @@ export class OrdenesStore {
             especialidad: l.especialidad,
             horas: l.horasFacturadas,
           })),
+          especialidades: ORDEN_ESPECIALIDADES.filter((e) => tocadas.has(e)),
         } satisfies Orden;
       }),
     );

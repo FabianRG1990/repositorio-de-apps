@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
+import { InsigniaEstado } from '../../shared/insignia-estado/insignia-estado';
 import {
-  ETIQUETA_ESPECIALIDAD,
   OrdenesStore,
   tiempoParadoLegible,
 } from '../../data-access/ordenes.store';
@@ -18,10 +19,9 @@ import {
   templateUrl: './panel-detalle.html',
   styleUrl: './panel-detalle.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FontAwesomeModule],
+  imports: [FontAwesomeModule, InsigniaEstado, EtiquetaEspecialidad],
 })
 export class PanelDetalle {
   readonly store = inject(OrdenesStore);
   protected readonly tiempo = tiempoParadoLegible;
-  protected readonly especialidad = ETIQUETA_ESPECIALIDAD;
 }
