@@ -1,9 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   ListaPestanas,
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
-import { OrdenesStore, tiempoParadoLegible } from '../../data-access/ordenes.store';
+import {
+  OrdenesStore,
+  tiempoParadoLegible,
+} from '../../data-access/ordenes.store';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'en-taller', label: 'En el taller', icon: ['fas', 'warehouse'] },

@@ -43,7 +43,8 @@ export class ListaPestanas {
     let siguiente: number | null = null;
 
     if (evento.key === 'ArrowRight') siguiente = (indice + 1) % total;
-    else if (evento.key === 'ArrowLeft') siguiente = (indice - 1 + total) % total;
+    else if (evento.key === 'ArrowLeft')
+      siguiente = (indice - 1 + total) % total;
     else if (evento.key === 'Home') siguiente = 0;
     else if (evento.key === 'End') siguiente = total - 1;
 
