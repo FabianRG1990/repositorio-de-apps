@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test('el shell arranca en el tablero', async ({ page }) => {
   await page.goto('/');
@@ -156,11 +156,13 @@ test('en móvil la fila del tablero no corta el nombre del vehículo', async ({
 
   // Con las tres columnas en una sola línea al centro le quedaban ~80 px y
   // "Toyota Hilux 2019" se veía como "Toyot…". El ellipsis no da error: hay
-  // que medir el desborde.
-  const titulo = page.locator('.fila__titulo').first();
-  const cortado = await titulo.evaluate(
-    (el) => el.scrollWidth > el.clientWidth,
-  );
+  // que medir el desborde. Se mide `.fila__modelo` y no `.fila__titulo`,
+  // porque el título pasó a ser un contenedor de dos piezas y el desborde lo
+  // sufre la de dentro.
+  const cortado = await page
+    .locator('.fila__modelo')
+    .first()
+    .evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(cortado).toBe(false);
 });
 
@@ -271,4 +273,245 @@ test('las Órdenes salen de la base y la semilla no las duplica', async ({
   await page.reload();
   await expect(page.locator('.fila').first()).toBeVisible();
   expect(await contar()).toBe(enLaBase);
+});
+
+/* ---------------------------------------------------------------------------
+   Lo que #77 midió sobre el prototipo, vuelto a medir sobre la app.
+
+   No se hereda al pasar a componentes de la plantilla: varios de esos
+   defectos existían justamente porque nadie los había medido.
+   --------------------------------------------------------------------------- */
+test.describe('la lista de órdenes, medida sobre el render', () => {
+  /* 1600 px: la fila conserva su forma de columnas por encima de 52 rem de
+     LISTA, y con los dos cajones abiertos el viewport de fábrica de Playwright
+     —1280— deja la lista en 46 rem, donde ya reflujo. Medirla ahí sería medir
+     otra forma. */
+  const ANCHA = { width: 1600, height: 900 };
+
+  const preparar = async (
+    page: Page,
+    piel: string,
+    densidad: string,
+    viewport = ANCHA,
+  ) => {
+    await page.setViewportSize(viewport);
+    await page.addInitScript(
+      (a) => {
+        localStorage.setItem('bitacora.apariencia', JSON.stringify(a));
+      },
+      { piel, densidad, marca: '#3da5c2' },
+    );
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+  };
+
+  /* La escalera de #18 §6.5 es 56 / 72 / 96 px, medida para un dedo con
+     guante. Compacta y normal la cumplen exacta; la amplia usa el 96 como
+     PISO y crece, porque enseña el detalle sin abrir la Orden. */
+  test('la escalera de altura de fila da 56 y 72 px exactos', async ({
+    page,
+  }) => {
+    for (const [densidad, esperado] of [
+      ['compacta', 56],
+      ['normal', 72],
+    ] as const) {
+      await preparar(page, 'oficina', densidad);
+      const altos = await page
+        .locator('li.fila')
+        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+
+      expect(altos.every((h) => Math.abs(h - esperado) < 1)).toBe(true);
+    }
+
+    await preparar(page, 'oficina', 'guantes');
+    const amplia = await page
+      .locator('li.fila')
+      .first()
+      .evaluate((e) => e.getBoundingClientRect().height);
+    expect(amplia).toBeGreaterThanOrEqual(96);
+  });
+
+  /* Cada fila es su propia rejilla, así que con columnas `auto` los chips
+     caían en una x distinta por fila y la columna dejaba de existir. */
+  test('las columnas de la lista caen en la misma x en todas las filas', async ({
+    page,
+  }) => {
+    await preparar(page, 'oficina', 'normal');
+
+    for (const parte of ['app-etiqueta-especialidad', 'app-insignia-estado']) {
+      const equis = await page
+        .locator('li.fila ' + parte)
+        .evaluateAll((els) =>
+          els.map((e) => Math.round(e.getBoundingClientRect().left)),
+        );
+      expect(new Set(equis).size).toBe(1);
+    }
+  });
+
+  /* La placa identifica el carro: no puede ser ella la que se corta. Con el
+     título en una sola cadena, "Hyundai Elantra 2018 · TSJ 1204" quedaba en
+     "TSJ 1…". */
+  test('la placa y el folio nunca se cortan, aunque el modelo sí', async ({
+    page,
+  }) => {
+    for (const ancho of [1600, 1366, 1280, 1024, 520, 360]) {
+      await preparar(page, 'oficina', 'normal', { width: ancho, height: 900 });
+
+      const cortes = await page.locator('li.fila').evaluateAll((els) =>
+        els.map((li) => {
+          const corta = (sel: string) => {
+            const el = li.querySelector(sel) as HTMLElement;
+            return el.scrollWidth > el.clientWidth + 1;
+          };
+          return { placa: corta('.fila__placa'), folio: corta('.fila__folio') };
+        }),
+      );
+
+      expect(cortes.filter((c) => c.placa || c.folio)).toEqual([]);
+    }
+  });
+
+  /* SC 1.4.4 pide 200 % sin desborde horizontal. La consulta de medio no
+     servía: mira la ventana, que no cambia de tamaño al subir la letra. */
+  test('al 200 % de tamaño de letra no hay desborde horizontal', async ({
+    page,
+  }) => {
+    await preparar(page, 'taller', 'normal');
+    await page.evaluate(
+      () => (document.documentElement.style.fontSize = '32px'),
+    );
+
+    await expect
+      .poll(() =>
+        page
+          .locator('.pantalla')
+          .evaluate((el) => el.scrollWidth > el.clientWidth),
+      )
+      .toBe(false);
+
+    // Y el texto creció de verdad, no es que se haya quedado igual.
+    const cuerpo = await page.evaluate(
+      () => getComputedStyle(document.body).fontSize,
+    );
+    expect(cuerpo).toBe('32px');
+  });
+
+  /* #18 §6.4: 2 px de trazo con 2 px de hueco, y por TECLADO — un `:focus` a
+     secas también lo dispara el ratón. */
+  test('el anillo de foco es de 2 px con 2 px de hueco, por teclado', async ({
+    page,
+  }) => {
+    await preparar(page, 'taller', 'normal');
+    await page.locator('.pantalla__accion').focus();
+    await page.keyboard.press('Tab');
+
+    const anillo = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const s = getComputedStyle(el);
+      return {
+        clase: el.className,
+        trazo: s.outlineWidth,
+        hueco: s.outlineOffset,
+        estilo: s.outlineStyle,
+        visible: el.matches(':focus-visible'),
+      };
+    });
+
+    expect(anillo).toMatchObject({
+      clase: 'fila__cuerpo',
+      trazo: '2px',
+      hueco: '2px',
+      estilo: 'solid',
+      visible: true,
+    });
+  });
+
+  /* ANSI/HFES 100-2007 §7.2.5.3: el color nunca es el único portador. Cada
+     tono lleva su figura, y a 20 px, que es donde se DISCRIMINA por color. */
+  test('cada estado lleva su propia figura además de su color', async ({
+    page,
+  }) => {
+    await preparar(page, 'oficina', 'normal');
+
+    const marcas = await page
+      .locator('li.fila app-insignia-estado .insignia')
+      .evaluateAll((els) =>
+        els.map((el) => {
+          const antes = getComputedStyle(el, '::before');
+          return {
+            tono: (el as HTMLElement).dataset['tono'],
+            figura: antes.clipPath + '|' + antes.borderRadius,
+            lado: antes.width,
+          };
+        }),
+      );
+
+    const porTono = new Map(marcas.map((m) => [m.tono, m.figura]));
+    expect(porTono.size).toBeGreaterThan(1);
+    expect(new Set(porTono.values()).size).toBe(porTono.size);
+    expect(marcas.every((m) => parseFloat(m.lado) >= 20)).toBe(true);
+  });
+
+  /* El cero cortado es la razón por la que #18 §6.1 eligió Inter: en una placa
+     confundir 0 con O es un error de trabajo real. Se comprueba por PÍXELES y
+     no leyendo el CSS: la app pedía la característica desde el principio y la
+     fuente que la trae no se estaba cargando, así que el CSS decía que sí y la
+     pantalla decía que no. */
+  test('el cero cortado se dibuja de verdad en la placa', async ({ page }) => {
+    await preparar(page, 'taller', 'normal');
+    const placa = page.locator('.fila__placa').first();
+
+    const conRasgos = await placa.screenshot();
+    await page.addStyleTag({
+      content:
+        '.fila__placa { font-variant-numeric: normal !important; font-feature-settings: normal !important; }',
+    });
+    const sinRasgos = await placa.screenshot();
+
+    expect(conRasgos.equals(sinRasgos)).toBe(false);
+  });
+
+  /* El agujero que Ver orden vino a tapar: en una tableta el panel está
+     cerrado, así que tocar la fila seleccionaba una Orden y no pasaba nada
+     visible. */
+  test('en tableta Ver orden abre el panel con la Orden pulsada', async ({
+    page,
+  }) => {
+    await preparar(page, 'oficina', 'normal', { width: 520, height: 900 });
+
+    const panel = page.locator('mat-sidenav.shell__panel');
+    await expect(panel).toBeHidden();
+
+    const primera = page.locator('li.fila').first();
+    const folio = (await primera.locator('.fila__folio').textContent())?.trim();
+    await primera.getByRole('button', { name: /Ver orden/ }).click();
+
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('.panel__encabezado')).toContainText(
+      'Orden ' + folio,
+    );
+  });
+
+  /* SC 1.4.10 pone el piso del reflujo en 320 px de ancho. A 360 la
+     especialidad y el estado en la misma línea medían 370 px contra los 342
+     disponibles —"Esperando repuesto" solo ya son 204— y la pantalla
+     desbordaba en horizontal. */
+  test('a 360 px de ancho no hay desplazamiento horizontal', async ({
+    page,
+  }) => {
+    await preparar(page, 'oficina', 'normal', { width: 360, height: 850 });
+
+    const desborde = await page.evaluate(() => {
+      const pantalla = document.querySelector('.pantalla') as HTMLElement;
+      return {
+        pantalla: pantalla.scrollWidth > pantalla.clientWidth,
+        documento:
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth,
+      };
+    });
+
+    expect(desborde).toEqual({ pantalla: false, documento: false });
+  });
 });
