@@ -17,11 +17,14 @@ import {
   faTableColumns,
   faWarehouse,
 } from '@fortawesome/pro-solid-svg-icons';
+import { ConmutadorPieles } from './prototipo/conmutador-pieles';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ConmutadorPieles],
   selector: 'app-root',
-  template: '<router-outlet />',
+  // El conmutador es del prototipo de #79 y se borra con él; en producción no
+  // se dibuja (ver `isDevMode()` en el componente).
+  template: '<router-outlet /><app-conmutador-pieles />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
