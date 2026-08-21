@@ -1,5 +1,20 @@
 import { test, expect, type Page } from '@playwright/test';
 
+/* A Bitácora se entra eligiendo un Perfil (ADR 0005). Estas pruebas no ejercen
+   esa pantalla —tiene la suya, más abajo—, así que arrancan con el Perfil ya
+   elegido, igual que un aparato donde ya se eligió una vez. Va Dueño porque es
+   el único al que la app le OFRECE editar la apariencia del Taller. */
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    /* La bandera la pone el bloque del Perfil, que necesita justo lo
+       contrario. Sin ella, esto volvería a sembrar el Perfil en CADA
+       navegación —`addInitScript` corre en todas— y esas pruebas nunca verían
+       un aparato recién instalado. */
+    if (localStorage.getItem('e2e.sin-perfil')) return;
+    localStorage.setItem('bitacora.perfil', 'dueno');
+  });
+});
+
 test('el shell arranca en el tablero', async ({ page }) => {
   await page.goto('/');
 
@@ -182,9 +197,11 @@ test('el item raíz sigue activo aunque la URL lleve un query param', async ({
 
 test.describe('ajustes de apariencia', () => {
   test.beforeEach(async ({ page }) => {
-    // Cada prueba arranca sin nada elegido, como un Taller recién instalado.
+    // Cada prueba arranca sin apariencia elegida, como un Taller recién
+    // instalado. Se borra SOLO esa clave: un `clear()` se llevaría por delante
+    // el Perfil, y sin Perfil la app manda a elegirlo antes de nada.
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => localStorage.removeItem('bitacora.apariencia'));
   });
 
   test('la piel elegida se aplica y sobrevive a recargar', async ({ page }) => {

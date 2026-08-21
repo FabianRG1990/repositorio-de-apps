@@ -15,6 +15,7 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { filter, startWith } from 'rxjs';
 import { DetalleStore } from '../data-access/detalle.store';
+import { PerfilStore } from '../data-access/perfil.store';
 import { MenuLateral } from './menu-lateral/menu-lateral';
 import { PanelDetalle } from './panel-detalle/panel-detalle';
 
@@ -45,6 +46,7 @@ const APAISADO_BAJO = '(max-height: 520px) and (orientation: landscape)';
 export class Shell {
   readonly #router = inject(Router);
   readonly #detalle = inject(DetalleStore);
+  readonly #perfiles = inject(PerfilStore);
 
   readonly #medios = toSignal(
     inject(BreakpointObserver).observe([ESTRECHO, MOVIL, APAISADO_BAJO]),
@@ -116,6 +118,15 @@ export class Shell {
   protected readonly panelDetalle = viewChild.required<MatSidenav>('panel');
 
   constructor() {
+    /* Se entra eligiendo un Perfil (ADR 0005). La comprobación va acá y no en
+       una guarda de ruta: una guarda intercepta CADA navegación y es lo que el
+       ADR descarta —nada está prohibido—. El Shell se construye una sola vez,
+       cuando el router ya resolvió la primera ruta, así que esto corre
+       exactamente al entrar y nunca más. */
+    if (!this.#perfiles.elegido()) {
+      void this.#router.navigateByUrl('/entrar');
+    }
+
     /* Ver orden PIDE el detalle; cómo se enseña lo decide el shell, porque
        depende de la anchura y eso una fila de la lista no lo sabe. El contador
        arranca en 0 y ese primer valor no abre nada: si no, el panel se abriría
