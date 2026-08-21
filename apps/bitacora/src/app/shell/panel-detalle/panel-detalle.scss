@@ -16,8 +16,8 @@
   gap: 0.6rem;
   padding: 1rem;
   border-radius: 1rem;
-  border: 1px solid var(--app-border);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--app-border-lista);
+  background: var(--app-capa-plana);
   box-shadow: var(--app-shadow-soft);
   font-weight: 500;
 }
@@ -74,20 +74,20 @@
 
 .panel__estado[data-tono='ok'] {
   color: var(--app-success);
-  border-color: color-mix(in oklab, var(--app-success) 45%, transparent);
-  background: color-mix(in oklab, var(--app-success) 14%, transparent);
+  border-color: var(--app-success-borde);
+  background: var(--app-success-fondo);
 }
 
 .panel__estado[data-tono='espera'] {
   color: var(--app-warning);
-  border-color: color-mix(in oklab, var(--app-warning) 45%, transparent);
-  background: color-mix(in oklab, var(--app-warning) 14%, transparent);
+  border-color: var(--app-warning-borde);
+  background: var(--app-warning-fondo);
 }
 
 .panel__estado[data-tono='riesgo'] {
   color: var(--app-danger);
-  border-color: color-mix(in oklab, var(--app-danger) 45%, transparent);
-  background: color-mix(in oklab, var(--app-danger) 14%, transparent);
+  border-color: var(--app-danger-borde);
+  background: var(--app-danger-fondo);
 }
 
 .panel__lineas {
@@ -104,8 +104,8 @@
   flex-direction: column;
   padding: 0.5rem 0.65rem;
   border-radius: 0.65rem;
-  border: 1px solid var(--app-border);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--app-border-lista);
+  background: var(--app-capa-reposo);
   font-size: 0.85rem;
 }
 

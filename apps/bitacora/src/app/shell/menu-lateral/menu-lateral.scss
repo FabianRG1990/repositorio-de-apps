@@ -18,8 +18,8 @@
   text-align: left;
   line-height: 1.5;
   border-radius: 1rem;
-  border: 1px solid var(--app-border);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--app-border-lista);
+  background: var(--app-capa-plana);
   box-shadow: var(--app-shadow-soft);
 }
 
@@ -41,9 +41,9 @@ mat-nav-list {
   height: 5rem;
   margin: 0 0 0.5rem 0;
   border-radius: 0.95rem !important;
-  border: 1px solid var(--app-border);
+  border: 1px solid var(--app-border-lista);
   border-left: 3px solid transparent;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--app-capa-reposo);
 
   font-size: 0.875rem;
   font-weight: 500;
@@ -65,31 +65,25 @@ mat-nav-list {
   bottom: 0;
   width: 12px;
   height: 12px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--app-esquina);
   clip-path: polygon(100% 0, 0 100%, 100% 100%);
   pointer-events: none;
 }
 
 .menu__item:not(.menu__item--activo):hover {
-  background-color: rgba(255, 255, 255, 0.045);
+  background-color: var(--app-capa-hover);
   border-color: var(--app-border-strong);
 }
 
 .menu__item--activo {
   color: var(--app-text);
   border-left-color: var(--app-accent-strong);
-  background: linear-gradient(
-    90deg,
-    rgba(61, 165, 194, 0.18),
-    rgba(255, 255, 255, 0.02) 72%
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 24px rgba(0, 0, 0, 0.24);
+  background: var(--app-menu-activo);
+  box-shadow: var(--app-sombra-menu-activo);
 }
 
 .menu__item--activo fa-icon {
-  color: #fff;
+  color: var(--app-icono-activo);
 }
 
 .menu__item--activo span,
@@ -98,11 +92,7 @@ mat-nav-list {
 }
 
 .menu__item--activo::after {
-  background: linear-gradient(
-    135deg,
-    rgba(138, 200, 212, 0.84),
-    rgba(61, 165, 194, 0.38)
-  );
+  background: var(--app-esquina-activa);
 }
 
 :host ::ng-deep .mat-mdc-list-item {
