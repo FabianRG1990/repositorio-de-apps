@@ -1,0 +1,31 @@
+@if (encabezadoVisible()) {
+  <div
+    class="menu__encabezado"
+    [class.menu__encabezado--desvaneciendo]="encabezadoDesvaneciendo()"
+    [attr.aria-hidden]="encabezadoDesvaneciendo() ? 'true' : null"
+  >
+    <div>Navegación</div>
+  </div>
+}
+
+<mat-nav-list>
+  @for (item of items(); track item.route) {
+    <a
+      mat-list-item
+      class="menu__item"
+      [routerLink]="item.route"
+      routerLinkActive="menu__item--activo"
+      [routerLinkActiveOptions]="{ exact: item.exact }"
+      #rla="routerLinkActive"
+      [activated]="rla.isActive"
+      [attr.aria-current]="rla.isActive ? 'page' : null"
+      [attr.title]="estaColapsado() ? item.label : null"
+      (click)="itemElegido.emit()"
+    >
+      <fa-icon matListItemIcon [icon]="item.icon" />
+      @if (!estaColapsado()) {
+        <span matListItemTitle>{{ item.label }}</span>
+      }
+    </a>
+  }
+</mat-nav-list>
