@@ -25,6 +25,13 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4202';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  /* 60 s en vez de los 30 s de fábrica. No es que las pruebas hagan de más:
+     contra `nx serve` en modo desarrollo —que sirve los módulos sin bundlear—
+     Firefox tarda entre 16 y 23 s en las pruebas del shell, contra 1-3 s de
+     Chromium. Con 23 s de caso peor, 30 s deja un 30 % de margen y basta que
+     ocho workers se peleen la CPU para agotarlo: de ahí los rojos
+     intermitentes que solo aparecían con la suite completa (issue #92). */
+  timeout: 60_000,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
