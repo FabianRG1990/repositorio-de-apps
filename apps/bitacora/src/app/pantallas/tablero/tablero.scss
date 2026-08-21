@@ -34,7 +34,7 @@
   font: inherit;
   cursor: pointer;
 
-  padding: 0.75rem 1rem;
+  padding: var(--app-fila-relleno) 1rem;
   border: 1px solid var(--app-border-lista);
   border-radius: 0.95rem;
   background: var(--app-capa-reposo);
