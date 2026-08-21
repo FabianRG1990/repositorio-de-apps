@@ -234,6 +234,19 @@ html[data-piel='oficina'] {
   );
 
   --app-focus-ring: color-mix(in oklab, var(--app-accent) 68%, transparent);
+
+  /* La especialidad es una CATEGORÍA: su matiz lo pone el dominio y la
+     claridad y el croma los pone la piel, igual que con el color de marca.
+     Medidos: ≥ 4,66:1 en las dos pieles, sobre los tres matices. */
+  --app-esp-l: 0.635;
+  --app-esp-c: 0.106;
+
+  /* El botón sólido es un par —fondo y tinta— y no un color suelto: quién de
+     los dos acentos hace de fondo depende de la piel. En oscuro el acento
+     fuerte es el claro de los dos, así que la tinta va negra encima; blanco
+     sobre él daría 2,8:1. */
+  --app-boton-fondo: var(--app-accent-strong);
+  --app-boton-tinta: #04090f;
 }
 
 /* --------------------------------- taller ---------------------------------
@@ -333,6 +346,15 @@ html[data-piel='taller'] {
   /* El anillo de foco va oscuro sobre claro; el hueco del `outline-offset`
      sigue haciendo de segundo anillo con la superficie de debajo. */
   --app-focus-ring: #212830;
+
+  --app-esp-l: 0.545;
+  --app-esp-c: 0.09;
+
+  /* En claro los papeles se invierten: el fondo lo hace el acento OSCURO
+     —`--app-accent-strong` es el claro acá— y la tinta va blanca. Con el
+     acento fuerte de fondo, el blanco daría 3,2:1. */
+  --app-boton-fondo: var(--app-accent);
+  --app-boton-tinta: #ffffff;
 }
 
 /* -------------------------------- densidad --------------------------------
@@ -349,18 +371,41 @@ html {
   font-size: 16px;
   --app-fila-relleno: 1.125rem;
   --app-item-alto: 5rem;
+  --app-fila-alto: 72px;
+  --app-boton-alto: 56px;
 }
 
 html[data-densidad='compacta'] {
   font-size: 15px;
   --app-fila-relleno: 0.72rem;
   --app-item-alto: 3.5rem;
+  --app-fila-alto: 56px;
+  --app-boton-alto: 48px;
 }
 
 html[data-densidad='guantes'] {
   font-size: 18px;
   --app-fila-relleno: 1.49rem;
   --app-item-alto: 6rem;
+  --app-fila-alto: 96px;
+  --app-boton-alto: 64px;
+}
+
+/* -------------------------- texto solo para lectores ----------------------
+   Lo que no cabe en pantalla pero el dato sigue existiendo. No es
+   `display: none` ni `visibility: hidden`: las dos lo sacan también del árbol
+   de accesibilidad, que es justo lo contrario de lo que hace falta acá.
+   --------------------------------------------------------------------------- */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 body {
