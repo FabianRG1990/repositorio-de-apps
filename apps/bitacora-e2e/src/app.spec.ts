@@ -243,3 +243,32 @@ test.describe('ajustes de apariencia', () => {
     expect(await acento()).not.toBe(antes);
   });
 });
+
+test('las Órdenes salen de la base y la semilla no las duplica', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('.fila').first()).toBeVisible();
+
+  const contar = () =>
+    page.evaluate(async () => {
+      const abrir = indexedDB.open('bitacora');
+      const db = await new Promise<IDBDatabase>((res, rej) => {
+        abrir.onsuccess = () => res(abrir.result);
+        abrir.onerror = () => rej(abrir.error);
+      });
+      return new Promise<number>((res) => {
+        const p = db.transaction('ordenes').objectStore('ordenes').count();
+        p.onsuccess = () => res(p.result);
+      });
+    });
+
+  const enLaBase = await contar();
+  expect(enLaBase).toBeGreaterThan(0);
+  await expect(page.locator('.fila')).toHaveCount(enLaBase);
+
+  // La semilla es idempotente: recargar no vuelve a sembrar.
+  await page.reload();
+  await expect(page.locator('.fila').first()).toBeVisible();
+  expect(await contar()).toBe(enLaBase);
+});
