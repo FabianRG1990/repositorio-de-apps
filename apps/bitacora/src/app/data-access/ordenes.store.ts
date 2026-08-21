@@ -1,4 +1,9 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { liveQuery } from 'dexie';
+import { from } from 'rxjs';
+import { BitacoraDatos } from './db/bitacora-db';
+import { ABIERTO, NO_BORRADO, type EstadoOrden } from './db/esquema';
 
 export type TonoEstado = 'ok' | 'espera' | 'riesgo';
 export type ClaveEspecialidad = 'mecanica' | 'electricidad' | 'pintura';
@@ -9,6 +14,7 @@ export interface LineaServicio {
   readonly horas: number;
 }
 
+/** Lo que la pantalla necesita de una Orden, ya compuesto. */
 export interface Orden {
   readonly folio: string;
   readonly placa: string;
@@ -22,106 +28,107 @@ export interface Orden {
   readonly lineas: readonly LineaServicio[];
 }
 
-/* Datos sembrados, los mismos del prototipo de temas. Las placas ticas van con
-   formato variado a propósito: #35 concluyó que NO se valida con regexp. */
-const SEMILLA: readonly Orden[] = [
-  {
-    folio: 'A1-2418',
-    placa: '863 549',
-    vehiculo: 'Toyota Hilux 2019',
-    cliente: 'Marielos Quesada',
-    estado: 'Esperando repuesto',
-    tono: 'riesgo',
-    tiempoParado: 52,
-    detalle: 'Bomba de agua pedida a San José — sin fecha de llegada',
-    lineas: [
-      {
-        descripcion: 'Cambio de bomba de agua',
-        especialidad: 'mecanica',
-        horas: 4,
-      },
-      { descripcion: 'Purga del sistema', especialidad: 'mecanica', horas: 1 },
-    ],
-  },
-  {
-    folio: 'A1-2420',
-    placa: 'TSJ 1204',
-    vehiculo: 'Hyundai Elantra 2018',
-    cliente: 'Taxis Los Yoses',
-    estado: 'En proceso',
-    tono: 'espera',
-    tiempoParado: 28,
-    detalle: 'Guardabarros derecho, segunda mano de color',
-    lineas: [
-      {
-        descripcion: 'Guardabarros derecho',
-        especialidad: 'pintura',
-        horas: 6,
-      },
-    ],
-  },
-  {
-    folio: 'A1-2419',
-    placa: '742 118',
-    vehiculo: 'Nissan Frontier 2021',
-    cliente: 'Rodrigo Vargas',
-    estado: 'En diagnóstico',
-    tono: 'espera',
-    tiempoParado: 6,
-    detalle: 'Alternador no carga en frío',
-    lineas: [
-      {
-        descripcion: 'Diagnóstico de carga',
-        especialidad: 'electricidad',
-        horas: 2,
-      },
-    ],
-  },
-  {
-    folio: 'A1-2421',
-    placa: '905 733',
-    vehiculo: 'Suzuki Swift 2022',
-    cliente: 'Ana Lucía Brenes',
-    estado: 'Listo para entrega',
-    tono: 'ok',
-    tiempoParado: 3,
-    detalle: 'Avisado por WhatsApp hace 1 h',
-    lineas: [
-      {
-        descripcion: 'Cambio de pastillas',
-        especialidad: 'mecanica',
-        horas: 1.5,
-      },
-    ],
-  },
-];
+/* El estado es un dato del dominio; el tono y la etiqueta son presentación.
+   Viven acá y no en la base para que cambiar cómo se ve un estado no sea una
+   migración de todas las bases locales. */
+const PRESENTACION: Record<
+  EstadoOrden,
+  { etiqueta: string; tono: TonoEstado }
+> = {
+  recibido: { etiqueta: 'Recibido', tono: 'espera' },
+  diagnostico: { etiqueta: 'En diagnóstico', tono: 'espera' },
+  'en-proceso': { etiqueta: 'En proceso', tono: 'espera' },
+  'esperando-repuesto': { etiqueta: 'Esperando repuesto', tono: 'riesgo' },
+  listo: { etiqueta: 'Listo para entrega', tono: 'ok' },
+  entregado: { etiqueta: 'Entregado', tono: 'ok' },
+};
 
 /**
- * Store en memoria mientras el esquema Dexie de #74 no exista. La forma de la
- * API —señales de solo lectura hacia afuera, mutación por métodos— es la que
- * ese ticket tiene que conservar al cambiar el respaldo.
+ * Las Órdenes que ve el tablero, compuestas desde la base.
+ *
+ * La API pública —`ordenes()`, `seleccionada()`, `seleccionar()`— es la misma
+ * que cuando los datos vivían en memoria: ese era el trato al escribirla, y
+ * este ticket es el que lo cobra. Ninguna plantilla cambió al mover el
+ * respaldo.
+ *
+ * `liveQuery` re-emite cuando la base cambia, incluso desde otra pestaña, así
+ * que la vista sigue al dato sin que nadie tenga que refrescar a mano.
  */
 @Injectable({ providedIn: 'root' })
 export class OrdenesStore {
-  readonly #ordenes = signal<readonly Orden[]>(SEMILLA);
+  readonly #datos = inject(BitacoraDatos);
   readonly #folioSeleccionado = signal<string | null>(null);
+
+  readonly #vista = toSignal(from(liveQuery(() => this.#componer())), {
+    initialValue: [] as readonly Orden[],
+  });
 
   /** Arriba lo que más duele: el tablero ordena por Tiempo parado. */
   readonly ordenes = computed(() =>
-    [...this.#ordenes()].sort((a, b) => b.tiempoParado - a.tiempoParado),
+    [...this.#vista()].sort((a, b) => b.tiempoParado - a.tiempoParado),
   );
 
   readonly folioSeleccionado = this.#folioSeleccionado.asReadonly();
 
   readonly seleccionada = computed(
     () =>
-      this.#ordenes().find((o) => o.folio === this.#folioSeleccionado()) ??
-      null,
+      this.#vista().find((o) => o.folio === this.#folioSeleccionado()) ?? null,
   );
 
   seleccionar(folio: string) {
     this.#folioSeleccionado.update((actual) =>
       actual === folio ? null : folio,
+    );
+  }
+
+  async #componer(): Promise<readonly Orden[]> {
+    const { db, tallerId } = this.#datos;
+
+    const ordenes = await db.ordenes
+      .where('[tallerId+borradoEn]')
+      .equals([tallerId, NO_BORRADO])
+      .toArray();
+
+    return Promise.all(
+      ordenes.map(async (orden) => {
+        const [vehiculo, cliente, placa, lineas] = await Promise.all([
+          db.vehiculos.get(orden.vehiculoId),
+          db.clientes.get(orden.clienteId),
+          db.vehiculoPlacas
+            .where('[vehiculoId+vigenteHasta]')
+            .equals([orden.vehiculoId, ABIERTO])
+            .first(),
+          db.lineas
+            .where('[ordenId+borradoEn]')
+            .equals([orden.id, NO_BORRADO])
+            .toArray(),
+        ]);
+
+        const presentacion = PRESENTACION[orden.estado];
+
+        return {
+          folio: orden.folio,
+          placa: placa?.placa ?? '',
+          vehiculo: [vehiculo?.marca, vehiculo?.modelo, vehiculo?.anio]
+            .filter(Boolean)
+            .join(' '),
+          cliente: cliente?.nombre ?? '',
+          estado: presentacion.etiqueta,
+          tono: presentacion.tono,
+          tiempoParado: Math.max(
+            0,
+            Math.round(
+              (Date.now() - new Date(orden.recibidoEn).getTime()) / 3_600_000,
+            ),
+          ),
+          detalle: orden.notas,
+          lineas: lineas.map((l) => ({
+            descripcion: l.descripcion,
+            especialidad: l.especialidad,
+            horas: l.horasFacturadas,
+          })),
+        } satisfies Orden;
+      }),
     );
   }
 }
