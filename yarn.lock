@@ -4283,6 +4283,7 @@ __metadata:
     "@types/node": "npm:^24.0.0"
     "@typescript-eslint/utils": "npm:^8.58.0"
     angular-eslint: "npm:^22.0.0"
+    dexie: "npm:^4.4.5"
     eslint: "npm:^9.8.0"
     eslint-config-prettier: "npm:^10.0.0"
     eslint-plugin-playwright: "npm:^1.6.2"
@@ -4295,6 +4296,7 @@ __metadata:
     tslib: "npm:^2.3.0"
     typescript: "npm:~6.0.3"
     typescript-eslint: "npm:^8.58.0"
+    uuidv7: "npm:^1.2.1"
     vitest: "npm:^4.0.8"
   languageName: unknown
   linkType: soft
@@ -7159,6 +7161,13 @@ __metadata:
     detect: dist/commonjs/bin/detect-port.js
     detect-port: dist/commonjs/bin/detect-port.js
   checksum: 10c0/06236ff1197ffea038d4a1c0ab60200ece1ac234eb00a507f93e986483c06989b9efd424cc2bbb8e9556c3984ce906e8a663799797e415626eefb26f040bd5d8
+  languageName: node
+  linkType: hard
+
+"dexie@npm:^4.4.5":
+  version: 4.4.5
+  resolution: "dexie@npm:4.4.5"
+  checksum: 10c0/a88439b82842b27929fb5e883944ff9a739f1b713382b1eb09745166cad41ce83ca443aa850ae185e9f75569f643aa8efb4126e52971db2b8c9ca27eab1afce2
   languageName: node
   linkType: hard
 
@@ -13063,6 +13072,15 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
+  languageName: node
+  linkType: hard
+
+"uuidv7@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "uuidv7@npm:1.2.1"
+  bin:
+    uuidv7: cli.js
+  checksum: 10c0/adaf3387f10435efccf5ab6bb23344228c5737f98137619dc53521d2325522536218449175a0f2b1b13c4ffb846448cbcc4fb667bebf0457392a0b7bb35004a8
   languageName: node
   linkType: hard
 
