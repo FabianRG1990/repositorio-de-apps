@@ -29,3 +29,52 @@
   </a>
   }
 </mat-nav-list>
+
+<!--
+  El Perfil vive al pie del menú, que es donde vive la identidad en las
+  herramientas que la gente ya usa a diario. Va SIEMPRE visible porque el
+  ADR 0005 promete que cambiar en vivo es gratis: si costara ir a buscarlo a
+  Ajustes, dejaría de ser una herramienta de demostración.
+-->
+<div class="menu__pie">
+  <button
+    type="button"
+    class="menu__perfil"
+    [matMenuTriggerFor]="menuPerfiles"
+    [attr.title]="estaColapsado() ? nombreDelPerfil() : null"
+    [attr.aria-label]="'Perfil: ' + nombreDelPerfil() + '. Cambiar de Perfil'"
+  >
+    <fa-icon class="menu__perfil-icono" [icon]="iconoDelPerfil()" />
+    @if (!estaColapsado()) {
+    <span class="menu__perfil-texto">
+      <span class="menu__perfil-nombre">{{ nombreDelPerfil() }}</span>
+      <span class="menu__perfil-pie">Cambiar de Perfil</span>
+    </span>
+    <fa-icon class="menu__perfil-flecha" [icon]="['fas', 'right-left']" />
+    }
+  </button>
+</div>
+
+<!--
+  Solo icono y nombre. El oficio de cada Perfil se explica en la pantalla de
+  entrada, que es donde se decide; acá el desplegable es un conmutador rápido
+  para quien ya sabe cuál es cuál, y meterle una segunda línea obligaría a
+  estilar el overlay —que se renderiza fuera del componente— para arreglar un
+  amontonamiento que no hacía falta crear.
+-->
+<mat-menu #menuPerfiles="matMenu" class="panel-perfiles">
+  @for (p of perfiles; track p) {
+  <button
+    mat-menu-item
+    type="button"
+    [attr.aria-current]="p === perfilActual() ? 'true' : null"
+    (click)="cambiarPerfil(p)"
+  >
+    <fa-icon [icon]="icono[p]" />
+    <span>{{ etiqueta[p] }}</span>
+    @if (p === perfilActual()) {
+    <fa-icon class="panel-perfiles__marca" [icon]="['fas', 'check']" />
+    }
+  </button>
+  }
+</mat-menu>

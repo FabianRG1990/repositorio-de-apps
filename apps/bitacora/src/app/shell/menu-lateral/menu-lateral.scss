@@ -1,6 +1,20 @@
 :host {
-  display: block;
+  /* Columna de alto completo para que el Perfil pueda empujarse al pie con
+     `margin-top: auto`. Antes era `display: block`, que no da eje al que
+     empujar. */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   color: var(--app-text);
+}
+
+/* La navegación se queda con el hueco sobrante y desplaza sola si hace falta:
+   el pie del Perfil no puede empujarse fuera de la vista cuando el menú
+   crezca. */
+mat-nav-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 :host * {
@@ -108,4 +122,94 @@ mat-nav-list {
 
 :host ::ng-deep .mdc-list-item--with-leading-icon .mdc-list-item__start {
   height: auto;
+}
+
+/* -------------------------------- el Perfil -------------------------------
+   Va al pie, empujado hasta abajo, que es donde vive la identidad en las
+   herramientas que la gente ya usa. El `margin-top: auto` necesita que el
+   host sea una columna flexible; se declara arriba.
+   -------------------------------------------------------------------------- */
+.menu__pie {
+  margin-top: auto;
+  padding: 0.5rem;
+  border-top: 1px solid var(--app-border-lista);
+}
+
+.menu__perfil {
+  width: 100%;
+  min-height: var(--app-item-alto);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 100ms linear,
+    color 100ms linear;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .menu__perfil:hover {
+    background: var(--app-capa-hover);
+    color: var(--app-text);
+    transition-duration: 0s;
+  }
+}
+
+.menu__perfil:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu__perfil {
+    transition: none;
+  }
+}
+
+.menu__perfil-icono {
+  flex: none;
+  font-size: 1.125rem;
+  color: var(--app-accent);
+}
+
+.menu__perfil-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.menu__perfil-nombre {
+  font-weight: 590;
+  color: var(--app-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dice qué pasa al pulsarlo. Sin esto, el pie parece una etiqueta de estado y
+   nadie descubre que el Perfil se cambia desde ahí. */
+.menu__perfil-pie {
+  font-size: 0.75rem;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-soft);
+}
+
+.menu__perfil-flecha {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+}
+
+/* En riel solo queda el icono, centrado, y el nombre viaja en el `title`. */
+.menu__perfil:has(.menu__perfil-icono:only-child) {
+  justify-content: center;
+  padding-inline: 0;
 }
