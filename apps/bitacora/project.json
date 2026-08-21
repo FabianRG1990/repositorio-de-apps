@@ -78,7 +78,8 @@
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "watch": false
+        "watch": false,
+        "setupFiles": ["apps/bitacora/src/test-setup.ts"]
       }
     },
     "serve-static": {
