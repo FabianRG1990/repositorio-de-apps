@@ -514,4 +514,43 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
 
     expect(desborde).toEqual({ pantalla: false, documento: false });
   });
+
+  /* Con guantes la fila ya ES una tarjeta de una columna, así que el reflujo
+     no debe tocarla. Cuando lo hacía, le reasignaba las áreas y la
+     especialidad se quedaba sin celda en esa plantilla: se auto-colocaba en
+     una fila implícita, debajo del detalle y pegada al borde derecho. */
+  test('la tarjeta de guantes no la reordena el reflujo', async ({ page }) => {
+    await preparar(page, 'taller', 'guantes', { width: 1440, height: 900 });
+
+    const sitios = await page
+      .locator('li.fila')
+      .first()
+      .evaluate((li) => {
+        /* Se compara el CENTRO y no el borde de arriba: la insignia de estado
+           es más alta que la etiqueta de especialidad —lleva relleno y borde—
+           y en la misma línea quedan centradas entre sí, así que sus `top`
+           difieren 5,5 px estando perfectamente alineadas. */
+        const centro = (sel: string) => {
+          const c = (
+            li.querySelector(sel) as HTMLElement
+          ).getBoundingClientRect();
+          return c.top + c.height / 2;
+        };
+        const izquierda = (sel: string) =>
+          (li.querySelector(sel) as HTMLElement).getBoundingClientRect().left;
+        return {
+          esp: centro('app-etiqueta-especialidad'),
+          estado: centro('app-insignia-estado'),
+          detalle: centro('.fila__detalle'),
+          espIzq: izquierda('.fila__especialidades'),
+          cuerpoIzq: izquierda('.fila__cuerpo'),
+        };
+      });
+
+    // Las insignias comparten línea, y esa línea va antes del detalle.
+    expect(Math.abs(sitios.esp - sitios.estado)).toBeLessThan(2);
+    expect(sitios.esp).toBeLessThan(sitios.detalle);
+    // Y arrancan donde arranca el resto de la tarjeta, no en el borde derecho.
+    expect(sitios.espIzq).toBeCloseTo(sitios.cuerpoIzq, 0);
+  });
 });
