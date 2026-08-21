@@ -1,16 +1,30 @@
 @use '@angular/material' as mat;
 
 /* ---------------------------------------------------------------------------
-   Piel de Bitácora. Réplica del estándar visual de Moofy VIP
-   (`apps/moofyvip/src/styles.scss` de claudio-andrade-solutions).
+   La piel de Bitácora, escrita como vocabulario de ROLES.
 
-   Los tokens `--app-*` son la capa propia; Material vive debajo con sus
-   `--mat-sys-*`. Los componentes leen SIEMPRE los `--app-*`, para que cambiar
-   de piel sea cambiar este bloque y nada más — que es lo que #79 necesita para
-   el modo taller.
+   Los componentes no nombran colores ni efectos: nombran para qué sirven. Un
+   componente escribe `background: var(--app-capa-reposo)` y nunca
+   `rgba(255,255,255,0.02)`; escribe `backdrop-filter: var(--app-vidrio)` y
+   nunca `blur(18px)`.
+
+   Esto no cambia nada de lo que se ve —los valores son los mismos de antes—,
+   pero es lo que hace posible la segunda piel de #79: si el nombre dice el
+   papel y no el tono, cambiar de piel puede ser cambiar valores y ninguna
+   regla. En oscuro `--app-capa-reposo` es un velo de luz y en claro tendrá que
+   ser un escalón de superficie: dos cosas distintas con el mismo papel, y solo
+   un nombre de rol las abarca.
+
+   Los efectos entran al vocabulario junto con los colores, porque el vidrio no
+   es un tono: es una caja.
    --------------------------------------------------------------------------- */
 
 html {
+  /* Sin `theme-type`, `mat.theme()` usa `color-scheme`: emite CADA token
+     `--mat-sys-*` como `light-dark(<claro>, <oscuro>)`
+     (`core/tokens/_system.scss`, `_generate-sys-colors`). Por eso Material
+     entero conmuta con la propiedad `color-scheme` de cada piel, sin volver a
+     emitir el tema ni duplicar la hoja. */
   @include mat.theme(
     (
       color: (
@@ -24,42 +38,27 @@ html {
 
   height: 100%;
 
-  /* Piel oscura, predeterminada. Es la de Moofy tal cual. */
-  --app-canvas-top: #14283b;
-  --app-canvas-bottom: #04090f;
-  --app-surface: rgba(9, 18, 29, 0.78);
-  --app-surface-strong: rgba(7, 14, 23, 0.92);
-  --app-surface-soft: rgba(244, 250, 255, 0.045);
-  --app-surface-soft-strong: rgba(244, 250, 255, 0.08);
-  --app-border: rgba(132, 165, 188, 0.18);
-  --app-border-strong: rgba(132, 165, 188, 0.28);
-  --app-text: #edf5fa;
-  --app-text-muted: rgba(237, 245, 250, 0.72);
-  --app-text-soft: rgba(237, 245, 250, 0.56);
-  --app-accent: #8ac8d4;
-  --app-accent-strong: #3da5c2;
-  --app-accent-soft: rgba(138, 200, 212, 0.16);
-  --app-accent-glow: rgba(138, 200, 212, 0.22);
-  --app-success: #8fd1ab;
-  --app-warning: #e7bf7f;
-  --app-danger: #ec9a85;
-  --app-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
-  --app-shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.3);
-  --app-focus-ring: rgba(138, 200, 212, 0.68);
-
-  /* Medidas del shell, tomadas de las de Moofy. */
+  /* Medidas del shell: no dependen de la piel. */
   --app-shell-radio: 1.25rem;
 
-  color-scheme: dark;
   background-color: var(--app-canvas-bottom);
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  min-height: 100dvh;
-  background:
+/* --------------------------------- moofy ---------------------------------
+   La piel del estándar, tal cual. Medida sobre la app: cumple AA en todo el
+   texto, y llega al objetivo 7:1 del proyecto en todo menos donde usa
+   opacidad 0,56 (secundario 5,43:1, etiquetas 5,81:1, insignias 5,45–6,87:1).
+   Se conserva como está: es la piel de oficina y ese es su contexto.
+   ------------------------------------------------------------------------- */
+html {
+  color-scheme: dark;
+
+  --app-canvas-top: #14283b;
+  --app-canvas-bottom: #04090f;
+
+  /* El lienzo es una imagen completa, no un color, para que una piel pueda
+     cambiarlo por un plano sin tocar la regla del `body`. */
+  --app-lienzo:
     radial-gradient(circle at top, rgba(97, 148, 182, 0.2), transparent 32%),
     radial-gradient(
       circle at 80% 18%,
@@ -72,10 +71,117 @@ body {
       #0a1520 44%,
       var(--app-canvas-bottom)
     );
+
+  --app-surface: rgba(9, 18, 29, 0.78);
+  --app-surface-strong: rgba(7, 14, 23, 0.92);
+  --app-surface-soft: rgba(244, 250, 255, 0.045);
+  --app-surface-soft-strong: rgba(244, 250, 255, 0.08);
+
+  --app-border: rgba(132, 165, 188, 0.18);
+  --app-border-strong: rgba(132, 165, 188, 0.28);
+  /* Delimitar un plano grande no es lo mismo que separar filas de una lista:
+     hoy valen igual, pero son dos roles y por eso son dos tokens. */
+  --app-border-lista: rgba(132, 165, 188, 0.18);
+
+  --app-text: #edf5fa;
+  --app-text-muted: rgba(237, 245, 250, 0.72);
+  --app-text-soft: rgba(237, 245, 250, 0.56);
+
+  --app-accent: #8ac8d4;
+  --app-accent-strong: #3da5c2;
+  --app-accent-soft: rgba(138, 200, 212, 0.16);
+  --app-accent-glow: rgba(138, 200, 212, 0.22);
+
+  /* Cada estado va en tres piezas —texto, píldora y borde— en vez de un solo
+     color con `color-mix` dentro del componente: así el componente no calcula
+     color, solo lo usa. */
+  --app-success: #8fd1ab;
+  --app-success-fondo: color-mix(in oklab, #8fd1ab 14%, transparent);
+  --app-success-borde: color-mix(in oklab, #8fd1ab 45%, transparent);
+  --app-warning: #e7bf7f;
+  --app-warning-fondo: color-mix(in oklab, #e7bf7f 14%, transparent);
+  --app-warning-borde: color-mix(in oklab, #e7bf7f 45%, transparent);
+  --app-danger: #ec9a85;
+  --app-danger-fondo: color-mix(in oklab, #ec9a85 14%, transparent);
+  --app-danger-borde: color-mix(in oklab, #ec9a85 45%, transparent);
+
+  /* Capas de estado de una superficie: reposo, hover, pulsado. */
+  --app-capa-reposo: rgba(255, 255, 255, 0.02);
+  --app-capa-hover: rgba(255, 255, 255, 0.05);
+  --app-capa-activa: rgba(255, 255, 255, 0.07);
+  --app-capa-plana: rgba(255, 255, 255, 0.03);
+
+  /* Efectos. Son tokens para que una piel pueda apagarlos. */
+  --app-vidrio: blur(18px);
+  --app-velo: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0.015)
+  );
+  --app-velo-cabecera: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.015)
+  );
+  /* Cada sombra es UNA lista completa, nunca piezas que el componente compone:
+     `box-shadow: var(--a), var(--b)` con una de las dos en `none` produce
+     `none, none`, que no es una lista válida y tira la declaración entera. */
+  --app-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+  --app-shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.3);
+  --app-sombra-menu-activo:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 24px rgba(0, 0, 0, 0.24);
+  --app-sombra-pestana-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 22px rgba(0, 0, 0, 0.12);
+  --app-sombra-pestana-activa: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  --app-esquina: rgba(255, 255, 255, 0.12);
+  --app-esquina-activa: linear-gradient(
+    135deg,
+    rgba(138, 200, 212, 0.84),
+    rgba(61, 165, 194, 0.38)
+  );
+
+  /* Lo seleccionado y lo activo. */
+  --app-seleccion: linear-gradient(
+    90deg,
+    rgba(61, 165, 194, 0.2),
+    rgba(255, 255, 255, 0.02) 72%
+  );
+  --app-seleccion-vertical: linear-gradient(
+    180deg,
+    rgba(61, 165, 194, 0.2),
+    rgba(255, 255, 255, 0.02)
+  );
+  --app-menu-activo: linear-gradient(
+    90deg,
+    rgba(61, 165, 194, 0.18),
+    rgba(255, 255, 255, 0.02) 72%
+  );
+  --app-icono-activo: #ffffff;
+
+  --app-pestanas-fondo:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+    rgba(5, 12, 20, 0.5);
+  --app-pestana-reposo: rgba(255, 255, 255, 0.012);
+  --app-pestana-hover: rgba(255, 255, 255, 0.045);
+  --app-pestana-activa: linear-gradient(
+    180deg,
+    rgba(61, 165, 194, 0.22),
+    rgba(255, 255, 255, 0.02)
+  );
+
+  --app-focus-ring: rgba(138, 200, 212, 0.68);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100dvh;
+  background: var(--app-lienzo);
   background-attachment: scroll;
   font-family: Roboto, Avenir, Helvetica, Arial, sans-serif;
   color: var(--app-text);
-  color-scheme: dark;
 }
 
 /* Fondo fijo solo con puntero fino y pantalla grande: en táctil el

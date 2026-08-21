@@ -49,9 +49,9 @@
   cursor: pointer;
 
   padding: 1rem;
-  border: 1px solid var(--app-border);
+  border: 1px solid var(--app-border-lista);
   border-radius: 0.95rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--app-capa-reposo);
   color: var(--app-text-muted);
   transition:
     background 120ms ease,
@@ -61,7 +61,7 @@
 
 @media (any-hover: hover) and (any-pointer: fine) {
   .tarjeta:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--app-capa-hover);
     border-color: var(--app-border-strong);
     color: var(--app-text);
   }
@@ -70,11 +70,7 @@
 .tarjeta[aria-current='true'] {
   color: var(--app-text);
   border-color: var(--app-accent-strong);
-  background: linear-gradient(
-    180deg,
-    rgba(61, 165, 194, 0.2),
-    rgba(255, 255, 255, 0.02)
-  );
+  background: var(--app-seleccion-vertical);
 }
 
 .tarjeta:focus-visible {

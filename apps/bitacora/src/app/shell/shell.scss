@@ -20,14 +20,8 @@
   border-radius: var(--app-shell-radio);
   border: 1px solid var(--app-border);
   box-shadow: var(--app-shadow);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.035),
-      rgba(255, 255, 255, 0.015)
-    ),
-    var(--app-surface);
-  backdrop-filter: blur(18px);
+  background: var(--app-velo), var(--app-surface);
+  backdrop-filter: var(--app-vidrio);
   overflow: hidden;
 }
 
@@ -66,14 +60,8 @@
   border-radius: var(--app-shell-radio);
   border: 1px solid var(--app-border);
   box-shadow: var(--app-shadow);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.035),
-      rgba(255, 255, 255, 0.015)
-    ),
-    var(--app-surface);
-  backdrop-filter: blur(18px);
+  background: var(--app-velo), var(--app-surface);
+  backdrop-filter: var(--app-vidrio);
   overflow: hidden;
 }
 
@@ -85,12 +73,8 @@
   padding: 0.7rem 1rem;
   line-height: 1.5;
   border-bottom: 1px solid var(--app-border);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.015)
-  );
-  backdrop-filter: blur(12px);
+  background: var(--app-velo-cabecera);
+  backdrop-filter: var(--app-vidrio);
 }
 
 .cuadro__titulo-grupo {
