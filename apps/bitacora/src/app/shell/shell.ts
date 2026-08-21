@@ -15,7 +15,8 @@ import { MenuLateral } from './menu-lateral/menu-lateral';
 import { PanelDetalle } from './panel-detalle/panel-detalle';
 
 /**
- * Consultas de medio del shell. Son las de Moofy VIP: `estrecho` decide si los
+ * Consultas de medio del shell. Son las del estándar visual de referencia:
+ * `estrecho` decide si los
  * cajones pasan a modo `over` (encima del contenido, con backdrop) o siguen en
  * `side` (empujando el contenido); las otras dos deciden si el header muestra
  * solo iconos.

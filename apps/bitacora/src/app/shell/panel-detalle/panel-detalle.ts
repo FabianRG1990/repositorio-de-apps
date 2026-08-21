@@ -7,9 +7,9 @@ import {
 } from '../../data-access/ordenes.store';
 
 /**
- * El panel derecho del estándar: contextual al contenido central. En Moofy VIP
- * ese sitio lo ocupa el carrito; acá lo ocupa el detalle de la Orden que esté
- * seleccionada, que es el equivalente de dominio.
+ * El panel derecho del estándar: contextual al contenido central. En el diseño
+ * de referencia ese sitio lo ocupa el carrito de compra; acá lo ocupa el detalle
+ * de la Orden que esté seleccionada, que es el equivalente de dominio.
  *
  * No navega ni cambia de ruta: solo refleja lo que el centro tiene elegido.
  */

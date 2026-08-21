@@ -12,11 +12,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-export type Piel = 'moofy' | 'taller';
+export type Piel = 'oficina' | 'taller';
 
 const PIELES: readonly { id: Piel; nombre: string }[] = [
-  { id: 'moofy', nombre: 'Moofy VIP — oficina' },
-  { id: 'taller', nombre: 'Modo taller — patio' },
+  { id: 'oficina', nombre: 'Oficina — bajo techo' },
+  { id: 'taller', nombre: 'Taller — al sol' },
 ];
 
 /**
@@ -132,7 +132,7 @@ export class ConmutadorPieles {
     new URLSearchParams(inject(DOCUMENT).location.search).get('piel') ===
       'taller'
       ? 'taller'
-      : 'moofy',
+      : 'oficina',
   );
 
   readonly #enUrl = toSignal(
@@ -141,20 +141,20 @@ export class ConmutadorPieles {
   );
 
   readonly #siguiente = computed<Piel>(() =>
-    this.actual() === 'moofy' ? 'taller' : 'moofy',
+    this.actual() === 'oficina' ? 'taller' : 'oficina',
   );
 
   constructor() {
     effect(() => {
       const enUrl = this.#enUrl();
       // Solo se adopta lo que trae la URL cuando el parámetro viene de verdad;
-      // que falte significa "se perdió al navegar", no "volvé a Moofy".
+      // que falte significa "se perdió al navegar", no "volvé a la de oficina".
       //
       // Y cuando falta NO se reescribe la URL: el prototipo no puede cambiar
       // lo que la app hace. Reponer el `?piel=` después de cada navegación
-      // dejaba `/ordenes?piel=moofy` y tumbaba siete pruebas de punta a punta
+      // dejaba `/ordenes?piel=oficina` y tumbaba siete pruebas de punta a punta
       // que afirman sobre la URL. La piel se sostiene sola en la señal.
-      if (enUrl === 'taller' || enUrl === 'moofy') {
+      if (enUrl === 'taller' || enUrl === 'oficina') {
         if (enUrl !== this.actual()) this.actual.set(enUrl);
       }
     });
