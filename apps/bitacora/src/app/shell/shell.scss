@@ -1,0 +1,142 @@
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.shell {
+  height: 100%;
+  background: transparent;
+}
+
+/* Los dos cajones y el contenido comparten la transición. Material anima el
+   cajón por su cuenta pero NO el margen del contenido: sin esta línea el
+   cuadro salta en vez de deslizarse cuando el menú se colapsa. */
+:host ::ng-deep .mat-drawer,
+:host ::ng-deep .mat-drawer-content {
+  transition: all 500ms ease-in-out !important;
+}
+
+:host ::ng-deep .mat-drawer {
+  border-radius: var(--app-shell-radio);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.015)
+    ),
+    var(--app-surface);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+:host ::ng-deep .mat-drawer-inner-container {
+  overflow: hidden auto;
+}
+
+.shell__menu,
+.shell__panel {
+  margin: 1.5rem 0;
+  color: var(--app-text);
+}
+
+.shell__contenido {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  padding: 0 0.5rem;
+  overflow: hidden;
+}
+
+.shell__hueco {
+  flex: 0 0 1.5rem;
+  height: 1.5rem;
+  background: transparent;
+}
+
+/* ---------------- El cuadro: contenedor único del contenido ---------------- */
+
+.cuadro {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  border-radius: var(--app-shell-radio);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.015)
+    ),
+    var(--app-surface);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.cuadro__cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--app-border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.015)
+  );
+  backdrop-filter: blur(12px);
+}
+
+.cuadro__titulo-grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cuadro__titulo {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--app-text);
+}
+
+.cuadro__hamburguesa,
+.cuadro__alternar-panel {
+  cursor: pointer;
+  color: var(--app-text-muted);
+  border-radius: 0.5rem;
+  transition: color 150ms ease;
+}
+
+.cuadro__hamburguesa:hover,
+.cuadro__alternar-panel:hover {
+  color: var(--app-text);
+}
+
+.cuadro__alternar-panel--apagado {
+  color: var(--app-text-soft);
+  opacity: 0.55;
+}
+
+.cuadro__hamburguesa:focus-visible,
+.cuadro__alternar-panel:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 3px;
+}
+
+/* `min-height: 0` es lo que mantiene el scroll DENTRO del cuadro. Sin ella un
+   hijo flex no puede encogerse por debajo de su contenido, la ranura crece
+   hasta desbordar y el scroll se va a la ventana entera. No da ningún error:
+   simplemente aparece donde no debe. */
+.cuadro__ranura {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

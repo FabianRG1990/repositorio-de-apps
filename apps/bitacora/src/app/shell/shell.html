@@ -1,0 +1,80 @@
+<mat-sidenav-container class="shell" [autosize]="true">
+  <mat-sidenav
+    #menu
+    class="shell__menu"
+    [mode]="esEstrecho() ? 'over' : 'side'"
+    [opened]="!esEstrecho()"
+    [style.width]="anchoMenu()"
+    [class.shell__menu--riel]="colapsado()"
+  >
+    <app-menu-lateral
+      [colapsado]="colapsado()"
+      (itemElegido)="alElegirDelMenu(menu)"
+    />
+  </mat-sidenav>
+
+  <mat-sidenav
+    #panel
+    class="shell__panel"
+    position="end"
+    [mode]="esEstrecho() ? 'over' : 'side'"
+    [opened]="!esEstrecho() && panelFijado()"
+    [style.width]="anchoPanel()"
+  >
+    <app-panel-detalle />
+  </mat-sidenav>
+
+  <mat-sidenav-content
+    class="shell__contenido"
+    [style.margin-left]="margenIzquierdo()"
+    [style.margin-right]="margenDerecho()"
+  >
+    <div class="shell__hueco"></div>
+
+    <div class="cuadro">
+      <div class="cuadro__cabecera">
+        <div class="cuadro__titulo-grupo">
+          <fa-icon
+            [icon]="['fas', 'bars']"
+            class="cuadro__hamburguesa fa-lg"
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="
+              colapsado() ? 'Expandir el menú' : 'Colapsar el menú'
+            "
+            [attr.aria-expanded]="!colapsado()"
+            (click)="alPulsarMenu(menu)"
+            (keydown.enter)="alPulsarMenu(menu)"
+            (keydown.space)="alPulsarMenu(menu)"
+          />
+          <div class="cuadro__titulo">{{ titulo() }}</div>
+        </div>
+
+        @if (!esCompacto()) {
+          <fa-icon
+            [icon]="['fas', 'table-columns']"
+            class="cuadro__alternar-panel fa-lg"
+            role="button"
+            tabindex="0"
+            [class.cuadro__alternar-panel--apagado]="
+              !esEstrecho() && !panelFijado()
+            "
+            [attr.aria-label]="
+              panelFijado() ? 'Ocultar el panel de detalle' : 'Mostrar el panel de detalle'
+            "
+            [attr.aria-pressed]="panelFijado()"
+            (click)="alAlternarPanel(panel)"
+            (keydown.enter)="alAlternarPanel(panel)"
+            (keydown.space)="alAlternarPanel(panel)"
+          />
+        }
+      </div>
+
+      <div class="cuadro__ranura">
+        <router-outlet />
+      </div>
+    </div>
+
+    <div class="shell__hueco"></div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

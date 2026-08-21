@@ -1,0 +1,59 @@
+@let orden = store.seleccionada();
+
+<div class="panel">
+  <div class="panel__encabezado">
+    <fa-icon [icon]="['fas', 'circle-info']" />
+    <span>{{ orden ? 'Orden ' + orden.folio : 'Detalle' }}</span>
+  </div>
+
+  @if (!orden) {
+    <section class="panel__vacio" role="status">
+      <fa-icon [icon]="['fas', 'hand-pointer']" class="fa-xl" />
+      <p>Elegí una Orden para ver su detalle acá.</p>
+    </section>
+  } @else {
+    <section class="panel__cuerpo">
+      <div class="panel__dato">
+        <span class="panel__etiqueta">Tiempo parado</span>
+        <strong class="panel__vistazo">{{ tiempo(orden.tiempoParado) }}</strong>
+      </div>
+
+      <div class="panel__dato">
+        <span class="panel__etiqueta">Vehículo</span>
+        <span>{{ orden.vehiculo }}</span>
+        <span class="panel__identificador">{{ orden.placa }}</span>
+      </div>
+
+      <div class="panel__dato">
+        <span class="panel__etiqueta">Cliente</span>
+        <span>{{ orden.cliente }}</span>
+      </div>
+
+      <div class="panel__dato">
+        <span class="panel__etiqueta">Estado</span>
+        <span class="panel__estado" [attr.data-tono]="orden.tono">{{
+          orden.estado
+        }}</span>
+      </div>
+
+      <div class="panel__dato">
+        <span class="panel__etiqueta"
+          >Líneas de servicio ({{ orden.lineas.length }})</span
+        >
+        <ul class="panel__lineas">
+          @for (linea of orden.lineas; track linea.descripcion) {
+            <li class="panel__linea">
+              <span>{{ linea.descripcion }}</span>
+              <span class="panel__linea-meta"
+                >{{ especialidad[linea.especialidad] }} ·
+                {{ linea.horas }} h</span
+              >
+            </li>
+          }
+        </ul>
+      </div>
+
+      <p class="panel__nota">{{ orden.detalle }}</p>
+    </section>
+  }
+</div>
