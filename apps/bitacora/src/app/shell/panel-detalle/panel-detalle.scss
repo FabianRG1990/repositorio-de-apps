@@ -64,30 +64,11 @@
   color: var(--app-text-muted);
 }
 
-.panel__estado {
+/* El estado ya no tiene CSS propio acá: lo pinta `app-insignia-estado`, que
+   es el mismo componente que usa la fila. Antes eran dos definiciones del
+   mismo concepto y ninguna de las dos llevaba el marcador de forma. */
+app-insignia-estado {
   align-self: flex-start;
-  padding: 0.2rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  border: 1px solid transparent;
-}
-
-.panel__estado[data-tono='ok'] {
-  color: var(--app-success);
-  border-color: var(--app-success-borde);
-  background: var(--app-success-fondo);
-}
-
-.panel__estado[data-tono='espera'] {
-  color: var(--app-warning);
-  border-color: var(--app-warning-borde);
-  background: var(--app-warning-fondo);
-}
-
-.panel__estado[data-tono='riesgo'] {
-  color: var(--app-danger);
-  border-color: var(--app-danger-borde);
-  background: var(--app-danger-fondo);
 }
 
 .panel__lineas {

@@ -1,0 +1,32 @@
+:host {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.esp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.0114em;
+  font-weight: 590;
+  color: var(--app-text-soft);
+  white-space: nowrap;
+}
+
+/* Mismo tamaño que el marcador del estado, por el mismo motivo: por debajo de
+   20 px el color de una marca pequeña deja de discriminarse. */
+.esp::before {
+  content: '';
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  border-radius: 0.25rem;
+  background: oklch(var(--app-esp-l) var(--app-esp-c) var(--esp-h));
+}
+
+/* Con el nombre oculto el hueco entre marca y texto sobra y desplazaría el
+   cuadro de color respecto de las filas que sí lo muestran. */
+.esp:has(.solo-lectores) {
+  gap: 0;
+}
