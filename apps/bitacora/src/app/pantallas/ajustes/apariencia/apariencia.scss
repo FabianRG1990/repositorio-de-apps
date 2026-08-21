@@ -1,0 +1,137 @@
+.apariencia {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 42rem;
+}
+
+/* 32–48 px entre secciones contra 12–16 px dentro de una: la proporción es lo
+   que separa sin dibujar una línea (#18 §6.3). */
+.ajuste {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ajuste__titulo,
+.ajuste__titulo label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--app-text);
+}
+
+.ajuste__nota {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--app-text-soft);
+  font-size: 0.85rem;
+}
+
+.ajuste__valor {
+  margin: 0.25rem 0 0;
+  color: var(--app-text);
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.opcion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+
+  /* 56 px de alto mínimo: es el piso para cualquier control real de #18 §5.2,
+     y esta pantalla se toca con guantes como cualquier otra. */
+  min-height: 3.5rem;
+  min-width: 11rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--app-border-lista);
+  border-radius: 0.95rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .opcion:hover {
+    background: var(--app-capa-hover);
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
+  }
+}
+
+.opcion--activa {
+  color: var(--app-text);
+  border-color: var(--app-accent-strong);
+  background: var(--app-seleccion-vertical);
+}
+
+.opcion:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.opcion__nombre {
+  font-weight: 500;
+}
+
+.opcion__para {
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* El área táctil es la de cualquier control: el selector nativo es pequeño y
+   sin esto queda por debajo del piso de 48 px. */
+.marca__entrada {
+  inline-size: 4rem;
+  block-size: 3rem;
+  padding: 0.2rem;
+  border: 1px solid var(--app-border-lista);
+  border-radius: 0.65rem;
+  background: var(--app-capa-reposo);
+  cursor: pointer;
+}
+
+.marca__entrada:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.marca__muestra {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--app-border-lista);
+}
+
+.marca__valor {
+  font-variant-numeric: tabular-nums slashed-zero;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+}
+
+.apariencia__pie {
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--app-border-lista);
+  color: var(--app-text-soft);
+  font-size: 0.85rem;
+}
