@@ -6,6 +6,7 @@ import {
   input,
   output,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { ConfiguracionTallerStore } from '../../data-access/configuracion-taller.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
 import { InsigniaEstado } from '../insignia-estado/insignia-estado';
@@ -48,13 +49,20 @@ import {
  * la misma lista. Un `:host-context([data-densidad])` en el CSS tampoco vale:
  * dejaría el `<html>` como segunda fuente de verdad del mismo dato.
  *
+ * ## Dos botones, no un botón dentro de otro
+ *
+ * El cuerpo de la fila selecciona; **Ver orden** abre el detalle. Van como
+ * hermanos dentro del `<li>` y no anidados, porque un `<button>` dentro de un
+ * `<button>` es HTML inválido — que es justo lo que hacía el prototipo de
+ * componentes, donde la fila era un `<article tabindex="0">` con el botón
+ * dentro.
  */
 @Component({
   selector: 'li[app-fila-orden]',
   templateUrl: './fila-orden.html',
   styleUrl: './fila-orden.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [InsigniaEstado, EtiquetaEspecialidad],
+  imports: [MatButtonModule, InsigniaEstado, EtiquetaEspecialidad],
   host: {
     class: 'fila',
     '[class.fila--seleccionada]': 'seleccionada()',
@@ -69,6 +77,7 @@ export class FilaOrden {
   readonly seleccionada = input(false);
 
   readonly elegida = output<void>();
+  readonly detallePedido = output<void>();
 
   /** A 56 px no hay segunda línea: se van el cliente y el detalle. */
   protected readonly compacta = computed(
