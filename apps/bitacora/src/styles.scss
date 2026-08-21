@@ -1,6 +1,35 @@
 @use '@angular/material' as mat;
 
 /* ---------------------------------------------------------------------------
+   La tipografía (#81).
+
+   Hasta este ticket la app pedía `Roboto` sin cargarla: no hay `@font-face` ni
+   paquete, así que el navegador caía a Arial y NADA de lo que #77 midió se
+   estaba dibujando — ni el cero cortado, ni las cifras tabulares, ni los
+   cuatro pesos. Era el hallazgo que #79 dejó anotado sin dueño.
+
+   El RANGO `100 900` es obligatorio. CSS Fonts 4 §7.2 recorta el peso pedido
+   al descriptor del `@font-face`: con un valor único, `font-weight: 590` se
+   convierte en 400 en silencio, y ese fue el defecto que #77 encontró midiendo
+   anchos de línea (590 y 600 daban el MISMO ancho exacto).
+
+   Se sirve desde `public/fuentes/`, no desde Google Fonts: el archivo del CDN
+   no trae `zero`, `cv05`, `cv08` ni `case` (#72 §6.3), y una PWA que tiene que
+   abrir sin conexión no puede depender de un tercero. El porqué completo y
+   cómo se regenera están en `public/fuentes/README.md`.
+   --------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'InterVariable';
+  font-style: normal;
+  font-weight: 100 900;
+  /* `swap` y no `block`: en el patio, sin señal y con la caché fría, es
+     preferible leer la lista en Arial un instante que mirar una lista en
+     blanco. */
+  font-display: swap;
+  src: url('/fuentes/InterVariable-latin.woff2') format('woff2');
+}
+
+/* ---------------------------------------------------------------------------
    Las dos pieles de Bitácora (#79).
 
    `oficina` — bajo techo: oscura, translúcida, con sombras y acento teal. Es
@@ -39,7 +68,24 @@ html {
         primary: mat.$cyan-palette,
         tertiary: mat.$azure-palette,
       ),
-      typography: Roboto,
+      /* Material toma la misma familia y los mismos pesos que el resto de la
+         app: si Material pinta con Roboto y la lista con Inter, la escalera de
+         pesos deja de significar lo mismo en cada mitad de la pantalla. */
+        typography: (
+          plain-family: (
+            InterVariable,
+            system-ui,
+            sans-serif,
+          ),
+          brand-family: (
+            InterVariable,
+            system-ui,
+            sans-serif,
+          ),
+          regular-weight: 400,
+          medium-weight: 510,
+          bold-weight: 680,
+        ),
       density: 0,
     )
   );
@@ -324,7 +370,10 @@ body {
   min-height: 100dvh;
   background: var(--app-lienzo);
   background-attachment: scroll;
-  font-family: Roboto, Avenir, Helvetica, Arial, sans-serif;
+  font-family: InterVariable, system-ui, sans-serif;
+  /* Inter 4.1 trae eje `opsz` (14–32): con esto el dato grande de la fila y el
+     texto de 14 px no usan el mismo dibujo escalado. */
+  font-optical-sizing: auto;
   color: var(--app-text);
 }
 
