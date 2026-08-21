@@ -396,6 +396,41 @@ html[data-densidad='guantes'] {
    `display: none` ni `visibility: hidden`: las dos lo sacan también del árbol
    de accesibilidad, que es justo lo contrario de lo que hace falta acá.
    --------------------------------------------------------------------------- */
+/* ------------------------ el desplegable de Perfiles ----------------------
+   Va acá y no en la hoja del menú lateral porque un `mat-menu` se renderiza en
+   un overlay al final del <body>, fuera del árbol del componente: el CSS
+   encapsulado no lo alcanza. `panelClass` + hoja global es el mecanismo que
+   Material documenta para esto.
+
+   El hueco entre icono y texto lo pone Material con
+   `.mat-mdc-menu-item .mat-icon`, y `fa-icon` no lleva esa clase — de ahí que
+   el icono saliera pegado a la palabra.
+
+   Y el `gap` NO va sobre el item: mirando el DOM del overlay se ve que
+   Material envuelve TODO el contenido proyectado en un solo
+   `span.mat-mdc-menu-item-text`, así que el item tiene un único hijo y no hay
+   nada que separar. La rejilla tiene que montarse sobre ese span.
+   -------------------------------------------------------------------------- */
+/* Sin un ancho mínimo el panel se ciñe al texto, no sobra hueco y el
+   `margin-left: auto` de la marca resuelve a 0: el check quedaba pegado a la
+   palabra en vez de irse al extremo. */
+.panel-perfiles.mat-mdc-menu-panel {
+  min-width: 13rem;
+}
+
+.panel-perfiles .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* La marca del Perfil activo se va al extremo: leerla ahí es lo que distingue
+   "cuál soy" de "cuáles hay" sin tener que comparar iconos. */
+.panel-perfiles .panel-perfiles__marca {
+  margin-left: auto;
+  color: var(--app-accent);
+}
+
 .solo-lectores {
   position: absolute;
   width: 1px;
