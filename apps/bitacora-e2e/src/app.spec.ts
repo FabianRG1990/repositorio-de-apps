@@ -864,3 +864,82 @@ test.describe('lo que la auditoría del 2026-08-22 encontró roto', () => {
     await expect(page.getByRole('radio').first()).toBeVisible();
   });
 });
+
+/* ---------------------------------------------------------------------------
+   Recepción (#102). Hasta este ticket no había forma de crear una Orden desde
+   la app: la interfaz solo sabía leer lo que la semilla había dejado puesto.
+   --------------------------------------------------------------------------- */
+test.describe('recibir un vehículo', () => {
+  test('crea la Orden y aparece en el Tablero con su Folio', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    // Se espera a que la semilla termine: contar antes daba 0 y la aserción
+    // de después comparaba contra un número que nunca fue el real.
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    const antes = await page.locator('li.fila').count();
+
+    await page.goto('/recepcion');
+    await page.fill('#placa', 'BNT 907');
+    await page.fill('#marca', 'Mazda');
+    await page.fill('#modelo', 'BT-50');
+    await page.fill('#anio', '2020');
+    await page.fill('#cliente', 'Ferretería El Roble');
+    await page.fill('#telefono', '2244-5566');
+    await page.fill('#reporta', 'Se calienta en presa');
+    await page.getByRole('button', { name: /Recibir veh/ }).click();
+
+    // Sale al Tablero con la Orden nueva ya seleccionada y su detalle abierto.
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('li.fila')).toHaveCount(antes + 1);
+
+    const panel = page.locator('mat-sidenav.shell__panel');
+    await expect(panel).toContainText('Mazda BT-50 2020');
+    await expect(panel).toContainText('BNT 907');
+    await expect(panel).toContainText('Ferretería El Roble');
+    // El Folio se muestra completo, con su letra (ADR 0010).
+    await expect(panel).toContainText(/Orden A1-\d+/);
+  });
+
+  /* El historial sigue al carro: la misma placa no puede crear un segundo
+     Vehículo, o el historial se parte en dos. */
+  test('una placa conocida reconoce el vehículo y no lo duplica', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+
+    await page.fill('#placa', '863 549');
+    await page.locator('#marca').click();
+
+    await expect(page.locator('.recepcion__conocido')).toContainText(
+      'Ya lo conocemos',
+    );
+    // Y rellena lo que el Taller ya sabe, editable.
+    await expect(page.locator('#marca')).toHaveValue('Toyota');
+    await expect(page.locator('#cliente')).toHaveValue('Marielos Quesada');
+    await expect(page.locator('#telefono')).toHaveValue('8888-1111');
+
+    await page.getByRole('button', { name: /Recibir veh/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+
+    // Dos Órdenes para el mismo carro, un solo carro en la lista de placas.
+    const conEsaPlaca = page.locator('li.fila').filter({ hasText: '863 549' });
+    await expect(conEsaPlaca).toHaveCount(2);
+  });
+
+  /* Un botón deshabilitado sin explicación es indistinguible de uno roto. */
+  test('dice qué falta mientras no se pueda recibir', async ({ page }) => {
+    await page.goto('/recepcion');
+
+    const enviar = page.getByRole('button', { name: /Recibir veh/ });
+    await expect(enviar).toBeDisabled();
+    await expect(page.locator('.recepcion__falta')).toContainText('Faltan');
+
+    await page.fill('#placa', 'XYZ 111');
+    await page.fill('#marca', 'Kia');
+    await page.fill('#cliente', 'Alguien');
+
+    await expect(enviar).toBeEnabled();
+    await expect(page.locator('.recepcion__falta')).toHaveCount(0);
+  });
+});
