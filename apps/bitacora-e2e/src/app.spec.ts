@@ -630,7 +630,7 @@ test.describe('el Perfil', () => {
   for (const [nombre, url] of [
     ['Asesor', '/'],
     ['Técnico', '/ordenes'],
-    ['Dueño', '/ajustes'],
+    ['Dueño', '/'],
   ] as const) {
     test(`el ${nombre} entra por ${url}`, async ({ page }) => {
       await sinElegir(page);
@@ -643,6 +643,10 @@ test.describe('el Perfil', () => {
          condicional para el caso de la raíz, y las dos cosas son ruido en una
          prueba que solo quiere saber dónde acabó. */
       await expect.poll(() => new URL(page.url()).pathname).toBe(url);
+
+      /* Y que ahí haya algo. El Dueño entraba por Ajustes, que abre en una
+         pestaña que hoy es un párrafo: la peor primera impresión posible. */
+      await expect(page.locator('li.fila').first()).toBeVisible();
     });
   }
 
@@ -666,18 +670,34 @@ test.describe('el Perfil', () => {
       page.locator('.menu__item .mdc-list-item__primary-text').allInnerTexts();
 
     await page.goto('/');
-    await expect.poll(delMenu).toEqual(['Tablero', 'Órdenes', 'Ajustes']);
+    await expect
+      .poll(delMenu)
+      .toEqual([
+        'Tablero',
+        'Ajustes',
+        'Órdenes',
+        'Recepción',
+        'Próximas visitas',
+      ]);
 
     await page.locator('.menu__perfil').click();
     await page.getByRole('menuitem', { name: /Técnico/ }).click();
 
-    await expect.poll(delMenu).toEqual(['Órdenes', 'Tablero']);
+    // Las mismas cinco, en otro orden: lo primero es lo que ese Perfil más usa.
+    await expect
+      .poll(delMenu)
+      .toEqual([
+        'Órdenes',
+        'Tablero',
+        'Recepción',
+        'Próximas visitas',
+        'Ajustes',
+      ]);
   });
 
-  /* EL corazón del ADR: el Perfil ofrece y no prohíbe. Ajustes no está en el
-     menú del Técnico y aun así se abre entera escribiendo la URL — no hay
-     guarda, no hay redirección, no hay pantalla de "no tenés permiso". */
-  test('lo que no se ofrece sigue abriéndose por URL', async ({ page }) => {
+  /* EL corazón del ADR: el Perfil ofrece y no prohíbe. Ninguna ruta lleva
+     guarda ni redirección, y ninguna pantalla dice "no tenés permiso". */
+  test('ninguna ruta está bloqueada para ningún Perfil', async ({ page }) => {
     await sinElegir(page);
     await page.goto('/');
     await page.getByRole('button', { name: /Técnico/ }).click();
@@ -771,5 +791,74 @@ test.describe('el Perfil', () => {
       hueco: '2px',
       visible: true,
     });
+  });
+
+  /* La auditoría del 2026-08-22 encontró que un Dueño no tenía NINGÚN camino
+     en la interfaz hasta Recepción ni hasta Próximas visitas: el menú le daba
+     un subconjunto y el resto quedaba solo para quien supiera escribir la URL.
+     Eso no es ofrecer menos, es prohibir sin decirlo. */
+  test('desde el menú se llega a las cinco pantallas, con cualquier Perfil', async ({
+    page,
+  }) => {
+    const TODAS = [
+      '/',
+      '/recepcion',
+      '/ordenes',
+      '/proximas-visitas',
+      '/ajustes',
+    ];
+
+    for (const perfil of ['asesor', 'tecnico', 'dueno']) {
+      await page.addInitScript((p) => {
+        localStorage.setItem('bitacora.perfil', p);
+      }, perfil);
+      await page.goto('/');
+      await expect(page.locator('.menu__item').first()).toBeVisible();
+
+      const enElMenu = await page
+        .locator('.menu__item')
+        .evaluateAll((els) => els.map((e) => new URL(e.href).pathname));
+
+      expect([...enElMenu].sort()).toEqual([...TODAS].sort());
+    }
+  });
+});
+
+test.describe('lo que la auditoría del 2026-08-22 encontró roto', () => {
+  /* Pulsar dos veces la misma fila vaciaba el panel y lo dejaba en "Elegí una
+     Orden". Desde la pantalla eso se lee como que la app dejó de responder. */
+  test('volver a pulsar una Orden no borra su detalle', async ({ page }) => {
+    await page.goto('/');
+    const cuerpo = page.locator('li.fila').first().locator('.fila__cuerpo');
+    const panel = page.locator('mat-sidenav.shell__panel');
+
+    await cuerpo.click();
+    await expect(panel).toContainText('A1-2418');
+
+    await cuerpo.click();
+    await expect(panel).toContainText('A1-2418');
+  });
+
+  /* Era un botón primario que no hacía absolutamente nada. Un botón muerto en
+     esa posición enseña que la app está rota aunque el resto funcione. */
+  test('Recibir vehículo lleva a Recepción', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('link', { name: /Recibir vehículo/ }).click();
+
+    await expect(page).toHaveURL(/\/recepcion$/);
+    await expect(page.locator('.cuadro__titulo')).toHaveText('Recepción');
+  });
+
+  /* Ajustes abría en la pestaña Taller, que es un párrafo: el Dueño entraba a
+     la app y veía la única pantalla con cero contenido. */
+  test('Ajustes abre en la pestaña que tiene contenido', async ({ page }) => {
+    await page.goto('/ajustes');
+
+    await expect(page.locator('[role="tabpanel"]')).toHaveAttribute(
+      'id',
+      'panel-apariencia',
+    );
+    await expect(page.getByRole('radio').first()).toBeVisible();
   });
 });
