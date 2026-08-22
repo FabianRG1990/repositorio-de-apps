@@ -21,37 +21,42 @@ export const PERFILES: readonly Perfil[] = ['asesor', 'tecnico', 'dueno'];
 /**
  * Qué le ofrece la app a cada Perfil: dónde entra y qué le pone en el menú.
  *
- * OFRECE, no permite. No hay guardas de ruta ni comprobaciones antes de
- * escribir: cualquiera de estas rutas se abre escribiendo la URL, y ninguna
- * pantalla comprueba el Perfil para dejar hacer algo. Lo único que cambia es
- * qué se pone delante, que es literalmente lo que decidió el ADR 0005.
+ * OFRECE, no permite — y eso obliga a que TODAS las pantallas sigan en el
+ * menú. La primera versión de esto le daba a cada Perfil un subconjunto, y el
+ * resultado medido fue que un Dueño no tenía NINGÚN camino en la interfaz
+ * hasta Recepción ni hasta Próximas visitas: quedaban solo para quien supiera
+ * escribir la URL a mano. Eso no es ofrecer menos, es prohibir sin decirlo.
  *
- * El orden de cada lista importa: es el del menú, y lo primero es lo que ese
- * Perfil mira más veces al día.
+ * Lo que cambia por Perfil es el ORDEN: primero lo que ese Perfil mira más
+ * veces al día. Eso sí es ofrecer, y no le quita nada a nadie.
  */
 export interface LoQueSeOfrece {
   /** Dónde cae al ENTRAR. Solo se usa al entrar (ver `elegir`). */
   readonly inicio: string;
-  /** Rutas del menú, en orden. */
+  /** Las rutas del menú, TODAS, ordenadas para este Perfil. */
   readonly menu: readonly string[];
 }
 
-/* Los tres destinos de entrada tienen contenido hoy. Recepción y Próximas
-   visitas todavía son un párrafo, así que mandar ahí al Asesor sería abrir la
-   demo en una pantalla vacía; cuando existan, este mapa es el único sitio que
-   hay que tocar. */
+/* Las cinco pantallas están en las tres listas: lo que cambia es el orden.
+
+   Los tres entran por una pantalla con datos a la vista. El Dueño entraba por
+   Ajustes, y medido resultó ser la peor primera impresión posible: Ajustes
+   abre en la pestaña Taller, que hoy es un párrafo, así que el Perfil que
+   suena a "yo mando acá" aterrizaba en la única pantalla de la app con cero
+   contenido. Entra por el Tablero como los demás; a Ajustes llega desde el
+   menú, donde lo tiene de primero. */
 export const OFRECIDO: Record<Perfil, LoQueSeOfrece> = {
   asesor: {
     inicio: '/',
-    menu: ['/', '/recepcion', '/ordenes', '/proximas-visitas'],
+    menu: ['/', '/recepcion', '/ordenes', '/proximas-visitas', '/ajustes'],
   },
   tecnico: {
     inicio: '/ordenes',
-    menu: ['/ordenes', '/'],
+    menu: ['/ordenes', '/', '/recepcion', '/proximas-visitas', '/ajustes'],
   },
   dueno: {
-    inicio: '/ajustes',
-    menu: ['/', '/ordenes', '/ajustes'],
+    inicio: '/',
+    menu: ['/', '/ajustes', '/ordenes', '/recepcion', '/proximas-visitas'],
   },
 };
 

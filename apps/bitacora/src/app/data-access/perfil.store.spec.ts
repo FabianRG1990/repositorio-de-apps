@@ -54,7 +54,7 @@ describe('el Perfil', () => {
     expect(store().ofrecido()).toBe(OFRECIDO.tecnico);
 
     store().elegir('dueno');
-    expect(store().ofrecido().inicio).toBe('/ajustes');
+    expect(store().ofrecido().inicio).toBe('/');
   });
 });
 
@@ -67,9 +67,27 @@ describe('lo que se le ofrece a cada Perfil', () => {
     }
   });
 
-  it('a nadie se le ofrece una lista vacía', () => {
+  /* Ofrecer no es prohibir, y con un subconjunto sí prohibía: medido sobre la
+     app, un Dueño no tenía NINGÚN camino en la interfaz hasta Recepción ni
+     hasta Próximas visitas. Lo que cambia por Perfil es el orden. */
+  it('a los tres se les ofrecen TODAS las pantallas, solo cambia el orden', () => {
+    const todas = [...OFRECIDO.asesor.menu].sort();
+
     for (const perfil of PERFILES) {
-      expect(OFRECIDO[perfil].menu.length).toBeGreaterThan(0);
+      expect([...OFRECIDO[perfil].menu].sort()).toEqual(todas);
+    }
+
+    const ordenes = PERFILES.map((p) => OFRECIDO[p].menu.join(','));
+    expect(new Set(ordenes).size).toBe(PERFILES.length);
+  });
+
+  /* Nadie debe aterrizar en una pantalla vacía: Recepción, Próximas visitas y
+     la pestaña Taller de Ajustes son todavía un párrafo. */
+  it('nadie entra por una pantalla sin contenido', () => {
+    const VACIAS = ['/recepcion', '/proximas-visitas', '/ajustes'];
+
+    for (const perfil of PERFILES) {
+      expect(VACIAS).not.toContain(OFRECIDO[perfil].inicio);
     }
   });
 
