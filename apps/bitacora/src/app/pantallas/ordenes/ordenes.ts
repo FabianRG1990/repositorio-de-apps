@@ -8,6 +8,8 @@ import {
   ListaPestanas,
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
+import { MatButtonModule } from '@angular/material/button';
+import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
 import { FilaOrden } from '../../shared/fila-orden/fila-orden';
 import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
@@ -28,13 +30,19 @@ const PESTANAS: readonly Pestana[] = [
   templateUrl: './ordenes.html',
   styleUrl: './ordenes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListaPestanas, FilaOrden],
+  imports: [ListaPestanas, FilaOrden, EtiquetaEspecialidad, MatButtonModule],
 })
 export class Ordenes {
   readonly store = inject(OrdenesStore);
   readonly #detalle = inject(DetalleStore);
   readonly pestanas = PESTANAS;
   readonly activa = signal<string>('en-taller');
+
+  /** `145000` → `₡145 000`. El monto de lo declinado es lo que se vuelve a
+      proponer, así que se lee, no se calcula. */
+  protected colones(monto: number): string {
+    return `₡${monto.toLocaleString('es-CR')}`;
+  }
 
   protected verOrden(folio: string) {
     if (this.store.folioSeleccionado() !== folio) {

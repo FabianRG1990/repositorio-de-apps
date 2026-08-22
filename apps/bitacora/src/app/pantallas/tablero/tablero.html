@@ -1,7 +1,12 @@
 <div class="pantalla">
+  @let enTaller = store.enElTaller();
+
   <div class="pantalla__cabecera">
+    <!-- Lo entregado ya no está en el taller, y esta pantalla se llama "En el
+         taller": mostrarlo acá contradecía su propio título. -->
     <p class="pantalla__conteo">
-      {{ store.ordenes().length }} vehículos · ordenados por tiempo parado
+      {{ enTaller.length }} {{ enTaller.length === 1 ? 'vehículo' : 'vehículos'
+      }} · ordenados por tiempo parado
     </p>
 
     <!-- Lleva a Recepción, que es donde se recibe un Vehículo. Antes no hacía
@@ -14,7 +19,7 @@
   </div>
 
   <ul class="lista">
-    @for (orden of store.ordenes(); track orden.folio) {
+    @for (orden of enTaller; track orden.folio) {
     <li
       app-fila-orden
       [orden]="orden"

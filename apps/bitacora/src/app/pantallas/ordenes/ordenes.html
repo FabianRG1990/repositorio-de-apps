@@ -14,8 +14,14 @@
       aria-labelledby="pestana-en-taller"
       class="panel"
     >
+      @let enTaller = store.enElTaller();
+      <p class="panel__conteo">
+        {{ enTaller.length }} {{ enTaller.length === 1 ? 'vehículo' :
+        'vehículos' }} en el taller
+      </p>
+
       <ul class="lista">
-        @for (orden of store.ordenes(); track orden.folio) {
+        @for (orden of enTaller; track orden.folio) {
         <li
           app-fila-orden
           [orden]="orden"
@@ -23,6 +29,8 @@
           (elegida)="store.seleccionar(orden.folio)"
           (detallePedido)="verOrden(orden.folio)"
         ></li>
+        } @empty {
+        <li class="panel__vacio">No hay vehículos en el taller.</li>
         }
       </ul>
     </section>
@@ -31,21 +39,98 @@
       role="tabpanel"
       id="panel-por-entregar"
       aria-labelledby="pestana-por-entregar"
-      class="panel panel--vacio"
+      class="panel"
     >
-      <p>Ninguna Orden esperando entrega.</p>
+      @let listas = store.porEntregar();
+      <!--
+        No salen de "En el taller": el carro terminado sigue ocupando espacio
+        hasta que lo recogen, y por eso el glosario lo llama Vehículo sin
+        recoger. Esto es una vista de lo mismo, no una gaveta aparte.
+      -->
+      <p class="panel__conteo">
+        {{ listas.length }} {{ listas.length === 1 ? 'vehículo listo' :
+        'vehículos listos' }} y sin recoger
+      </p>
+
+      <ul class="lista">
+        @for (orden of listas; track orden.folio) {
+        <li
+          app-fila-orden
+          [orden]="orden"
+          [seleccionada]="store.folioSeleccionado() === orden.folio"
+          (elegida)="store.seleccionar(orden.folio)"
+          (detallePedido)="verOrden(orden.folio)"
+        ></li>
+        } @empty {
+        <li class="panel__vacio">Ninguna Orden esperando entrega.</li>
+        }
+      </ul>
     </section>
     } @case ('declinado') {
     <section
       role="tabpanel"
       id="panel-declinado"
       aria-labelledby="pestana-declinado"
-      class="panel panel--vacio"
+      class="panel"
     >
-      <p>
-        El trabajo declinado reaparece solo al recibir el Vehículo, con motivo y
-        monto.
+      @let rechazadas = store.declinadas();
+      <p class="panel__conteo">
+        {{ rechazadas.length }} {{ rechazadas.length === 1 ? 'trabajo declinado'
+        : 'trabajos declinados' }} · reaparecen cuando el Vehículo vuelva
       </p>
+
+      <!--
+        Se lista por LÍNEA y no por Orden: el trabajo declinado es de la Línea
+        (ADR 0002), así que una misma Orden puede tener una aprobada y otra
+        declinada, y agrupar por Orden escondería justo eso.
+      -->
+      <ul class="lista">
+        @for (item of rechazadas; track item.orden.folio +
+        item.linea.descripcion) {
+        <li class="declinada">
+          <button
+            type="button"
+            class="declinada__cuerpo"
+            [attr.aria-current]="store.folioSeleccionado() === item.orden.folio"
+            (click)="store.seleccionar(item.orden.folio)"
+          >
+            <span class="declinada__trabajo">{{ item.linea.descripcion }}</span>
+            <span class="declinada__carro">
+              {{ item.orden.vehiculo }} ·
+              <span class="identificador">{{ item.orden.placa }}</span>
+              · {{ item.orden.cliente }}
+            </span>
+            <!-- Conserva motivo Y monto: es lo que se vuelve a proponer. -->
+            @if (item.linea.motivoDeclinacion) {
+            <span class="declinada__motivo">
+              «{{ item.linea.motivoDeclinacion }}»
+            </span>
+            }
+            <app-etiqueta-especialidad
+              class="declinada__especialidad"
+              [especialidad]="item.linea.especialidad"
+            />
+            <span class="declinada__monto identificador"
+              >{{ colones(item.linea.monto) }}</span
+            >
+          </button>
+
+          <button
+            matButton="outlined"
+            type="button"
+            class="declinada__accion"
+            (click)="verOrden(item.orden.folio)"
+          >
+            Ver orden<span class="solo-lectores"> {{ item.orden.folio }}</span>
+          </button>
+        </li>
+        } @empty {
+        <li class="panel__vacio">
+          Ningún trabajo declinado. Cuando el Taller recomiende algo que el
+          Cliente no apruebe, queda acá con su motivo y su monto.
+        </li>
+        }
+      </ul>
     </section>
     } }
   </div>

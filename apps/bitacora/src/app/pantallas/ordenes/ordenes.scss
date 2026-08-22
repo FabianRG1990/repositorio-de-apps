@@ -44,3 +44,156 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.panel__conteo {
+  margin: 0 0 1rem;
+  color: var(--app-text-soft);
+  font-size: 0.85rem;
+}
+
+.panel__vacio {
+  list-style: none;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--app-text-soft);
+  line-height: 1.5;
+}
+
+/* ------------------------------ lo declinado ------------------------------
+   No reutiliza la fila de Orden a propósito: acá el dato de vistazo no es el
+   tiempo parado sino QUÉ se declinó y por CUÁNTO, que es lo que se vuelve a
+   proponer cuando el carro regrese.
+   -------------------------------------------------------------------------- */
+.declinada {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  min-height: var(--app-fila-alto);
+  border-radius: 0.75rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+  transition: background 100ms linear;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .declinada:hover {
+    background: var(--app-capa-hover);
+    color: var(--app-text);
+    transition-duration: 0s;
+  }
+}
+
+.declinada:has(.declinada__cuerpo[aria-current='true']) {
+  background: var(--app-seleccion);
+  color: var(--app-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .declinada {
+    transition: none;
+  }
+}
+
+.declinada__cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'trabajo especialidad monto'
+    'carro   especialidad monto'
+    'motivo  especialidad monto';
+  align-items: center;
+  gap: 0 1rem;
+  min-width: 0;
+  border: 0;
+  padding: 0.6rem 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+
+.declinada__cuerpo:focus-visible,
+.declinada__accion:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.declinada__trabajo {
+  grid-area: trabajo;
+  font-weight: 590;
+  letter-spacing: 0.0056em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.declinada__carro,
+.declinada__motivo {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.declinada__carro {
+  grid-area: carro;
+}
+
+/* El motivo va en cursiva y entrecomillado porque son palabras del Cliente,
+   no una etiqueta del sistema. */
+.declinada__motivo {
+  grid-area: motivo;
+  font-style: italic;
+}
+
+.declinada__especialidad {
+  grid-area: especialidad;
+  justify-self: start;
+}
+
+.declinada__monto {
+  grid-area: monto;
+  justify-self: end;
+  font-size: 1.125rem;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums slashed-zero;
+  white-space: nowrap;
+}
+
+.declinada__accion {
+  --mat-button-outlined-container-height: var(--app-boton-alto);
+  --mat-button-outlined-label-text-weight: 590;
+  --mat-button-outlined-outline-color: var(--app-border-strong);
+  --mat-button-outlined-label-text-color: var(--app-accent);
+  flex: none;
+}
+
+/* Con la lista estrecha, el monto y la especialidad bajan bajo el texto. */
+@container (max-width: 42rem) {
+  .declinada {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding: 0.75rem 1rem;
+  }
+
+  .declinada__cuerpo {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'trabajo trabajo'
+      'carro   carro'
+      'motivo  motivo'
+      'especialidad monto';
+    row-gap: 0.4rem;
+  }
+
+  .declinada__accion {
+    justify-self: stretch;
+  }
+}
