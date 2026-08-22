@@ -49,12 +49,25 @@ también", hay que partirlo.
 
 El CI corre `nx format:check`, y `.prettierignore` **no** excluye Markdown: un `.md`
 sin formatear (investigación, ADR, `CONTEXT.md`) deja el PR en rojo igual que un
-`.ts`. Un hook `PostToolUse` (`.claude/hooks/format-on-write.mjs`) pasa Prettier
-sobre cada archivo que se escribe con `Write`/`Edit`, así que dentro de Claude Code
-esto ya está cubierto. Si commiteás por fuera, corré `yarn nx format:write` antes.
+`.ts`.
+
+Dos hooks lo cubren, y hacen falta los dos:
+
+- **`PostToolUse`** (`.claude/hooks/format-on-write.mjs`) pasa Prettier sobre cada
+  archivo escrito con `Write`/`Edit`.
+- **`PreToolUse`** (`.claude/hooks/format-check-on-commit.mjs`) no deja pasar un
+  `git commit` con archivos sin formatear. Cubre lo que el primero no ve: un
+  `sed` masivo, un script, cualquier cosa que toque archivos desde el shell —
+  que es exactamente lo que dejó el CI en rojo en el PR #68 (issue #69). **Avisa,
+  no arregla**: lo que se commitea es el índice, así que formatear el archivo del
+  disco dejaría el commit igual de mal y el arreglo suelto fuera.
+
+Si commiteás por fuera de Claude Code, corré `yarn nx format:write` antes.
 
 En Windows, `prettier --check` local da falsos positivos por CRLF. El log del CI
-(Linux, LF) es la fuente de verdad — no persigas archivos que solo fallan localmente.
+(Linux, LF) es la fuente de verdad — no persigas archivos que solo fallan
+localmente. El hook del commit **no** tiene ese problema: compara el contenido que
+git va a guardar, ya normalizado a LF, no el del disco.
 
 ## Agent skills
 
