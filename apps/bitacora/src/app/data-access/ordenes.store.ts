@@ -12,6 +12,10 @@ export interface LineaServicio {
   readonly descripcion: string;
   readonly especialidad: ClaveEspecialidad;
   readonly horas: number;
+  readonly monto: number;
+  /** Lo que el Taller recomendó y el Cliente no aprobó. Conserva su motivo. */
+  readonly declinada: boolean;
+  readonly motivoDeclinacion: string | null;
 }
 
 /** Lo que la pantalla necesita de una Orden, ya compuesto. */
@@ -21,6 +25,8 @@ export interface Orden {
   readonly vehiculo: string;
   readonly cliente: string;
   readonly estado: string;
+  /** La clave del dominio, para filtrar. `estado` es la etiqueta que se lee. */
+  readonly estadoClave: EstadoOrden;
   readonly tono: TonoEstado;
   /** Horas desde que el Vehículo entró. Es el criterio de orden (ADR 0003). */
   readonly tiempoParado: number;
@@ -84,6 +90,38 @@ export class OrdenesStore {
 
   readonly folioSeleccionado = this.#folioSeleccionado.asReadonly();
 
+  /**
+   * Lo que está físicamente en el Taller: todo lo no entregado.
+   *
+   * Lo Listo NO se va de acá. El carro terminado sigue ocupando espacio hasta
+   * que el Cliente lo recoge —el glosario lo llama Vehículo sin recoger— y por
+   * eso el tablero lo sigue señalando. "Por entregar" es una vista de lo
+   * mismo, no una gaveta aparte.
+   */
+  readonly enElTaller = computed(() =>
+    this.ordenes().filter((o) => o.estadoClave !== 'entregado'),
+  );
+
+  /** El trabajo terminó y el carro sigue ahí esperando a que lo recojan. */
+  readonly porEntregar = computed(() =>
+    this.ordenes().filter((o) => o.estadoClave === 'listo'),
+  );
+
+  /**
+   * Lo que el Taller recomendó y el Cliente no aprobó.
+   *
+   * Se lista por LÍNEA y no por Orden: el trabajo declinado es de la Línea
+   * (ADR 0002), así que una misma Orden puede tener una aprobada y otra
+   * declinada, y agrupar por Orden escondería justo eso.
+   */
+  readonly declinadas = computed(() =>
+    this.ordenes().flatMap((orden) =>
+      orden.lineas
+        .filter((linea) => linea.declinada)
+        .map((linea) => ({ orden, linea })),
+    ),
+  );
+
   readonly seleccionada = computed(
     () =>
       this.#vista().find((o) => o.folio === this.#folioSeleccionado()) ?? null,
@@ -131,7 +169,13 @@ export class OrdenesStore {
         ]);
 
         const presentacion = PRESENTACION[orden.estado];
-        const tocadas = new Set(lineas.map((l) => l.especialidad));
+        /* Lo declinado no cuenta como Especialidad tocada: nadie lo está
+           trabajando, así que pintar su color en la fila diría que sí. */
+        const tocadas = new Set(
+          lineas
+            .filter((l) => l.declinadaEn === NO_BORRADO)
+            .map((l) => l.especialidad),
+        );
 
         return {
           folio: orden.folio,
@@ -141,6 +185,7 @@ export class OrdenesStore {
             .join(' '),
           cliente: cliente?.nombre ?? '',
           estado: presentacion.etiqueta,
+          estadoClave: orden.estado,
           tono: presentacion.tono,
           tiempoParado: Math.max(
             0,
@@ -153,6 +198,9 @@ export class OrdenesStore {
             descripcion: l.descripcion,
             especialidad: l.especialidad,
             horas: l.horasFacturadas,
+            monto: l.monto,
+            declinada: l.declinadaEn !== NO_BORRADO,
+            motivoDeclinacion: l.motivoDeclinacion,
           })),
           especialidades: ORDEN_ESPECIALIDADES.filter((e) => tocadas.has(e)),
         } satisfies Orden;
