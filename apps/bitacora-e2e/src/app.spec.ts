@@ -276,20 +276,29 @@ test('las Órdenes salen de la base y la semilla no las duplica', async ({
         abrir.onsuccess = () => res(abrir.result);
         abrir.onerror = () => rej(abrir.error);
       });
+      /* Se cuentan las que NO están entregadas, que es lo que el Tablero
+         muestra: la semilla incluye una Orden ya entregada justamente para
+         que ese filtro se ejerza. Contar la tabla entera comparaba contra un
+         número que la pantalla nunca iba a enseñar. */
       return new Promise<number>((res) => {
-        const p = db.transaction('ordenes').objectStore('ordenes').count();
-        p.onsuccess = () => res(p.result);
+        const p = db.transaction('ordenes').objectStore('ordenes').getAll();
+        p.onsuccess = () =>
+          res(
+            (p.result as { entregadoEn: number | string }[]).filter(
+              (o) => o.entregadoEn === 0,
+            ).length,
+          );
       });
     });
 
-  const enLaBase = await contar();
-  expect(enLaBase).toBeGreaterThan(0);
-  await expect(page.locator('.fila')).toHaveCount(enLaBase);
+  const enElTaller = await contar();
+  expect(enElTaller).toBeGreaterThan(0);
+  await expect(page.locator('.fila')).toHaveCount(enElTaller);
 
   // La semilla es idempotente: recargar no vuelve a sembrar.
   await page.reload();
   await expect(page.locator('.fila').first()).toBeVisible();
-  expect(await contar()).toBe(enLaBase);
+  expect(await contar()).toBe(enElTaller);
 });
 
 /* ---------------------------------------------------------------------------
@@ -941,5 +950,101 @@ test.describe('recibir un vehículo', () => {
 
     await expect(enviar).toBeEnabled();
     await expect(page.locator('.recepcion__falta')).toHaveCount(0);
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Las tres pestañas de Órdenes (#104). Estaban vacías: cero filas y un párrafo.
+   --------------------------------------------------------------------------- */
+test.describe('las pestañas de Órdenes', () => {
+  const filas = (page: Page) =>
+    page.locator('[role="tabpanel"] li.fila, [role="tabpanel"] li.declinada');
+
+  const abrir = async (page: Page, nombre: string) => {
+    await page.goto('/ordenes');
+    await page.getByRole('tab', { name: new RegExp(nombre, 'i') }).click();
+  };
+
+  /* Lo entregado ya no está en el taller. Sin una sola Orden entregada en la
+     semilla, este filtro pasaría igual sin estar haciendo nada. */
+  test('En el taller deja fuera lo entregado', async ({ page }) => {
+    await abrir(page, 'En el taller');
+
+    await expect(filas(page)).toHaveCount(4);
+    await expect(page.locator('[role="tabpanel"]')).not.toContainText(
+      'Isuzu D-Max',
+    );
+  });
+
+  /* Y el Tablero se llama "En el taller": tiene que enseñar lo mismo. */
+  test('el Tablero enseña lo mismo que su propio título dice', async ({
+    page,
+  }) => {
+    await abrir(page, 'En el taller');
+    const enLaPestana = await filas(page).count();
+
+    await page.goto('/');
+    await expect(page.locator('li.fila')).toHaveCount(enLaPestana);
+  });
+
+  /* El carro listo NO se va de "En el taller": sigue ocupando espacio hasta
+     que lo recogen. Por entregar es una vista de lo mismo, no otra gaveta. */
+  test('Por entregar muestra los listos, y siguen en el taller', async ({
+    page,
+  }) => {
+    await abrir(page, 'Por entregar');
+
+    await expect(filas(page)).toHaveCount(1);
+    await expect(page.locator('[role="tabpanel"]')).toContainText(
+      'Suzuki Swift',
+    );
+
+    await page.getByRole('tab', { name: /En el taller/i }).click();
+    await expect(page.locator('[role="tabpanel"]')).toContainText(
+      'Suzuki Swift',
+    );
+  });
+
+  /* El trabajo declinado es de la LÍNEA, no de la Orden: una misma Orden puede
+     tener una aprobada y otra declinada. Y conserva motivo y monto, que es lo
+     que se vuelve a proponer cuando el carro regrese. */
+  test('Declinado lista por línea, con su motivo y su monto', async ({
+    page,
+  }) => {
+    await abrir(page, 'Declinado');
+
+    await expect(filas(page)).toHaveCount(2);
+
+    const primera = page.locator('li.declinada').first();
+    await expect(primera).toContainText('Cambio de faja de distribución');
+    await expect(primera).toContainText('863 549');
+    await expect(primera).toContainText('próxima visita');
+    await expect(primera.locator('.declinada__monto')).toContainText('96');
+  });
+
+  /* La Orden del Toyota tiene dos líneas aprobadas y una declinada: en la
+     lista aparece SOLO la declinada, no la Orden entera. */
+  test('de una Orden con líneas mixtas solo sale la declinada', async ({
+    page,
+  }) => {
+    await abrir(page, 'Declinado');
+
+    const delToyota = page
+      .locator('li.declinada')
+      .filter({ hasText: '863 549' });
+    await expect(delToyota).toHaveCount(1);
+    await expect(delToyota).not.toContainText('Cambio de bomba de agua');
+  });
+
+  /* Lo declinado no se está trabajando, así que su color no puede aparecer en
+     la fila como si alguien lo estuviera haciendo. */
+  test('la especialidad declinada no se cuenta en la fila del Tablero', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const toyota = page.locator('li.fila').filter({ hasText: '863 549' });
+    // Mecánica está declinada en una línea y aprobada en dos: sale una vez.
+    await expect(toyota.locator('app-etiqueta-especialidad')).toHaveCount(1);
   });
 });
