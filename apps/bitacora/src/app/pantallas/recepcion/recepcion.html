@@ -1,6 +1,130 @@
+@let c = campos(); @let ya = conocido();
+
 <div class="pantalla">
-  <p>
-    Acá se recibe el Vehículo: nombre, teléfono y placa. La cédula se pide al
-    facturar.
-  </p>
+  <form class="recepcion" (ngSubmit)="recibir()">
+    <p class="recepcion__guia">
+      Con la placa basta para empezar. La cédula se pide al facturar, no acá.
+    </p>
+
+    <div class="campo campo--placa">
+      <label for="placa">Placa</label>
+      <input
+        id="placa"
+        name="placa"
+        autocomplete="off"
+        [value]="c.placa"
+        (input)="escribir('placa', $any($event.target).value)"
+        (blur)="buscarPorPlaca()"
+      />
+      <!--
+        El historial sigue al carro, no a la persona: si el Taller ya conoce
+        esta placa se reutiliza el Vehículo y se dice en pantalla. Sin esto, el
+        mismo carro entraría dos veces como dos carros distintos.
+      -->
+      @if (ya) {
+      <p class="recepcion__conocido" role="status">
+        <fa-icon [icon]="['fas', 'circle-info']" />
+        Ya lo conocemos: {{ ya.marca }} {{ ya.modelo }} @if (ya.visitas) { · {{
+        ya.visitas }} {{ ya.visitas === 1 ? 'visita' : 'visitas' }} }
+      </p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="marca">Marca</label>
+      <input
+        id="marca"
+        name="marca"
+        [value]="c.marca"
+        (input)="escribir('marca', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="modelo">Modelo</label>
+      <input
+        id="modelo"
+        name="modelo"
+        [value]="c.modelo"
+        (input)="escribir('modelo', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="campo campo--corto">
+      <label for="anio">Año</label>
+      <input
+        id="anio"
+        name="anio"
+        inputmode="numeric"
+        [value]="c.anio"
+        (input)="escribir('anio', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="cliente">Cliente</label>
+      <input
+        id="cliente"
+        name="cliente"
+        [value]="c.cliente"
+        (input)="escribir('cliente', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="telefono">Teléfono</label>
+      <input
+        id="telefono"
+        name="telefono"
+        inputmode="tel"
+        [value]="c.telefono"
+        (input)="escribir('telefono', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="campo campo--ancho">
+      <label for="quienEntrega">Quién entrega</label>
+      <input
+        id="quienEntrega"
+        name="quienEntrega"
+        [value]="c.quienEntrega"
+        [attr.placeholder]="c.cliente || 'El Cliente'"
+        (input)="escribir('quienEntrega', $any($event.target).value)"
+      />
+      <p class="campo__ayuda">
+        Puede no ser el Cliente: en una flotilla es un chofer distinto cada vez.
+      </p>
+    </div>
+
+    <div class="campo campo--ancho">
+      <label for="reporta">Qué reporta el Cliente</label>
+      <textarea
+        id="reporta"
+        name="reporta"
+        rows="3"
+        [value]="c.reporta"
+        (input)="escribir('reporta', $any($event.target).value)"
+      ></textarea>
+    </div>
+
+    @if (error()) {
+    <p class="recepcion__error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="recepcion__pie">
+      <button
+        matButton="filled"
+        type="submit"
+        class="recepcion__enviar"
+        [disabled]="faltaAlgo || guardando()"
+      >
+        {{ guardando() ? 'Recibiendo…' : 'Recibir vehículo' }}
+      </button>
+      @if (faltaAlgo) {
+      <p class="recepcion__falta" role="status">
+        Faltan la placa, la marca y el cliente.
+      </p>
+      }
+    </div>
+  </form>
 </div>
