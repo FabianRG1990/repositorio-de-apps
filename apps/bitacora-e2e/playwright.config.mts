@@ -25,24 +25,45 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4202';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
-  /* 60 s en vez de los 30 s de fábrica. No es que las pruebas hagan de más:
-     contra `nx serve` en modo desarrollo —que sirve los módulos sin bundlear—
-     Firefox tarda entre 16 y 23 s en las pruebas del shell, contra 1-3 s de
-     Chromium. Con 23 s de caso peor, 30 s deja un 30 % de margen y basta que
-     ocho workers se peleen la CPU para agotarlo: de ahí los rojos
-     intermitentes que solo aparecían con la suite completa (issue #92). */
+  /* Se mantienen los 60 s de #81 por ahora. Contra el build el peor caso de
+     Firefox baja de 46,5 s a 18,7 s, pero eso es la MEDIANA del problema, no
+     su techo: el peor caso sigue variando bastante entre corridas, y hasta
+     saber por qué no hay número que ajustar con fundamento. */
   timeout: 60_000,
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
+  /* La suite corre contra el BUILD, no contra el dev server.
+
+     El dev server sirve los módulos sin bundlear, y Firefox lo paga mucho más
+     caro que Chromium: era la causa de fondo de los rojos intermitentes del
+     issue #92, donde tres a cinco pruebas de Firefox se pasaban del timeout
+     solo cuando la suite corría completa.
+
+     Medido en la misma máquina, misma suite de 72 pruebas:
+
+     | | dev server | build |
+     | --- | --- | --- |
+     | Firefox, peor prueba | 46,5 s | 18,7 s |
+     | Firefox, suma | 370,3 s | 234,3 s |
+     | Chromium, peor prueba | 5,9 s | 2,7 s |
+     | corrida completa | 72,9 s | 47,3 s |
+
+     Y de propina prueba lo que de verdad se le entrega al taller: con el dev
+     server, un fallo que solo aparezca con la optimización activada no lo veía
+     nadie hasta desplegar.
+
+     El `timeout` propio es más largo que los 60 s de fábrica de Playwright
+     porque `serve-static` compila antes de servir. */
   webServer: {
-    command: 'yarn nx run bitacora:serve',
+    command: 'yarn nx run bitacora:serve-static',
     url: 'http://localhost:4202',
     reuseExistingServer: true,
+    timeout: 180_000,
     cwd: workspaceRoot,
   },
   projects: [
