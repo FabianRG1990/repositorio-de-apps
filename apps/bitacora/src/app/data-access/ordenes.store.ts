@@ -89,10 +89,22 @@ export class OrdenesStore {
       this.#vista().find((o) => o.folio === this.#folioSeleccionado()) ?? null,
   );
 
+  /**
+   * Elegir una Orden. Es IDEMPOTENTE: volver a pulsar la misma no la
+   * deselecciona.
+   *
+   * Antes hacía de interruptor, y el efecto era que pulsar dos veces la misma
+   * fila vaciaba el panel de detalle y lo dejaba en "Elegí una Orden". Visto
+   * desde la pantalla eso se lee como que la app dejó de responder, no como
+   * que uno mismo la deseleccionó. Quitar la selección es un gesto aparte
+   * —`limpiarSeleccion`—, no el mismo gesto repetido.
+   */
   seleccionar(folio: string) {
-    this.#folioSeleccionado.update((actual) =>
-      actual === folio ? null : folio,
-    );
+    this.#folioSeleccionado.set(folio);
+  }
+
+  limpiarSeleccion() {
+    this.#folioSeleccionado.set(null);
   }
 
   async #componer(): Promise<readonly Orden[]> {
