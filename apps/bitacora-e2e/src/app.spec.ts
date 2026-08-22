@@ -817,7 +817,9 @@ test.describe('el Perfil', () => {
 
       const enElMenu = await page
         .locator('.menu__item')
-        .evaluateAll((els) => els.map((e) => new URL(e.href).pathname));
+        .evaluateAll((els) =>
+          (els as HTMLAnchorElement[]).map((e) => new URL(e.href).pathname),
+        );
 
       expect([...enElMenu].sort()).toEqual([...TODAS].sort());
     }
