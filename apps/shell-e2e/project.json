@@ -8,10 +8,12 @@
   "// e2e": "El target e2e lo infiere @nx/playwright/plugin; aquí solo se sobrescribe su comando para añadir --pass-with-no-tests. Este proyecto todavía no tiene specs (src/ solo trae .gitkeep) y Playwright aborta con 'No tests found', lo que dejaba el CI en rojo. Cuando se agreguen specs el flag queda inocuo, porque sí habrá tests que correr.",
   "targets": {
     "e2e": {
+      "dependsOn": [],
       "options": {
         "cwd": "apps/shell-e2e",
         "command": "playwright test --pass-with-no-tests"
       }
     }
-  }
+  },
+  "// e2e dependsOn": "Vacío a propósito: @nx/playwright infiere la dependencia leyendo el webServer.command, y entonces Nx arranca el servidor por su cuenta mientras Playwright ejecuta el mismo comando encima. Con tres suites a la vez las cadenas se cruzan y Nx aborta con \"Recursive task invocation detected\" (issue #97). Declarándolo vacío lo arranca uno solo."
 }
