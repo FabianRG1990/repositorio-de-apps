@@ -5,6 +5,7 @@ import {
   type Especialidad,
   type EstadoOrden,
 } from './esquema';
+import { RecepcionDeVehiculos } from './recepcion';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
 
 /**
@@ -120,6 +121,19 @@ export class BitacoraDatos {
   readonly tallerId = TALLER_DEMO;
   readonly repo = new Repositorio(this.db, this.tallerId);
   readonly vehiculos = new RepositorioVehiculos(this.db, this.tallerId);
+  readonly recepcion = new RecepcionDeVehiculos(
+    this.db,
+    this.tallerId,
+    this.repo,
+    this.vehiculos,
+  );
+
+  /** El Puesto desde el que este aparato acuña Folios. Fase 1 tiene uno solo. */
+  async puestoActual(): Promise<string> {
+    const puesto = await this.repo.vivos(this.db.puestos).first();
+    if (!puesto) throw new Error('El Taller no tiene ningún Puesto');
+    return puesto.id;
+  }
 
   /** Se resuelve cuando la base está lista para consultarse. */
   readonly lista: Promise<void>;
