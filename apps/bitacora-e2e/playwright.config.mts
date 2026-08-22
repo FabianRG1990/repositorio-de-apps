@@ -25,12 +25,45 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4202';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
-  /* Se mantienen los 60 s de #81 por ahora. Contra el build el peor caso de
-     Firefox baja de 46,5 s a 18,7 s, pero eso es la MEDIANA del problema, no
-     su techo: el peor caso sigue variando bastante entre corridas, y hasta
-     saber por qué no hay número que ajustar con fundamento. */
-  timeout: 60_000,
+  /* 45 s. Los 60 de antes eran un parche para tolerar la lentitud del dev
+     server; con el build y los workers acotados (abajo), el peor caso de
+     Firefox medido en cuatro corridas cae en 17,1–22,2 s, contra los 46,5 s
+     del punto de partida. Con 45 s el margen es de 2× sobre el peor de los
+     peores, y queda sitio para una máquina de CI más lenta.
 
+     No se baja a los 30 de fábrica: el margen seguiría siendo amplio, pero el
+     coste de equivocarse es un rojo intermitente que hace desconfiar de la
+     suite entera, y el de acertar es no ahorrar nada — un timeout alto no
+     cuesta tiempo en las pruebas que pasan. */
+  timeout: 45_000,
+
+  /* La MITAD del problema del issue #92 era esta, y el ticket la había
+     descartado ("alarga la corrida entera para todos"). La medición dice lo
+     contrario: con menos workers la suite es a la vez más estable Y más
+     rápida.
+
+     Misma máquina (16 núcleos lógicos), misma suite de 72 pruebas, contra el
+     build:
+
+     | workers | peor prueba de Firefox | suma Firefox | corrida completa |
+     | --- | --- | --- | --- |
+     | 8 (el 50 % de fábrica) | 28,0 s | 274,8 s | 55,5 s |
+     | 4 | 7,1 s | 135,8 s | 49,7 s |
+     | 2 | 4,5 s | 111,9 s | 69,1 s |
+
+     Ocho workers no compran velocidad: se pelean la CPU. Cada worker levanta
+     un navegador entero, y Firefox paga la contención mucho más caro que
+     Chromium — de ahí que los rojos de #92 fueran siempre suyos. Bajar a
+     cuatro deja la corrida completa donde estaba y hunde el peor caso, que es
+     el número del que dependía el flake.
+
+     Los tres valores de la tabla son de una corrida cada uno y hay ruido de
+     fondo: con la configuración final, cuatro corridas seguidas dieron un peor
+     caso de 17,1 / 17,8 / 22,2 / 18,8 s. El orden de magnitud es lo que manda,
+     no el número exacto.
+
+     En CI no se toca: Playwright ya usa un solo worker cuando detecta `CI`. */
+  workers: process.env['CI'] ? 1 : '25%',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
