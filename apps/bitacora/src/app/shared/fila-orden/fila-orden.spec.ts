@@ -12,6 +12,7 @@ const ORDEN: Orden = {
   vehiculo: 'Toyota Hilux 2019',
   cliente: 'Marielos Quesada',
   estado: 'Esperando repuesto',
+  estadoClave: 'esperando-repuesto',
   tono: 'riesgo',
   tiempoParado: 52,
   detalle: 'Bomba de agua pedida a San José',
