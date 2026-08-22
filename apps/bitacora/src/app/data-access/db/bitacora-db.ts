@@ -20,6 +20,9 @@ interface SemillaLinea {
   descripcion: string;
   especialidad: Especialidad;
   horas: number;
+  monto: number;
+  /** El Cliente no la aprobó. Conserva su motivo y reaparece al volver. */
+  declinada?: { motivo: string };
 }
 
 interface SemillaOrden {
@@ -32,6 +35,8 @@ interface SemillaOrden {
   estado: EstadoOrden;
   /** Horas desde que entró: el criterio de orden del tablero (ADR 0003). */
   haceHoras: number;
+  /** Horas desde que se entregó, si ya salió del Taller. */
+  entregadoHaceHoras?: number;
   notas: string;
   lineas: readonly SemillaLinea[];
 }
@@ -55,8 +60,24 @@ const SEMILLA: readonly SemillaOrden[] = [
         descripcion: 'Cambio de bomba de agua',
         especialidad: 'mecanica',
         horas: 4,
+        monto: 145000,
       },
-      { descripcion: 'Purga del sistema', especialidad: 'mecanica', horas: 1 },
+      {
+        descripcion: 'Purga del sistema',
+        especialidad: 'mecanica',
+        horas: 1,
+        monto: 18000,
+      },
+      /* Declinada: el Taller lo recomendó y el Cliente dijo que no. Se guarda
+         con su motivo y su monto porque vuelve a proponerse cuando el carro
+         regrese (glosario). */
+      {
+        descripcion: 'Cambio de faja de distribución',
+        especialidad: 'mecanica',
+        horas: 3,
+        monto: 96000,
+        declinada: { motivo: 'El cliente lo deja para la próxima visita' },
+      },
     ],
   },
   {
@@ -74,6 +95,7 @@ const SEMILLA: readonly SemillaOrden[] = [
         descripcion: 'Guardabarros derecho',
         especialidad: 'pintura',
         horas: 6,
+        monto: 210000,
       },
     ],
   },
@@ -92,6 +114,14 @@ const SEMILLA: readonly SemillaOrden[] = [
         descripcion: 'Diagnóstico de carga',
         especialidad: 'electricidad',
         horas: 2,
+        monto: 25000,
+      },
+      {
+        descripcion: 'Cambio de alternador',
+        especialidad: 'electricidad',
+        horas: 2.5,
+        monto: 178000,
+        declinada: { motivo: 'Va a cotizar el repuesto por su cuenta' },
       },
     ],
   },
@@ -110,6 +140,29 @@ const SEMILLA: readonly SemillaOrden[] = [
         descripcion: 'Cambio de pastillas',
         especialidad: 'mecanica',
         horas: 1.5,
+        monto: 62000,
+      },
+    ],
+  },
+  /* Ya entregada: sirve para que "En el taller" filtre de verdad. Sin una sola
+     Orden fuera, el filtro pasaría igual sin estar haciendo nada. */
+  {
+    placa: 'CL 214 508',
+    marca: 'Isuzu',
+    modelo: 'D-Max',
+    anio: 2017,
+    cliente: 'Constructora Peñas Blancas',
+    telefono: '2100-9090',
+    estado: 'entregado',
+    haceHoras: 96,
+    entregadoHaceHoras: 20,
+    notas: 'Entregado al chofer con el reporte de frenos firmado',
+    lineas: [
+      {
+        descripcion: 'Rectificado de discos',
+        especialidad: 'mecanica',
+        horas: 2,
+        monto: 54000,
       },
     ],
   },
@@ -237,7 +290,11 @@ export class BitacoraDatos {
         recibidoEn: new Date(
           Date.now() - s.haceHoras * 60 * 60 * 1000,
         ).toISOString(),
-        entregadoEn: NO_BORRADO,
+        entregadoEn: s.entregadoHaceHoras
+          ? new Date(
+              Date.now() - s.entregadoHaceHoras * 60 * 60 * 1000,
+            ).toISOString()
+          : NO_BORRADO,
         proximaVisita: null,
         notas: s.notas,
       });
@@ -250,9 +307,11 @@ export class BitacoraDatos {
           pagador: 'cliente',
           horasFacturadas: linea.horas,
           horasReales: 0,
-          monto: 0,
-          declinadaEn: NO_BORRADO,
-          motivoDeclinacion: null,
+          monto: linea.monto,
+          declinadaEn: linea.declinada
+            ? new Date(Date.now() - s.haceHoras * 60 * 60 * 1000).toISOString()
+            : NO_BORRADO,
+          motivoDeclinacion: linea.declinada?.motivo ?? null,
         });
       }
     }
