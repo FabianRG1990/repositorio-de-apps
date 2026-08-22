@@ -28,5 +28,9 @@ const PESTANAS: readonly Pestana[] = [
 })
 export class Ajustes {
   readonly pestanas = PESTANAS;
-  readonly activa = signal<string>('taller');
+
+  /* Abre en Apariencia y no en Taller: Taller y Especialidades todavía son un
+     párrafo cada una, así que abrir por la primera dejaba la pantalla en
+     blanco. Cuando tengan contenido, esto vuelve a 'taller'. */
+  readonly activa = signal<string>('apariencia');
 }

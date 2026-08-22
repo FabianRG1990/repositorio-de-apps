@@ -4,10 +4,13 @@
       {{ store.ordenes().length }} vehículos · ordenados por tiempo parado
     </p>
 
-    <button matButton="filled" type="button" class="pantalla__accion">
+    <!-- Lleva a Recepción, que es donde se recibe un Vehículo. Antes no hacía
+         nada: un botón primario que no responde enseña que la app está rota
+         aunque el resto funcione. -->
+    <a matButton="filled" class="pantalla__accion" routerLink="/recepcion">
       <fa-icon [icon]="['fas', 'car-side']" />
       Recibir vehículo
-    </button>
+    </a>
   </div>
 
   <ul class="lista">
