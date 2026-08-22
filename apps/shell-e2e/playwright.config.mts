@@ -30,10 +30,21 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   /* Run your local dev server before starting the tests */
+  /* Contra el BUILD y no contra el dev server, igual que Bitácora (#92): el
+     dev server sirve los módulos sin bundlear y Firefox lo paga mucho más caro
+     que Chromium. Allá el peor caso bajó de 46,5 s a ~18 s.
+
+     Hoy esta suite no tiene ni un spec, así que el servidor se levanta para no
+     correr nada; se deja apuntando al build igual que las demás para que el día
+     que se añada el primer spec no haya que acordarse de esto.
+
+     El `timeout` es más largo que los 60 s de fábrica de Playwright porque
+     `serve-static` compila antes de servir. */
   webServer: {
-    command: 'yarn nx run shell:serve',
+    command: 'yarn nx run shell:serve-static',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
+    timeout: 180_000,
     cwd: workspaceRoot,
   },
   projects: [
