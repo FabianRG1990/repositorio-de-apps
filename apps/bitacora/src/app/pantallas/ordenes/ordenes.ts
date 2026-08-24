@@ -13,6 +13,7 @@ import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiquet
 import { FilaOrden } from '../../shared/fila-orden/fila-orden';
 import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
+import { colones } from '../../shared/formato';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'en-taller', label: 'En el taller', icon: ['fas', 'warehouse'] },
@@ -37,12 +38,7 @@ export class Ordenes {
   readonly #detalle = inject(DetalleStore);
   readonly pestanas = PESTANAS;
   readonly activa = signal<string>('en-taller');
-
-  /** `145000` → `₡145 000`. El monto de lo declinado es lo que se vuelve a
-      proponer, así que se lee, no se calcula. */
-  protected colones(monto: number): string {
-    return `₡${monto.toLocaleString('es-CR')}`;
-  }
+  protected readonly colones = colones;
 
   protected verOrden(folio: string) {
     if (this.store.folioSeleccionado() !== folio) {
