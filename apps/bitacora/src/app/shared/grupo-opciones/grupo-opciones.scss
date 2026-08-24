@@ -1,0 +1,84 @@
+.grupo {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.grupo__leyenda {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-muted);
+}
+
+.grupo__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  /* Piso táctil: se pulsa de pie y con prisa. No baja de 44 px ni cuando la
+     densidad de la app es la compacta. */
+  min-height: max(2.75rem, calc(var(--app-boton-alto) - 4px));
+  padding: 0 0.85rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 999px;
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.opcion:hover {
+  background: var(--app-capa-hover);
+}
+
+/* El control nativo se esconde a la vista pero SIGUE existiendo: es él quien
+   trae el foco, el recorrido con flechas entre radios y el estado anunciado.
+   No se usa `display:none`, que lo sacaría del orden de tabulación. */
+.opcion__control {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* El foco se pinta sobre la píldora, porque el control real es invisible. */
+.opcion:has(.opcion__control:focus-visible) {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Marcada. El color NO es el único portador —§7.2.5.3—: entra también una
+   palomita y el borde se engrosa, así que se distingue en escala de grises y
+   a un metro del monitor. */
+.opcion--marcada {
+  border-color: var(--app-accent-strong);
+  border-width: 2px;
+  padding: 0 calc(0.85rem - 1px);
+  background: var(--app-accent-soft);
+  font-weight: 590;
+}
+
+.opcion--marcada::before {
+  content: '✓';
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.opcion__detalle {
+  color: var(--app-text-soft);
+  font-size: 0.875rem;
+}

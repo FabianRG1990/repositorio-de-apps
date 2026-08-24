@@ -1,0 +1,60 @@
+<div class="campo">
+  <div class="campo__cabecera">
+    <label class="campo__etiqueta" [attr.for]="'campo-' + campo()">
+      {{ etiqueta() }}
+    </label>
+
+    @if (dictado.hayMicrofono()) {
+    <button
+      matButton="outlined"
+      type="button"
+      class="campo__micro"
+      [class.campo__micro--activo]="escuchandoEste()"
+      [attr.aria-pressed]="escuchandoEste()"
+      [attr.aria-label]="etiquetaBoton()"
+      (click)="alternarMicrofono()"
+    >
+      <fa-icon
+        [icon]="['fas', escuchandoEste() ? 'microphone-slash' : 'microphone']"
+      />
+      <span aria-hidden="true"
+        >{{ escuchandoEste() ? 'Parar' : 'Dictar' }}</span
+      >
+    </button>
+    }
+  </div>
+
+  <textarea
+    class="campo__texto"
+    [id]="'campo-' + campo()"
+    [rows]="filas()"
+    [value]="valor()"
+    [attr.placeholder]="marcador()"
+    [attr.aria-describedby]="ayuda() ? 'ayuda-' + campo() : null"
+    (input)="escribir($any($event.target).value)"
+  ></textarea>
+
+  <!--
+    Lo que se va oyendo va FUERA del textarea y en gris: metido dentro habría
+    que borrarlo y reescribirlo en cada parcial, y eso mueve el cursor de quien
+    esté corrigiendo a mano mientras el Cliente sigue hablando.
+  -->
+  @if (parcial()) {
+  <p class="campo__parcial" aria-hidden="true">{{ parcial() }}…</p>
+  }
+
+  <!--
+    Se anuncia el ESTADO, no el texto: los parciales cambian varias veces por
+    segundo y repetirlos convierte el lector de pantalla en ruido.
+  -->
+  <p class="solo-lectores" role="status">{{ anuncio() }}</p>
+
+  @if (problema()) {
+  <p class="campo__problema" role="status">
+    <fa-icon [icon]="['fas', 'circle-exclamation']" />
+    {{ problema() }}
+  </p>
+  } @if (ayuda()) {
+  <p class="campo__ayuda" [id]="'ayuda-' + campo()">{{ ayuda() }}</p>
+  }
+</div>

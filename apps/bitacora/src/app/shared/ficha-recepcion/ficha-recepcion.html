@@ -1,0 +1,67 @@
+@let d = datos();
+
+<article class="ficha">
+  @if (conCabecera()) {
+  <header class="ficha__cabecera">
+    <span class="ficha__placa identificador">{{ d.placa }}</span>
+    <span class="ficha__carro">{{ d.carro }}</span>
+  </header>
+
+  <dl class="ficha__datos">
+    <div class="ficha__dato">
+      <dt>Cliente</dt>
+      <dd>{{ d.cliente }} @if (d.telefono) { · {{ d.telefono }} }</dd>
+    </div>
+    <div class="ficha__dato">
+      <dt>Quién entrega</dt>
+      <dd>{{ d.quienEntrega || d.cliente }}</dd>
+    </div>
+    <div class="ficha__dato">
+      <dt>Kilometraje</dt>
+      <dd>{{ d.odometro !== null ? kilometros(d.odometro) : 'Sin anotar' }}</dd>
+    </div>
+    <div class="ficha__dato">
+      <dt>Combustible</dt>
+      <dd>{{ d.combustible }}</dd>
+    </div>
+  </dl>
+  }
+
+  <section class="ficha__bloque">
+    <h3 class="ficha__subtitulo">
+      Lo que reporta el cliente ({{ d.quejas.length }})
+    </h3>
+
+    <ul class="ficha__quejas">
+      @for (q of d.quejas; track q.textual) {
+      <li class="ficha__queja">
+        <p class="ficha__queja-titulo">
+          {{ q.titulo }} @if (q.especialidad) {
+          <app-etiqueta-especialidad [especialidad]="q.especialidad" />
+          }
+        </p>
+        <!-- Entrecomillado: no es una etiqueta del sistema, es lo que dijo. -->
+        <p class="ficha__textual">«{{ q.textual }}»</p>
+        @if (q.meta) {
+        <p class="ficha__meta">{{ q.meta }}</p>
+        }
+      </li>
+      } @empty {
+      <li class="ficha__vacio">No quedó anotado nada de lo que dijo.</li>
+      }
+    </ul>
+  </section>
+
+  @if (d.danosPrevios || d.objetosDentro) {
+  <section class="ficha__bloque">
+    <h3 class="ficha__subtitulo">Cómo entró</h3>
+    @if (d.danosPrevios) {
+    <p class="ficha__linea"><strong>Ya traía:</strong> {{ d.danosPrevios }}</p>
+    } @if (d.objetosDentro) {
+    <p class="ficha__linea">
+      <strong>Lleva adentro:</strong> {{ d.objetosDentro }}
+    </p>
+    }
+  </section>
+  }
+</article>
