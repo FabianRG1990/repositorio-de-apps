@@ -1,130 +1,427 @@
-@let c = campos(); @let ya = conocido();
+@let c = carro(); @let e = entrada(); @let ya = conocido(); @let paso_ = paso();
 
 <div class="pantalla">
-  <form class="recepcion" (ngSubmit)="recibir()">
-    <p class="recepcion__guia">
-      Con la placa basta para empezar. La cédula se pide al facturar, no acá.
+  <!--
+    El riel de pasos. Se puede volver a los anteriores pero no adelantarse:
+    volver atrás nunca castiga lo hecho, y saltar hacia adelante se saltaría lo
+    que sí es obligatorio.
+  -->
+  <nav class="riel" aria-label="Pasos de la recepción">
+    <p class="riel__cuenta">
+      Paso {{ indicePaso() + 1 }} de {{ pasos.length }}
     </p>
+    <ol class="riel__pasos">
+      @for (p of pasos; track p.id; let i = $index) {
+      <li class="riel__paso">
+        <button
+          type="button"
+          class="riel__boton"
+          [class.riel__boton--actual]="p.id === paso_"
+          [class.riel__boton--hecho]="i < indicePaso()"
+          [disabled]="i > masLejos()"
+          [attr.aria-current]="p.id === paso_ ? 'step' : null"
+          (click)="irA(p.id)"
+        >
+          <span class="riel__marca" aria-hidden="true">
+            @if (i < indicePaso()) {
+            <fa-icon [icon]="['fas', 'check']" />
+            } @else {
+            <fa-icon [icon]="p.icono" />
+            }
+          </span>
+          <span class="riel__titulo">{{ p.titulo }}</span>
+        </button>
+      </li>
+      }
+    </ol>
+  </nav>
 
-    <div class="campo campo--placa">
-      <label for="placa">Placa</label>
-      <input
-        id="placa"
-        name="placa"
-        autocomplete="off"
-        [value]="c.placa"
-        (input)="escribir('placa', $any($event.target).value)"
-        (blur)="buscarPorPlaca()"
-      />
+  <div class="paso">
+    @switch (paso_) {
+
+    <!-- ------------------------------------------------------ 1. El carro -->
+    @case ('carro') {
+    <section class="paso__cuerpo" aria-labelledby="titulo-carro">
+      <h2 class="paso__titulo" id="titulo-carro">¿Qué carro es?</h2>
+      <p class="paso__guia">
+        Con la placa basta para empezar. La cédula se pide al facturar, no acá.
+      </p>
+
+      <div class="campo campo--placa">
+        <label for="placa">Placa</label>
+        <input
+          id="placa"
+          name="placa"
+          autocomplete="off"
+          [value]="c.placa"
+          (input)="escribirCarro('placa', $any($event.target).value)"
+          (blur)="buscarPorPlaca()"
+        />
+      </div>
+
       <!--
         El historial sigue al carro, no a la persona: si el Taller ya conoce
         esta placa se reutiliza el Vehículo y se dice en pantalla. Sin esto, el
         mismo carro entraría dos veces como dos carros distintos.
       -->
       @if (ya) {
-      <p class="recepcion__conocido" role="status">
-        <fa-icon [icon]="['fas', 'circle-info']" />
-        Ya lo conocemos: {{ ya.marca }} {{ ya.modelo }} @if (ya.visitas) { · {{
-        ya.visitas }} {{ ya.visitas === 1 ? 'visita' : 'visitas' }} }
-      </p>
+      <div class="conocido" role="status">
+        <p class="conocido__saludo">
+          <fa-icon [icon]="['fas', 'clock-rotate-left']" />
+          Ya lo conocemos: <strong>{{ ya.marca }} {{ ya.modelo }}</strong>
+          @if (ya.visitas) { · {{ ya.visitas }} {{ ya.visitas === 1 ? 'visita' :
+          'visitas' }} } @if (ya.ultimoOdometro !== null) { · última lectura {{
+          kilometros(ya.ultimoOdometro) }} }
+        </p>
+
+        <!--
+          El trabajo declinado "vuelve a proponerse cuando el Vehículo
+          regresa" (glosario). Este es el momento exacto en que regresa, así
+          que aparece acá y no en una pestaña que hay que acordarse de abrir.
+        -->
+        @if (ya.pendienteDeAntes.length) {
+        <div class="pendiente">
+          <p class="pendiente__cabecera">
+            <fa-icon [icon]="['fas', 'circle-exclamation']" />
+            Quedó pendiente de antes ·
+            <strong class="identificador"
+              >{{ colones(pendienteTotal()) }}</strong
+            >
+          </p>
+          <ul class="pendiente__lista">
+            @for (t of ya.pendienteDeAntes; track t.descripcion) {
+            <li class="pendiente__linea">
+              <span class="pendiente__trabajo">{{ t.descripcion }}</span>
+              <app-etiqueta-especialidad [especialidad]="t.especialidad" />
+              <span class="pendiente__monto identificador">
+                {{ colones(t.monto) }}
+              </span>
+              @if (t.motivo) {
+              <span class="pendiente__motivo">«{{ t.motivo }}»</span>
+              }
+            </li>
+            }
+          </ul>
+          <p class="pendiente__pie">
+            Es buen momento para volver a proponerlo.
+          </p>
+        </div>
+        }
+      </div>
       }
-    </div>
 
-    <div class="campo">
-      <label for="marca">Marca</label>
-      <input
-        id="marca"
-        name="marca"
-        [value]="c.marca"
-        (input)="escribir('marca', $any($event.target).value)"
-      />
-    </div>
+      <div class="rejilla">
+        <div class="campo">
+          <label for="marca">Marca</label>
+          <input
+            id="marca"
+            name="marca"
+            [value]="c.marca"
+            (input)="escribirCarro('marca', $any($event.target).value)"
+          />
+        </div>
 
-    <div class="campo">
-      <label for="modelo">Modelo</label>
-      <input
-        id="modelo"
-        name="modelo"
-        [value]="c.modelo"
-        (input)="escribir('modelo', $any($event.target).value)"
-      />
-    </div>
+        <div class="campo">
+          <label for="modelo">Modelo</label>
+          <input
+            id="modelo"
+            name="modelo"
+            [value]="c.modelo"
+            (input)="escribirCarro('modelo', $any($event.target).value)"
+          />
+        </div>
 
-    <div class="campo campo--corto">
-      <label for="anio">Año</label>
-      <input
-        id="anio"
-        name="anio"
-        inputmode="numeric"
-        [value]="c.anio"
-        (input)="escribir('anio', $any($event.target).value)"
-      />
-    </div>
+        <div class="campo campo--corto">
+          <label for="anio">Año</label>
+          <input
+            id="anio"
+            name="anio"
+            inputmode="numeric"
+            [value]="c.anio"
+            (input)="escribirCarro('anio', $any($event.target).value)"
+          />
+        </div>
 
-    <div class="campo">
-      <label for="cliente">Cliente</label>
-      <input
-        id="cliente"
-        name="cliente"
-        [value]="c.cliente"
-        (input)="escribir('cliente', $any($event.target).value)"
-      />
-    </div>
+        <div class="campo">
+          <label for="cliente">Cliente</label>
+          <input
+            id="cliente"
+            name="cliente"
+            [value]="c.cliente"
+            (input)="escribirCarro('cliente', $any($event.target).value)"
+          />
+        </div>
 
-    <div class="campo">
-      <label for="telefono">Teléfono</label>
-      <input
-        id="telefono"
-        name="telefono"
-        inputmode="tel"
-        [value]="c.telefono"
-        (input)="escribir('telefono', $any($event.target).value)"
-      />
-    </div>
-
-    <div class="campo campo--ancho">
-      <label for="quienEntrega">Quién entrega</label>
-      <input
-        id="quienEntrega"
-        name="quienEntrega"
-        [value]="c.quienEntrega"
-        [attr.placeholder]="c.cliente || 'El Cliente'"
-        (input)="escribir('quienEntrega', $any($event.target).value)"
-      />
-      <p class="campo__ayuda">
-        Puede no ser el Cliente: en una flotilla es un chofer distinto cada vez.
-      </p>
-    </div>
-
-    <div class="campo campo--ancho">
-      <label for="reporta">Qué reporta el Cliente</label>
-      <textarea
-        id="reporta"
-        name="reporta"
-        rows="3"
-        [value]="c.reporta"
-        (input)="escribir('reporta', $any($event.target).value)"
-      ></textarea>
-    </div>
-
-    @if (error()) {
-    <p class="recepcion__error" role="alert">{{ error() }}</p>
+        <div class="campo">
+          <label for="telefono">Teléfono</label>
+          <input
+            id="telefono"
+            name="telefono"
+            inputmode="tel"
+            [value]="c.telefono"
+            (input)="escribirCarro('telefono', $any($event.target).value)"
+          />
+        </div>
+      </div>
+    </section>
     }
 
-    <div class="recepcion__pie">
+    <!-- ------------------------------------------------- 2. Qué le pasa ---->
+    @case ('queja') {
+    <section class="paso__cuerpo" aria-labelledby="titulo-queja">
+      <h2 class="paso__titulo" id="titulo-queja">¿Qué dice el cliente?</h2>
+      <p class="paso__guia">
+        Anotalo como lo dijo él. Lo que el taller cree que es se decide después,
+        al diagnosticar.
+      </p>
+
+      @for (q of quejas(); track q.clave; let i = $index) {
+      <article class="queja">
+        <header class="queja__cabecera">
+          <h3 class="queja__titulo">
+            {{ q.titulo || 'Lo que dice el cliente' }}
+          </h3>
+          @if (quejas().length > 1) {
+          <button
+            matButton
+            type="button"
+            class="queja__quitar"
+            (click)="quitarQueja(q.clave)"
+          >
+            <fa-icon [icon]="['fas', 'xmark']" />
+            Quitar<span class="solo-lectores"> el problema {{ i + 1 }}</span>
+          </button>
+          }
+        </header>
+
+        <app-campo-dictado
+          [campo]="'queja-' + q.clave"
+          etiqueta="lo que dice el cliente"
+          marcador="Suena al frenar, sobre todo cuando voy bajando…"
+          [valor]="q.textual"
+          [filas]="3"
+          (cambiado)="escribirQueja(q.clave, $event)"
+        />
+
+        <!--
+          Las preguntas de abajo son el "ayudante": la estructura la pone la
+          pantalla, no la voz. Así se guía sin tener que interpretar lenguaje
+          natural, que es justo lo que ADR 0004 descartó.
+        -->
+        <div class="queja__preguntas">
+          <app-grupo-opciones
+            [nombre]="'cuando-' + q.clave"
+            etiqueta="¿Cuándo pasa?"
+            [opciones]="cuandos"
+            [seleccionadas]="q.cuando"
+            (elegida)="alternarCuando(q.clave, $event)"
+          />
+
+          <app-grupo-opciones
+            [nombre]="'senal-' + q.clave"
+            etiqueta="¿Qué hace?"
+            [opciones]="senales"
+            [seleccionadas]="q.senales"
+            (elegida)="alternarSenal(q.clave, $event)"
+          />
+        </div>
+
+        <div class="queja__desde">
+          <label [attr.for]="'desde-' + q.clave">¿Desde cuándo?</label>
+          <input
+            [id]="'desde-' + q.clave"
+            [value]="q.desdeCuando"
+            placeholder="Como dos semanas"
+            (input)="escribirDesdeCuando(q.clave, $any($event.target).value)"
+          />
+          <div class="queja__atajos">
+            @for (d of desdeCuando; track d.id) {
+            <button
+              matButton="outlined"
+              type="button"
+              class="queja__atajo"
+              (click)="elegirDesdeCuando(q.clave, d.id)"
+            >
+              {{ d.etiqueta }}
+            </button>
+            }
+          </div>
+        </div>
+
+        <!--
+          La sugerencia SIEMPRE dice por qué. Una etiqueta que aparece sola
+          obliga a creerle a ciegas o a ignorarla siempre, y las dos salidas
+          son malas.
+        -->
+        <div class="sugerencia">
+          <app-grupo-opciones
+            [nombre]="'esp-' + q.clave"
+            etiqueta="¿A quién le toca?"
+            [opciones]="especialidades"
+            [seleccionadas]="q.especialidad ? [q.especialidad] : []"
+            [multiple]="false"
+            (elegida)="elegirEspecialidad(q.clave, $event)"
+          />
+          @if (q.porque.length) {
+          <p class="sugerencia__porque">
+            <fa-icon [icon]="['fas', 'wand-magic-sparkles']" />
+            @if (q.sugerida) { Se propone por lo que dijo: } @else { No alcanza
+            para proponer especialidad. Se reconoció: } @for (p of q.porque;
+            track p) {
+            <span class="sugerencia__dicho">«{{ p }}»</span>
+            }
+          </p>
+          }
+        </div>
+      </article>
+      }
+
+      <button
+        matButton="outlined"
+        type="button"
+        class="queja__agregar"
+        (click)="agregarQueja()"
+      >
+        <fa-icon [icon]="['fas', 'plus']" />
+        Dijo otra cosa
+      </button>
+    </section>
+    }
+
+    <!-- ------------------------------------------------- 3. Cómo entró ----->
+    @case ('entrada') {
+    <section class="paso__cuerpo" aria-labelledby="titulo-entrada">
+      <h2 class="paso__titulo" id="titulo-entrada">¿Cómo viene el carro?</h2>
+      <p class="paso__guia">
+        Esto es lo que respalda al taller si después alguien dice que el golpe
+        no venía de antes.
+      </p>
+
+      <div class="rejilla">
+        <div class="campo campo--corto">
+          <label for="odometro">Kilometraje</label>
+          <input
+            id="odometro"
+            name="odometro"
+            inputmode="numeric"
+            [value]="e.odometro"
+            (input)="escribirOdometro($any($event.target).value)"
+          />
+          @if (ya?.ultimoOdometro !== null && ya?.ultimoOdometro !== undefined)
+          {
+          <p class="campo__ayuda">
+            La última vez marcaba {{ kilometros(ya!.ultimoOdometro!) }}.
+          </p>
+          }
+        </div>
+
+        <div class="campo campo--ancho">
+          <app-grupo-opciones
+            nombre="tanque"
+            etiqueta="Combustible"
+            [opciones]="tanque"
+            [seleccionadas]="e.combustible !== null ? [e.combustible + ''] : []"
+            [multiple]="false"
+            (elegida)="elegirTanque($event)"
+          />
+        </div>
+      </div>
+
+      <app-campo-dictado
+        campo="danos"
+        etiqueta="los daños que ya traía"
+        ayuda="Se dicta caminando alrededor del carro."
+        marcador="Rayón largo en la puerta trasera derecha…"
+        [valor]="e.danosPrevios"
+        [filas]="3"
+        (cambiado)="escribirEntrada('danosPrevios', $event)"
+      />
+
+      <app-campo-dictado
+        campo="objetos"
+        etiqueta="lo que dejó adentro"
+        ayuda="Herramienta, silla de bebé, documentos."
+        marcador="Herramienta del dueño en el cajón…"
+        [valor]="e.objetosDentro"
+        [filas]="2"
+        (cambiado)="escribirEntrada('objetosDentro', $event)"
+      />
+
+      <div class="campo campo--ancho">
+        <label for="quienEntrega">Quién entrega</label>
+        <input
+          id="quienEntrega"
+          name="quienEntrega"
+          [value]="c.quienEntrega"
+          [attr.placeholder]="c.cliente || 'El Cliente'"
+          (input)="escribirCarro('quienEntrega', $any($event.target).value)"
+        />
+        <p class="campo__ayuda">
+          Puede no ser el Cliente: en una flotilla es un chofer distinto cada
+          vez.
+        </p>
+      </div>
+    </section>
+    }
+
+    <!-- ------------------------------------------------- 4. Confirmar ------>
+    @case ('ficha') {
+    <section class="paso__cuerpo" aria-labelledby="titulo-ficha">
+      <h2 class="paso__titulo" id="titulo-ficha">Así queda</h2>
+
+      <app-ficha-recepcion [datos]="ficha()" />
+
+      <p class="paso__nota">
+        La Orden nace sin trabajos: se agregan al diagnosticar, que es cuando
+        se sabe qué tiene.
+      </p>
+
+      @if (error()) {
+      <p class="recepcion__error" role="alert">{{ error() }}</p>
+      }
+    </section>
+    } }
+  </div>
+
+  <!-- El pie no se mueve: los dos botones están siempre donde uno los dejó. -->
+  <div class="pie">
+    <button
+      matButton="outlined"
+      type="button"
+      class="pie__atras"
+      [disabled]="indicePaso() === 0"
+      (click)="atras()"
+    >
+      <fa-icon [icon]="['fas', 'arrow-left']" />
+      Atrás
+    </button>
+
+    <div class="pie__derecha">
+      @if (faltaParaSeguir(); as falta) {
+      <p class="pie__falta" role="status">{{ falta }}</p>
+      } @if (paso_ === 'ficha') {
       <button
         matButton="filled"
-        type="submit"
-        class="recepcion__enviar"
-        [disabled]="faltaAlgo || guardando()"
+        type="button"
+        class="pie__seguir"
+        [disabled]="guardando()"
+        (click)="recibir()"
       >
+        <fa-icon [icon]="['fas', 'car-side']" />
         {{ guardando() ? 'Recibiendo…' : 'Recibir vehículo' }}
       </button>
-      @if (faltaAlgo) {
-      <p class="recepcion__falta" role="status">
-        Faltan la placa, la marca y el cliente.
-      </p>
+      } @else {
+      <button
+        matButton="filled"
+        type="button"
+        class="pie__seguir"
+        [disabled]="!!faltaParaSeguir()"
+        (click)="siguiente()"
+      >
+        Siguiente
+        <fa-icon [icon]="['fas', 'arrow-right']" />
+      </button>
       }
     </div>
-  </form>
+  </div>
 </div>
