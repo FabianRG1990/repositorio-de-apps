@@ -396,6 +396,32 @@ html[data-densidad='guantes'] {
    `display: none` ni `visibility: hidden`: las dos lo sacan también del árbol
    de accesibilidad, que es justo lo contrario de lo que hace falta acá.
    --------------------------------------------------------------------------- */
+/* ---------------------- el alto de la pantalla de la ruta -----------------
+   La pantalla que monta el router es hija flex de `.cuadro__ranura`, y en una
+   columna flex el estirado automático es el del eje TRANSVERSAL: a lo alto se
+   dimensiona por su contenido. Sin esto, una pantalla más alta que la ranura
+   desborda y lo que sobra se pierde contra el `overflow: hidden` de arriba,
+   SIN barra de desplazamiento — porque el `overflow: auto` que cada pantalla
+   declara nunca llega a activarse.
+
+   Se midió con la Recepción guiada: 621 px de contenido en una ranura de 601,
+   con el pie de "Atrás / Siguiente" cortado 20 px por debajo del borde. Las
+   demás pantallas tenían el mismo fallo esperando a tener contenido de sobra.
+
+   Y va en la hoja GLOBAL y no en la del armazón, aunque el selector sea suyo:
+   Angular estampa el atributo de contenido del padre solo en lo que está en su
+   plantilla, y un componente creado por el router no lo lleva. Comprobado en
+   el DOM — el anfitrión tenía `_nghost-…` y ningún `_ngcontent-…`, así que la
+   regla encapsulada no lo alcanzaba nunca. Es el mismo motivo por el que el
+   desplegable de Perfiles de abajo también vive acá.
+   -------------------------------------------------------------------------- */
+.cuadro__ranura > *:not(router-outlet) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ------------------------ el desplegable de Perfiles ----------------------
    Va acá y no en la hoja del menú lateral porque un `mat-menu` se renderiza en
    un overlay al final del <body>, fuera del árbol del componente: el CSS
