@@ -1,0 +1,22 @@
+<fieldset class="grupo">
+  <legend class="grupo__leyenda">{{ etiqueta() }}</legend>
+
+  <div class="grupo__opciones">
+    @for (opcion of opciones(); track opcion.id) {
+    <label class="opcion" [class.opcion--marcada]="marcada(opcion.id)">
+      <input
+        class="opcion__control"
+        [type]="multiple() ? 'checkbox' : 'radio'"
+        [name]="nombre()"
+        [value]="opcion.id"
+        [checked]="marcada(opcion.id)"
+        (change)="elegida.emit(opcion.id)"
+      />
+      <span class="opcion__texto">{{ opcion.etiqueta }}</span>
+      @if (opcion.detalle) {
+      <span class="opcion__detalle identificador">{{ opcion.detalle }}</span>
+      }
+    </label>
+    }
+  </div>
+</fieldset>

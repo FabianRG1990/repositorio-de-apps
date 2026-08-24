@@ -1,0 +1,105 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.campo__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+}
+
+.campo__etiqueta {
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-muted);
+}
+
+/* El botón queda a la altura táctil de #18 §5.2 aun siendo secundario: se
+   pulsa de pie, con prisa y a veces con guante. */
+.campo__micro {
+  --mat-button-outlined-container-height: 2.25rem;
+  --mat-button-outlined-label-text-weight: 590;
+  flex: none;
+}
+
+.campo__micro--activo {
+  --mat-button-outlined-container-color: var(--app-danger-fondo);
+  --mat-button-outlined-label-text-color: var(--app-danger);
+  --mat-button-outlined-outline-color: var(--app-danger-borde);
+}
+
+/* Late mientras escucha. Es la única señal continua de que el micrófono está
+   abierto, y por eso NO puede ser solo el color del botón: §7.2.5.3 pide que
+   el color nunca sea el único portador. El icono también cambia de forma. */
+.campo__micro--activo fa-icon {
+  animation: campo-latido 1.6s ease-in-out infinite;
+}
+
+@keyframes campo-latido {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campo__micro--activo fa-icon {
+    animation: none;
+  }
+}
+
+.campo__texto {
+  min-height: var(--app-boton-alto);
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.6rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.campo__texto:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  border-color: var(--app-accent-strong);
+}
+
+/* Lo que todavía puede cambiar se ve distinto de lo que ya quedó escrito. El
+   borde punteado dice "esto no está guardado" sin depender del color. */
+.campo__parcial {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 0.5rem;
+  background: var(--app-capa-plana);
+  color: var(--app-text-soft);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.campo__problema {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--app-danger);
+}
+
+.campo__ayuda {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.25rem;
+  color: var(--app-text-soft);
+}
