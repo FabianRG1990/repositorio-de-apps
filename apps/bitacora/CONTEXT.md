@@ -88,6 +88,14 @@ _Evitar_: orden de trabajo, OT, ticket, job
 El número visible de la Orden, el que el Cliente y el Taller usan para referirse al trabajo y el que va impreso en la factura. Lleva la letra del Puesto que lo acuñó y un consecutivo propio de ese Puesto — `A-241` —, así que los Folios de un Taller no forman una sola serie corrida. Se acuña al crear la Orden: ninguna Orden vive sin Folio.
 _Evitar_: número de orden, consecutivo, ID
 
+**Reporte del Cliente**:
+Lo que el Cliente dice que le pasa al carro, guardado **en sus palabras**. Es la queja de las tres C del oficio —queja, causa, corrección—, y lo que después se diagnostica cuelga de ella. Una Visita trae varios: "suena al frenar y además no prende el aire" son dos Reportes, de dos Especialidades. **No es una Línea de servicio**: la queja es del Cliente y existe desde que el carro entra; la Línea es del Taller y nace al diagnosticar.
+_Evitar_: síntoma, problema, falla, motivo de ingreso, descripción
+
+**Estado de entrada**:
+Cómo venía el Vehículo al recibirlo: kilometraje, cuartos de tanque, daños que ya traía y objetos dejados adentro. Se anota una vez y no se vuelve a tocar. Pertenece a la Orden y no al Vehículo, porque describe esta Visita.
+_Evitar_: inventario, checklist, inspección de ingreso
+
 **Foto**:
 Una imagen del Vehículo tomada al recibirlo, guardada en la Orden. **Pertenece a la Orden, no a la Línea de servicio**: muestra cómo entró el carro, no justifica un cobro concreto.
 _Evitar_: evidencia, adjunto, imagen, inspección
@@ -135,3 +143,7 @@ _Evitar_: horas (a secas), tiempo
 **Dictado**:
 Hablarle a un campo de texto en vez de teclearlo. Es un acelerador sobre campos que ya funcionan escribiendo, nunca una forma distinta de llenar la Orden: lo dictado queda como texto y se corrige a mano.
 _Evitar_: comando de voz, voz, reconocimiento
+
+**Sugerencia**:
+Lo que el sistema propone al leer un Reporte del Cliente — una Especialidad, unas señales, un título corto. Siempre viene con las palabras del Cliente que la motivaron y siempre se puede cambiar; ante la duda no propone nada. Nunca es un dato del Taller: el dato lo pone quien recibe.
+_Evitar_: detección, predicción, análisis, clasificación automática
