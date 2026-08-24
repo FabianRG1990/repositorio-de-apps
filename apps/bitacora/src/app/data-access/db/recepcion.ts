@@ -1,7 +1,22 @@
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
-import { ABIERTO, BitacoraDb, NO_BORRADO, type Orden } from './esquema';
+import {
+  ABIERTO,
+  BitacoraDb,
+  NO_BORRADO,
+  type CuartosDeTanque,
+  type Especialidad,
+  type Orden,
+  type Registro,
+  type ReporteDelCliente,
+} from './esquema';
 
-/** Lo que el Asesor escribe cuando entra un carro. */
+/** Una queja del Cliente tal como sale de la pantalla, sin identidad todavía. */
+export type ReporteNuevo = Omit<
+  ReporteDelCliente,
+  keyof Registro | 'ordenId' | 'posicion'
+>;
+
+/** Lo que el Asesor recoge cuando entra un carro. */
 export interface DatosDeRecepcion {
   readonly placa: string;
   readonly marca: string;
@@ -11,8 +26,28 @@ export interface DatosDeRecepcion {
   readonly telefono: string;
   /** Puede no ser el Cliente: en una flotilla es un chofer distinto cada vez. */
   readonly quienEntrega: string;
-  /** Lo que el Cliente reporta. Va a las notas de la Orden. */
-  readonly reporta: string;
+  /**
+   * Las quejas del Cliente, en el orden en que las dijo.
+   *
+   * Son varias a propósito: nadie llega diciendo una sola cosa. "Suena al
+   * frenar y además no prende el aire" son dos problemas, de dos
+   * Especialidades distintas, y aplastarlos en un párrafo es justo lo que
+   * hacía que después no se supiera a quién asignarlos.
+   */
+  readonly reportes: readonly ReporteNuevo[];
+  readonly odometro: number | null;
+  readonly combustible: CuartosDeTanque | null;
+  readonly danosPrevios: string;
+  readonly objetosDentro: string;
+}
+
+/** Trabajo que el Taller propuso y el Cliente no aprobó, esperando su regreso. */
+export interface TrabajoPendienteDeAntes {
+  readonly descripcion: string;
+  readonly especialidad: Especialidad;
+  readonly monto: number;
+  readonly motivo: string | null;
+  readonly declinadoEn: string;
 }
 
 /** Lo que la app ya sabe de una Placa antes de que se termine de escribir. */
@@ -26,6 +61,19 @@ export interface VehiculoConocido {
   readonly telefono: string;
   /** Cuántas veces ha entrado al Taller. Es el historial, y es el argumento. */
   readonly visitas: number;
+  /** Cuándo entró la última vez. `null` si esta es la primera. */
+  readonly ultimaVisitaEn: string | null;
+  /** El último odómetro que se le leyó, para no partir de cero. */
+  readonly ultimoOdometro: number | null;
+  /**
+   * Lo que se le recomendó y no aprobó, con su monto.
+   *
+   * Es el dato por el que se paga un sistema como este: el glosario dice que
+   * el trabajo declinado "vuelve a proponerse cuando el Vehículo regresa", y
+   * el Vehículo está regresando justo ahora. Sin esto, la app sabe que hay
+   * ₡96 000 sobre la mesa y se los calla.
+   */
+  readonly pendienteDeAntes: readonly TrabajoPendienteDeAntes[];
 }
 
 /**
@@ -95,10 +143,16 @@ export class RecepcionDeVehiculos {
       ? await this.db.clientes.get(propiedad.clienteId)
       : undefined;
 
+    /* Las Visitas se traen enteras y no se cuentan con `count()`: de las
+       mismas filas salen la última fecha y el último odómetro, y pedirlas
+       tres veces sería recorrer el mismo índice tres veces. */
     const visitas = await this.db.ordenes
       .where('vehiculoId')
       .equals(vehiculoId)
-      .count();
+      .toArray();
+    const porFecha = [...visitas].sort((a, b) =>
+      b.recibidoEn.localeCompare(a.recibidoEn),
+    );
 
     return {
       vehiculoId,
@@ -108,8 +162,52 @@ export class RecepcionDeVehiculos {
       clienteId: cliente?.id ?? null,
       cliente: cliente?.nombre ?? '',
       telefono: cliente?.telefono ?? '',
-      visitas,
+      visitas: visitas.length,
+      ultimaVisitaEn: porFecha[0]?.recibidoEn ?? null,
+      /* El odómetro NO es el de la última Visita sino el mayor de todas: las
+         Órdenes pueden entrar desordenadas —dos Puestos sin conexión— y un
+         kilometraje que retrocede se lee como error del Taller. */
+      ultimoOdometro:
+        visitas.reduce<number | null>(
+          (mayor, o) =>
+            typeof o.odometro === 'number' && o.odometro > (mayor ?? -1)
+              ? o.odometro
+              : mayor,
+          null,
+        ) ?? null,
+      pendienteDeAntes: await this.#pendienteDeAntes(visitas.map((o) => o.id)),
     };
+  }
+
+  /**
+   * El trabajo declinado de las Visitas anteriores de este carro.
+   *
+   * El glosario dice que el Trabajo declinado "vuelve a proponerse cuando el
+   * Vehículo regresa". Este es el momento exacto en que regresa, así que es
+   * acá donde tiene que aparecer — no en una pestaña que hay que acordarse de
+   * abrir. Lo más reciente primero: una pastilla declinada hace una semana
+   * pesa más en la conversación que una de hace dos años.
+   */
+  async #pendienteDeAntes(
+    ordenIds: readonly string[],
+  ): Promise<readonly TrabajoPendienteDeAntes[]> {
+    if (!ordenIds.length) return [];
+
+    const lineas = await this.db.lineas
+      .where('ordenId')
+      .anyOf(ordenIds as string[])
+      .toArray();
+
+    return lineas
+      .filter((l) => l.declinadaEn !== NO_BORRADO && l.borradoEn === NO_BORRADO)
+      .map((l) => ({
+        descripcion: l.descripcion,
+        especialidad: l.especialidad,
+        monto: l.monto,
+        motivo: l.motivoDeclinacion,
+        declinadoEn: String(l.declinadaEn),
+      }))
+      .sort((a, b) => b.declinadoEn.localeCompare(a.declinadoEn));
   }
 
   /** Recibe el Vehículo y devuelve la Orden ya con su Folio. */
@@ -124,6 +222,12 @@ export class RecepcionDeVehiculos {
         this.db.vehiculoPlacas,
         this.db.propiedades,
         this.db.ordenes,
+        this.db.reportes,
+        /* `lineas` entra al ámbito aunque acá no se escriba: `reconocer` las
+           lee para traer lo declinado, y Dexie exige que la transacción
+           interna sea un subconjunto de esta. Sin esto revienta en el primer
+           carro conocido, que es justo el caso que más se demuestra. */
+        this.db.lineas,
         this.db.puestos,
         this.db.pendientes,
       ],
@@ -171,7 +275,7 @@ export class RecepcionDeVehiculos {
            avanzado y ese número quedaría quemado sin Orden que lo lleve. */
         const folio = await acunarFolio(this.db, puestoId);
 
-        return this.repo.crear(this.db.ordenes, {
+        const orden = await this.repo.crear(this.db.ordenes, {
           folio,
           puestoId,
           vehiculoId,
@@ -182,8 +286,39 @@ export class RecepcionDeVehiculos {
           recibidoEn: momento,
           entregadoEn: NO_BORRADO,
           proximaVisita: null,
-          notas: datos.reporta.trim(),
+          /* `notas` deja de ser donde vive la queja y queda como lo que su
+             nombre dice. Lo que el Cliente reportó son Reportes, cada uno con
+             su estructura; aplastarlos acá es lo que había antes. */
+          notas: '',
+          odometro: datos.odometro,
+          combustible: datos.combustible,
+          danosPrevios: datos.danosPrevios.trim(),
+          objetosDentro: datos.objetosDentro.trim(),
         });
+
+        /* En serie y no con `Promise.all`: `Repositorio.crear` incrementa el
+           `++secuencia` del outbox, y el orden de reenvío tiene que ser el
+           orden en que el Cliente dijo las cosas. */
+        let posicion = 0;
+        for (const reporte of datos.reportes) {
+          if (!reporte.textual.trim()) continue;
+          await this.repo.crear(this.db.reportes, {
+            ordenId: orden.id,
+            /* Se le quitan los espacios de los extremos —el dictado los deja—
+               y nada más. Las palabras no se tocan: una queja reescrita por
+               quien recibe ya trae un diagnóstico adentro. */
+            textual: reporte.textual.trim(),
+            capturadoPor: reporte.capturadoPor,
+            cuando: reporte.cuando,
+            desdeCuando: reporte.desdeCuando.trim(),
+            senales: reporte.senales,
+            especialidadSugerida: reporte.especialidadSugerida,
+            sugerenciaCorregida: reporte.sugerenciaCorregida,
+            posicion: posicion++,
+          });
+        }
+
+        return orden;
       },
     );
   }

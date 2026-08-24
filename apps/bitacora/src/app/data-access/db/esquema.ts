@@ -25,6 +25,15 @@ export type Pagador = 'cliente' | 'aseguradora';
 export type MedioDeAviso = 'whatsapp' | 'llamada' | 'presencial';
 
 /**
+ * Cuánto combustible traía el carro, en cuartos de tanque.
+ *
+ * Se guardan cuartos y no litros ni porcentaje porque es lo que la aguja
+ * permite leer: nadie mira el tablero y dice "31 %". Medir con más precisión
+ * de la que tiene el instrumento es inventar el dato.
+ */
+export type CuartosDeTanque = 0 | 1 | 2 | 3 | 4;
+
+/**
  * Lo que lleva toda entidad sincronizable desde el día uno.
  *
  * `creadoEn` / `actualizadoEn` / `borradoEn` son los tres campos que el
@@ -138,6 +147,83 @@ export interface Orden extends Registro {
   /** La escribe el Asesor a mano al cerrar; no se calcula (ADR 0011). */
   proximaVisita: string | null;
   notas: string;
+
+  /* --- Estado de entrada: cómo venía el carro cuando se recibió. -----------
+     Se anota una sola vez, al recibir, y no se vuelve a tocar. Es lo que
+     sostiene al Taller cuando alguien dice "usted me rayó el carro" o "yo lo
+     dejé con medio tanque", y por eso vive en la Orden y no en el Vehículo:
+     describe ESTA Visita, no al carro. */
+
+  /** Kilómetros marcados al entrar. `null` si el odómetro no se pudo leer. */
+  odometro: number | null;
+  /** Cuartos de tanque al entrar. `null` si nadie lo miró. */
+  combustible: CuartosDeTanque | null;
+  /** Golpes y rayones que YA traía. Prosa: se dicta o se escribe. */
+  danosPrevios: string;
+  /** Lo que el Cliente dejó adentro. Prosa: se dicta o se escribe. */
+  objetosDentro: string;
+}
+
+/** Cuándo se manifiesta la queja. Son las condiciones que el Cliente reconoce. */
+export type CuandoPasa =
+  | 'al-frenar'
+  | 'al-arrancar'
+  | 'en-frio'
+  | 'al-acelerar'
+  | 'al-girar'
+  | 'a-velocidad'
+  | 'siempre';
+
+/** Qué da la queja. Es lo que el Cliente percibe, no lo que el carro tiene. */
+export type SenalDeFalla =
+  | 'ruido'
+  | 'vibracion'
+  | 'olor'
+  | 'humo'
+  | 'luz-tablero'
+  | 'fuga'
+  | 'no-enciende'
+  | 'se-apaga'
+  | 'tira-agua'
+  | 'golpe-visible';
+
+/**
+ * Lo que el Cliente dice que le pasa al carro, guardado como lo dijo.
+ *
+ * Es la **Queja** de las tres C del oficio —queja, causa, corrección—, y el
+ * estándar es registrarla en las palabras del Cliente, no en las del Taller:
+ * una queja reescrita por quien recibe ya trae un diagnóstico adentro, y
+ * cuando el diagnóstico sale mal nadie puede volver a lo que de verdad se
+ * dijo. Por eso `textual` no se normaliza nunca.
+ *
+ * Vive aparte de la Línea de servicio porque **no es lo mismo**: la queja es
+ * del Cliente y existe desde que el carro entra; la Línea es del Taller y
+ * nace al diagnosticar. Una queja puede terminar en tres Líneas, en una, o en
+ * ninguna. Meterlas en la misma tabla obligaría a inventar una Línea sin
+ * precio ni Especialidad en el momento de recibir.
+ */
+export interface ReporteDelCliente extends Registro {
+  ordenId: string;
+  /** Las palabras del Cliente, sin normalizar. */
+  textual: string;
+  /** Si se dictó o se tecleó. Se guarda para saber cuánto se usa el micrófono. */
+  capturadoPor: 'dictado' | 'tecleado';
+  cuando: readonly CuandoPasa[];
+  /** "hoy", "esta semana", "hace un mes". Texto: el Cliente no sabe la fecha. */
+  desdeCuando: string;
+  senales: readonly SenalDeFalla[];
+  /**
+   * La Especialidad que el sistema propuso. `null` cuando no se atrevió.
+   *
+   * Es una SUGERENCIA guardada, no la Especialidad del trabajo: esa es de la
+   * Línea de servicio (ADR 0001) y todavía no existe. Se conserva para poder
+   * medir después si el intérprete acierta.
+   */
+  especialidadSugerida: Especialidad | null;
+  /** Si quien recibió cambió la sugerencia a mano. */
+  sugerenciaCorregida: boolean;
+  /** El orden en que el Cliente las dijo. La primera suele ser la que duele. */
+  posicion: number;
 }
 
 export interface LineaServicio extends Registro {
@@ -210,6 +296,7 @@ export class BitacoraDb extends Dexie {
   vehiculoPlacas!: EntityTable<VehiculoPlaca, 'id'>;
   propiedades!: EntityTable<Propiedad, 'id'>;
   ordenes!: EntityTable<Orden, 'id'>;
+  reportes!: EntityTable<ReporteDelCliente, 'id'>;
   lineas!: EntityTable<LineaServicio, 'id'>;
   autorizaciones!: EntityTable<Autorizacion, 'id'>;
   avisos!: EntityTable<AvisoDeListo, 'id'>;
@@ -251,5 +338,27 @@ export class BitacoraDb extends Dexie {
 
       pendientes: '++secuencia, id, tallerId, entidad, entidadId, creadoEn',
     });
+
+    /* La versión 2 añade el Reporte del Cliente y el estado de entrada.
+       Los campos nuevos de `ordenes` NO se declaran acá: Dexie solo lleva
+       índices, no columnas, y ninguno de los cuatro se consulta por índice.
+       Lo que sí hace falta es el `upgrade`, porque una base creada con la v1
+       tiene Órdenes sin esos campos, y `undefined` viajaría tal cual a la cola
+       de sincronización el día que exista servidor. */
+    this.version(2)
+      .stores({
+        reportes: 'id, tallerId, ordenId, [ordenId+borradoEn]',
+      })
+      .upgrade((tx) =>
+        tx
+          .table<Orden>('ordenes')
+          .toCollection()
+          .modify((orden) => {
+            orden.odometro ??= null;
+            orden.combustible ??= null;
+            orden.danosPrevios ??= '';
+            orden.objetosDentro ??= '';
+          }),
+      );
   }
 }

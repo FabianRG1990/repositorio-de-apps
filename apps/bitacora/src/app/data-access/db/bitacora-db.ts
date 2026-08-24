@@ -2,8 +2,11 @@ import { Injectable } from '@angular/core';
 import {
   BitacoraDb,
   NO_BORRADO,
+  type CuandoPasa,
+  type CuartosDeTanque,
   type Especialidad,
   type EstadoOrden,
+  type SenalDeFalla,
 } from './esquema';
 import { RecepcionDeVehiculos } from './recepcion';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
@@ -25,6 +28,15 @@ interface SemillaLinea {
   declinada?: { motivo: string };
 }
 
+/** Una queja del Cliente sembrada, con lo que el intérprete habría propuesto. */
+interface SemillaReporte {
+  textual: string;
+  cuando?: readonly CuandoPasa[];
+  desdeCuando?: string;
+  senales?: readonly SenalDeFalla[];
+  especialidad: Especialidad | null;
+}
+
 interface SemillaOrden {
   placa: string;
   marca: string;
@@ -38,6 +50,13 @@ interface SemillaOrden {
   /** Horas desde que se entregó, si ya salió del Taller. */
   entregadoHaceHoras?: number;
   notas: string;
+  /** Cómo venía el carro al entrar. Es lo que respalda al Taller después. */
+  odometro?: number;
+  combustible?: CuartosDeTanque;
+  danosPrevios?: string;
+  objetosDentro?: string;
+  /** Lo que el Cliente dijo, en sus palabras. */
+  reportes?: readonly SemillaReporte[];
   lineas: readonly SemillaLinea[];
 }
 
@@ -55,6 +74,19 @@ const SEMILLA: readonly SemillaOrden[] = [
     estado: 'esperando-repuesto',
     haceHoras: 52,
     notas: 'Bomba de agua pedida a San José — sin fecha de llegada',
+    odometro: 148320,
+    combustible: 1,
+    danosPrevios: 'Rayón largo en la puerta trasera derecha, ya venía',
+    objetosDentro: 'Herramienta del dueño en el cajón',
+    reportes: [
+      {
+        textual: 'Se está calentando cuando queda en presa, la aguja sube',
+        cuando: ['siempre'],
+        desdeCuando: 'como dos semanas',
+        senales: ['luz-tablero'],
+        especialidad: 'mecanica',
+      },
+    ],
     lineas: [
       {
         descripcion: 'Cambio de bomba de agua',
@@ -90,6 +122,18 @@ const SEMILLA: readonly SemillaOrden[] = [
     estado: 'en-proceso',
     haceHoras: 28,
     notas: 'Guardabarros derecho, segunda mano de color',
+    odometro: 312450,
+    combustible: 2,
+    danosPrevios: 'Golpe en el guardabarros derecho, es a lo que viene',
+    objetosDentro: '',
+    reportes: [
+      {
+        textual: 'Le dieron un golpe estacionado, el guardabarros derecho',
+        desdeCuando: 'el sábado',
+        senales: ['golpe-visible'],
+        especialidad: 'pintura',
+      },
+    ],
     lineas: [
       {
         descripcion: 'Guardabarros derecho',
@@ -109,6 +153,29 @@ const SEMILLA: readonly SemillaOrden[] = [
     estado: 'diagnostico',
     haceHoras: 6,
     notas: 'Alternador no carga en frío',
+    odometro: 61870,
+    combustible: 3,
+    danosPrevios: '',
+    objetosDentro: 'Silla de bebé atrás',
+    /* Dos quejas de DOS Especialidades en la misma Visita: es el caso que un
+       solo campo de notas no sabía representar, y el que justifica que el
+       Reporte sea una entidad. */
+    reportes: [
+      {
+        textual: 'En la mañana cuesta que prenda, hace un ruido y no arranca',
+        cuando: ['en-frio', 'al-arrancar'],
+        desdeCuando: 'como un mes',
+        senales: ['no-enciende', 'ruido'],
+        especialidad: 'electricidad',
+      },
+      {
+        textual: 'Y también chilla cuando freno despacio',
+        cuando: ['al-frenar'],
+        desdeCuando: 'esta semana',
+        senales: ['ruido'],
+        especialidad: 'mecanica',
+      },
+    ],
     lineas: [
       {
         descripcion: 'Diagnóstico de carga',
@@ -135,6 +202,19 @@ const SEMILLA: readonly SemillaOrden[] = [
     estado: 'listo',
     haceHoras: 3,
     notas: 'Avisado por WhatsApp hace 1 h',
+    odometro: 28100,
+    combustible: 4,
+    danosPrevios: '',
+    objetosDentro: '',
+    reportes: [
+      {
+        textual: 'Rechina al frenar, sobre todo cuando voy bajando',
+        cuando: ['al-frenar'],
+        desdeCuando: 'unos días',
+        senales: ['ruido'],
+        especialidad: 'mecanica',
+      },
+    ],
     lineas: [
       {
         descripcion: 'Cambio de pastillas',
@@ -157,6 +237,19 @@ const SEMILLA: readonly SemillaOrden[] = [
     haceHoras: 96,
     entregadoHaceHoras: 20,
     notas: 'Entregado al chofer con el reporte de frenos firmado',
+    odometro: 205600,
+    combustible: 2,
+    danosPrevios: 'Cajón golpeado por trabajo, el cliente lo sabe',
+    objetosDentro: '',
+    reportes: [
+      {
+        textual: 'Vibra el volante cuando frena en la autopista',
+        cuando: ['al-frenar', 'a-velocidad'],
+        desdeCuando: 'hace rato',
+        senales: ['vibracion'],
+        especialidad: 'mecanica',
+      },
+    ],
     lineas: [
       {
         descripcion: 'Rectificado de discos',
@@ -223,6 +316,7 @@ export class BitacoraDatos {
         this.db.vehiculoPlacas,
         this.db.propiedades,
         this.db.ordenes,
+        this.db.reportes,
         this.db.lineas,
         this.db.pendientes,
       ],
@@ -297,7 +391,29 @@ export class BitacoraDatos {
           : NO_BORRADO,
         proximaVisita: null,
         notas: s.notas,
+        odometro: s.odometro ?? null,
+        combustible: s.combustible ?? null,
+        danosPrevios: s.danosPrevios ?? '',
+        objetosDentro: s.objetosDentro ?? '',
       });
+
+      /* Las quejas se siembran como `tecleado`: son datos de demo, nadie las
+         dictó. Marcarlas como dictadas inflaría el único número que dice si el
+         micrófono se usa de verdad. */
+      let posicion = 0;
+      for (const reporte of s.reportes ?? []) {
+        await this.repo.crear(this.db.reportes, {
+          ordenId: orden.id,
+          textual: reporte.textual,
+          capturadoPor: 'tecleado',
+          cuando: reporte.cuando ?? [],
+          desdeCuando: reporte.desdeCuando ?? '',
+          senales: reporte.senales ?? [],
+          especialidadSugerida: reporte.especialidad,
+          sugerenciaCorregida: false,
+          posicion: posicion++,
+        });
+      }
 
       for (const linea of s.lineas) {
         await this.repo.crear(this.db.lineas, {

@@ -115,7 +115,23 @@ export class Recepcion {
           cliente: c.cliente,
           telefono: c.telefono,
           quienEntrega: c.quienEntrega,
-          reporta: c.reporta,
+          /* Una sola queja mientras la pantalla siga siendo un formulario
+             plano. El flujo guiado recoge varias. */
+          reportes: [
+            {
+              textual: c.reporta,
+              capturadoPor: 'tecleado',
+              cuando: [],
+              desdeCuando: '',
+              senales: [],
+              especialidadSugerida: null,
+              sugerenciaCorregida: false,
+            },
+          ],
+          odometro: null,
+          combustible: null,
+          danosPrevios: '',
+          objetosDentro: '',
         },
         await this.#datos.puestoActual(),
       );
