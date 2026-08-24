@@ -35,6 +35,24 @@
     </div>
 
     <div class="panel__dato">
+      <span class="panel__etiqueta">Kilometraje al entrar</span>
+      <span
+        >{{ orden.entrada.odometro !== null ?
+        kilometros(orden.entrada.odometro) : 'Sin anotar' }} · {{
+        tanque(orden.entrada.combustible) }} de tanque</span
+      >
+    </div>
+
+    <!--
+      La MISMA ficha que se enseñó al confirmar en el mostrador. Reusar el
+      componente no es ahorro de código: es lo que garantiza que lo que se
+      confirmó y lo que se lee tres días después sean literalmente lo mismo.
+    -->
+    @if (ficha(); as f) {
+    <app-ficha-recepcion [datos]="f" [conCabecera]="false" />
+    }
+
+    <div class="panel__dato">
       <span class="panel__etiqueta"
         >Líneas de servicio ({{ orden.lineas.length }})</span
       >

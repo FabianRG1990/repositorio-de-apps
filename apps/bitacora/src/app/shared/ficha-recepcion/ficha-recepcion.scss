@@ -111,3 +111,18 @@
   color: var(--app-text-soft);
   font-style: italic;
 }
+
+/* Dentro del panel de detalle la ficha va sin marco: el panel ya es una
+   tarjeta, y una tarjeta dentro de otra hace que el ojo cuente dos cosas
+   donde solo hay una. */
+.ficha--desnuda {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.ficha--desnuda .ficha__bloque:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}

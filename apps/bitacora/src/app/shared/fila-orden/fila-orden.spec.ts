@@ -16,6 +16,13 @@ const ORDEN: Orden = {
   tono: 'riesgo',
   tiempoParado: 52,
   detalle: 'Bomba de agua pedida a San José',
+  reportes: [],
+  entrada: {
+    odometro: null,
+    combustible: null,
+    danosPrevios: '',
+    objetosDentro: '',
+  },
   lineas: [],
   especialidades: ['mecanica'],
 };
