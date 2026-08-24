@@ -3,7 +3,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { liveQuery } from 'dexie';
 import { from } from 'rxjs';
 import { BitacoraDatos } from './db/bitacora-db';
-import { ABIERTO, NO_BORRADO, type EstadoOrden } from './db/esquema';
+import {
+  ABIERTO,
+  NO_BORRADO,
+  type CuandoPasa,
+  type CuartosDeTanque,
+  type EstadoOrden,
+  type SenalDeFalla,
+} from './db/esquema';
+import { interpretar } from './interpretar-reporte';
 
 export type TonoEstado = 'ok' | 'espera' | 'riesgo';
 export type ClaveEspecialidad = 'mecanica' | 'electricidad' | 'pintura';
@@ -16,6 +24,31 @@ export interface LineaServicio {
   /** Lo que el Taller recomendó y el Cliente no aprobó. Conserva su motivo. */
   readonly declinada: boolean;
   readonly motivoDeclinacion: string | null;
+}
+
+/**
+ * Una queja del Cliente como se lee después.
+ *
+ * El título NO se guarda: se vuelve a derivar del texto en cada lectura. Un
+ * título guardado envejece —el intérprete mejora y el título viejo se queda
+ * como estaba— y ninguna decisión depende de él, así que sale más barato
+ * calcularlo que migrarlo.
+ */
+export interface ReporteVisto {
+  readonly titulo: string;
+  readonly textual: string;
+  readonly especialidad: ClaveEspecialidad | null;
+  readonly cuando: readonly CuandoPasa[];
+  readonly senales: readonly SenalDeFalla[];
+  readonly desdeCuando: string;
+}
+
+/** Cómo venía el carro al entrar. Se anota una vez y no se vuelve a tocar. */
+export interface EstadoDeEntrada {
+  readonly odometro: number | null;
+  readonly combustible: CuartosDeTanque | null;
+  readonly danosPrevios: string;
+  readonly objetosDentro: string;
 }
 
 /** Lo que la pantalla necesita de una Orden, ya compuesto. */
@@ -31,6 +64,9 @@ export interface Orden {
   /** Horas desde que el Vehículo entró. Es el criterio de orden (ADR 0003). */
   readonly tiempoParado: number;
   readonly detalle: string;
+  /** Lo que el Cliente dijo al entregar el carro, en sus palabras. */
+  readonly reportes: readonly ReporteVisto[];
+  readonly entrada: EstadoDeEntrada;
   readonly lineas: readonly LineaServicio[];
   /* Las Especialidades que toca la Orden, sin repetir y en orden fijo. Se
      derivan de las Líneas y no se guardan en la Orden: la Especialidad es de
@@ -155,7 +191,7 @@ export class OrdenesStore {
 
     return Promise.all(
       ordenes.map(async (orden) => {
-        const [vehiculo, cliente, placa, lineas] = await Promise.all([
+        const [vehiculo, cliente, placa, lineas, reportes] = await Promise.all([
           db.vehiculos.get(orden.vehiculoId),
           db.clientes.get(orden.clienteId),
           db.vehiculoPlacas
@@ -163,6 +199,10 @@ export class OrdenesStore {
             .equals([orden.vehiculoId, ABIERTO])
             .first(),
           db.lineas
+            .where('[ordenId+borradoEn]')
+            .equals([orden.id, NO_BORRADO])
+            .toArray(),
+          db.reportes
             .where('[ordenId+borradoEn]')
             .equals([orden.id, NO_BORRADO])
             .toArray(),
@@ -194,6 +234,24 @@ export class OrdenesStore {
             ),
           ),
           detalle: orden.notas,
+          /* En el orden en que el Cliente las dijo: la primera suele ser la
+             que duele, y reordenarlas por otra cosa pierde ese dato. */
+          reportes: [...reportes]
+            .sort((a, b) => a.posicion - b.posicion)
+            .map((r) => ({
+              titulo: interpretar(r.textual).titulo,
+              textual: r.textual,
+              especialidad: r.especialidadSugerida,
+              cuando: r.cuando,
+              senales: r.senales,
+              desdeCuando: r.desdeCuando,
+            })),
+          entrada: {
+            odometro: orden.odometro ?? null,
+            combustible: orden.combustible ?? null,
+            danosPrevios: orden.danosPrevios ?? '',
+            objetosDentro: orden.objetosDentro ?? '',
+          },
           lineas: lineas.map((l) => ({
             descripcion: l.descripcion,
             especialidad: l.especialidad,

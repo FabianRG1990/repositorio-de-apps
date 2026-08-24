@@ -88,8 +88,39 @@ interface Regla<T> {
 }
 
 /* Lo que el Cliente percibe. NO es lo que el carro tiene: "suena" es una
-   señal, "rótula gastada" es un diagnóstico, y quien recibe no diagnostica. */
+   señal, "rótula gastada" es un diagnóstico, y quien recibe no diagnostica.
+
+   El ORDEN importa y es por GRAVEDAD, no alfabético: la primera que acierte
+   encabeza el título. "En la mañana cuesta que prenda, hace un ruido y no
+   arranca" tiene las dos, y titularlo "Ruido en frío" entierra lo único que
+   deja al Cliente a pie. Lo que impide usar el carro va primero.
+
+   El orden de los chips en pantalla NO sale de acá —sale del vocabulario de
+   etiquetas—, así que reordenar esta lista no mueve nada de la interfaz. */
 const SENALES: readonly Regla<SenalDeFalla>[] = [
+  {
+    clave: 'no-enciende',
+    esNegativa: true,
+    frases: [
+      'no enciende',
+      'no prende',
+      'no arranca',
+      'no da marcha',
+      /* "tampoco" aparece en cuanto hay más de una queja —"y tampoco prende el
+         aire"—, y sin estas tres la segunda cosa que dice el Cliente se queda
+         sin señal reconocida. Salió de recorrer la pantalla, no de leer las
+         listas. */
+      'tampoco prende',
+      'tampoco enciende',
+      'tampoco arranca',
+      'no funciona',
+      'no sirve',
+      'cuesta que prenda',
+      'cuesta prender',
+      'cuesta arrancar',
+    ],
+  },
+  { clave: 'se-apaga', frases: ['se apaga', 'se ahoga', 'se muere'] },
   {
     clave: 'ruido',
     frases: [
@@ -132,29 +163,6 @@ const SENALES: readonly Regla<SenalDeFalla>[] = [
     clave: 'tira-agua',
     frases: ['tira agua', 'bota agua', 'pierde agua', 'entra agua'],
   },
-  {
-    clave: 'no-enciende',
-    esNegativa: true,
-    frases: [
-      'no enciende',
-      'no prende',
-      'no arranca',
-      'no da marcha',
-      /* "tampoco" aparece en cuanto hay más de una queja —"y tampoco prende el
-         aire"—, y sin estas tres la segunda cosa que dice el Cliente se queda
-         sin señal reconocida. Salió de recorrer la pantalla, no de leer las
-         listas. */
-      'tampoco prende',
-      'tampoco enciende',
-      'tampoco arranca',
-      'no funciona',
-      'no sirve',
-      'cuesta que prenda',
-      'cuesta prender',
-      'cuesta arrancar',
-    ],
-  },
-  { clave: 'se-apaga', frases: ['se apaga', 'se ahoga', 'se muere'] },
   {
     clave: 'golpe-visible',
     frases: [

@@ -1,6 +1,6 @@
 @let d = datos();
 
-<article class="ficha">
+<article class="ficha" [class.ficha--desnuda]="!conCabecera()">
   @if (conCabecera()) {
   <header class="ficha__cabecera">
     <span class="ficha__placa identificador">{{ d.placa }}</span>
