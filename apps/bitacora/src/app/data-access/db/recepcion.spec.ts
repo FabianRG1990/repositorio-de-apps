@@ -17,7 +17,21 @@ const DATOS = {
   cliente: 'Marielos Quesada',
   telefono: '8888-1111',
   quienEntrega: 'Marielos Quesada',
-  reporta: 'Hace un ruido al frenar',
+  reportes: [
+    {
+      textual: 'Hace un ruido al frenar',
+      capturadoPor: 'tecleado' as const,
+      cuando: ['al-frenar' as const],
+      desdeCuando: 'esta semana',
+      senales: ['ruido' as const],
+      especialidadSugerida: 'mecanica' as const,
+      sugerenciaCorregida: false,
+    },
+  ],
+  odometro: 148320,
+  combustible: 2 as const,
+  danosPrevios: 'Rayón en la puerta trasera derecha',
+  objetosDentro: '',
 };
 
 beforeEach(async () => {
@@ -47,7 +61,6 @@ describe('recibir un Vehículo', () => {
     expect(orden.folio).toBe('A1-2418');
     expect(orden.estado).toBe('recibido');
     expect(orden.recibidoEn).toBe(reloj);
-    expect(orden.notas).toBe('Hace un ruido al frenar');
     expect(orden.entregadoEn).toBe(NO_BORRADO);
     // La Orden nace SIN Líneas: se añaden al diagnosticar.
     expect(await db.lineas.count()).toBe(0);
