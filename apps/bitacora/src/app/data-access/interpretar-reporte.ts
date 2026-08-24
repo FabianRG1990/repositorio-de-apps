@@ -140,6 +140,15 @@ const SENALES: readonly Regla<SenalDeFalla>[] = [
       'no prende',
       'no arranca',
       'no da marcha',
+      /* "tampoco" aparece en cuanto hay más de una queja —"y tampoco prende el
+         aire"—, y sin estas tres la segunda cosa que dice el Cliente se queda
+         sin señal reconocida. Salió de recorrer la pantalla, no de leer las
+         listas. */
+      'tampoco prende',
+      'tampoco enciende',
+      'tampoco arranca',
+      'no funciona',
+      'no sirve',
       'cuesta que prenda',
       'cuesta prender',
       'cuesta arrancar',
@@ -410,11 +419,11 @@ export function interpretar(texto: string): Interpretacion {
     puntajes[0].dichos.length === puntajes[1].dichos.length;
   const ganadora = empatan ? null : (puntajes[0] ?? null);
 
-  const porque = [
+  const porque = sinRepetir([
     ...senales.map((s) => s.dicho),
     ...cuando.map((c) => c.dicho),
     ...(ganadora ? [ganadora.dichos[0]] : []),
-  ].filter((dicho, i, todos) => todos.indexOf(dicho) === i);
+  ]);
 
   return {
     senales: senales.map((s) => s.clave),
@@ -423,6 +432,25 @@ export function interpretar(texto: string): Interpretacion {
     porque,
     titulo: titular(senales[0]?.clave, cuando[0]?.clave, texto),
   };
+}
+
+/**
+ * Quita los motivos repetidos y los que ya están dichos dentro de otro.
+ *
+ * "Chilla cuando freno" acierta tres reglas y devolvía «Chilla» «cuando
+ * freno» «freno»: el último no añade nada y hace que la explicación se lea
+ * como un tartamudeo. Basta con que sobreviva el más largo de los que se
+ * solapan.
+ */
+function sinRepetir(dichos: readonly string[]): readonly string[] {
+  const unicos = dichos.filter((d, i) => dichos.indexOf(d) === i);
+  return unicos.filter(
+    (d) =>
+      !unicos.some(
+        (otro) =>
+          otro !== d && otro.toLowerCase().includes(d.toLowerCase()),
+      ),
+  );
 }
 
 function titular(
