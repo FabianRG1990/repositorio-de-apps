@@ -995,7 +995,9 @@ test.describe('recibir un vehículo', () => {
     await expect(page.locator('.pie__falta')).toContainText('Falta la placa');
 
     // Y el riel tampoco deja adelantarse a un paso que no se ha alcanzado.
-    await expect(page.getByRole('button', { name: /Confirmar/ })).toBeDisabled();
+    await expect(
+      page.getByRole('button', { name: /Confirmar/ }),
+    ).toBeDisabled();
 
     await page.fill('#placa', 'XYZ 111');
     await expect(page.locator('.pie__falta')).toContainText('Falta la marca');
@@ -1004,7 +1006,9 @@ test.describe('recibir un vehículo', () => {
     await expect(avanzar).toBeEnabled();
 
     await avanzar.click();
-    await expect(page.locator('.pie__falta')).toContainText('al menos una cosa');
+    await expect(page.locator('.pie__falta')).toContainText(
+      'al menos una cosa',
+    );
   });
 
   /* Volver atrás no puede castigar: es lo primero que se hace cuando el
@@ -1040,7 +1044,9 @@ test.describe('recibir un vehículo', () => {
 
     await siguiente(page);
     await siguiente(page);
-    await expect(page.locator('.ficha__subtitulo').first()).toContainText('(2)');
+    await expect(page.locator('.ficha__subtitulo').first()).toContainText(
+      '(2)',
+    );
     await page.getByRole('button', { name: /Recibir veh/ }).click();
 
     const panel = page.locator('mat-sidenav.shell__panel');
@@ -1221,7 +1227,9 @@ test.describe('el dictado', () => {
     /* Lo que se va oyendo se ve APARTE, no dentro del campo: metido dentro
        habría que reescribirlo en cada parcial y el cursor se movería solo. */
     await page.evaluate(() => window.__voz?.parcial('chilla cuando'));
-    await expect(page.locator('.campo__parcial')).toContainText('chilla cuando');
+    await expect(page.locator('.campo__parcial')).toContainText(
+      'chilla cuando',
+    );
     await expect(page.locator('textarea').first()).toHaveValue('');
 
     await page.evaluate(() => window.__voz?.final('Chilla cuando freno'));
@@ -1263,14 +1271,14 @@ test.describe('el dictado', () => {
     await siguiente(page);
 
     await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
-    await expect.poll(() => page.evaluate(() => window.__voz?.sesiones())).toBe(
-      1,
-    );
+    await expect
+      .poll(() => page.evaluate(() => window.__voz?.sesiones()))
+      .toBe(1);
 
     await page.evaluate(() => window.__voz?.cerrar());
-    await expect.poll(() => page.evaluate(() => window.__voz?.sesiones())).toBe(
-      2,
-    );
+    await expect
+      .poll(() => page.evaluate(() => window.__voz?.sesiones()))
+      .toBe(2);
   });
 
   /* Los ocho códigos de error de la API no se pueden enseñar tal cual: lo que

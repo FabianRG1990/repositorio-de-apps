@@ -33,7 +33,10 @@ export interface Interpretacion {
  * las palabras del Cliente en vez de la entrada del diccionario.
  */
 function normalizar(texto: string): string {
-  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 function escapar(frase: string): string {
@@ -455,8 +458,7 @@ function sinRepetir(dichos: readonly string[]): readonly string[] {
   return unicos.filter(
     (d) =>
       !unicos.some(
-        (otro) =>
-          otro !== d && otro.toLowerCase().includes(d.toLowerCase()),
+        (otro) => otro !== d && otro.toLowerCase().includes(d.toLowerCase()),
       ),
   );
 }
