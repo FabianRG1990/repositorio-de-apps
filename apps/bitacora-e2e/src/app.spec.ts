@@ -878,24 +878,49 @@ test.describe('lo que la auditoría del 2026-08-22 encontró roto', () => {
    Recepción (#102). Hasta este ticket no había forma de crear una Orden desde
    la app: la interfaz solo sabía leer lo que la semilla había dejado puesto.
    --------------------------------------------------------------------------- */
+/** Llena el paso 1 con un carro que el Taller no conoce. */
+async function llenarElCarro(page: Page, placa = 'BNT 907') {
+  await page.fill('#placa', placa);
+  await page.fill('#marca', 'Mazda');
+  await page.fill('#modelo', 'BT-50');
+  await page.fill('#anio', '2020');
+  await page.fill('#cliente', 'Ferretería El Roble');
+  await page.fill('#telefono', '2244-5566');
+}
+
+const siguiente = (page: Page) =>
+  page.getByRole('button', { name: 'Siguiente' }).click();
+
 test.describe('recibir un vehículo', () => {
-  test('crea la Orden y aparece en el Tablero con su Folio', async ({
+  test('recorre los cuatro pasos y deja la Orden con lo que dijo el cliente', async ({
     page,
   }) => {
     await page.goto('/');
-    // Se espera a que la semilla termine: contar antes daba 0 y la aserción
-    // de después comparaba contra un número que nunca fue el real.
+    /* Se espera a que la semilla termine: contar antes daba 0 y la aserción
+       de después comparaba contra un número que nunca fue el real. */
     await expect(page.locator('li.fila').first()).toBeVisible();
     const antes = await page.locator('li.fila').count();
 
     await page.goto('/recepcion');
-    await page.fill('#placa', 'BNT 907');
-    await page.fill('#marca', 'Mazda');
-    await page.fill('#modelo', 'BT-50');
-    await page.fill('#anio', '2020');
-    await page.fill('#cliente', 'Ferretería El Roble');
-    await page.fill('#telefono', '2244-5566');
-    await page.fill('#reporta', 'Se calienta en presa');
+    await expect(page.locator('.riel__cuenta')).toHaveText('Paso 1 de 4');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await expect(page.locator('.riel__cuenta')).toHaveText('Paso 2 de 4');
+    await page
+      .locator('textarea')
+      .first()
+      .fill('Se calienta cuando queda en presa');
+    await siguiente(page);
+
+    await expect(page.locator('.riel__cuenta')).toHaveText('Paso 3 de 4');
+    await page.fill('#odometro', '84500');
+    await page.getByText('½', { exact: true }).click();
+    await siguiente(page);
+
+    // El paso 4 enseña la ficha antes de guardar nada.
+    await expect(page.locator('.ficha__placa')).toHaveText('BNT 907');
+    await expect(page.locator('.ficha')).toContainText('84 500 km');
     await page.getByRole('button', { name: /Recibir veh/ }).click();
 
     // Sale al Tablero con la Orden nueva ya seleccionada y su detalle abierto.
@@ -905,9 +930,12 @@ test.describe('recibir un vehículo', () => {
     const panel = page.locator('mat-sidenav.shell__panel');
     await expect(panel).toContainText('Mazda BT-50 2020');
     await expect(panel).toContainText('BNT 907');
-    await expect(panel).toContainText('Ferretería El Roble');
     // El Folio se muestra completo, con su letra (ADR 0010).
     await expect(panel).toContainText(/Orden A1-\d+/);
+    /* Y la queja sobrevive a la Recepción, en las palabras del Cliente: si no,
+       la ficha sería una pantalla bonita que no deja nada. */
+    await expect(panel).toContainText('«Se calienta cuando queda en presa»');
+    await expect(panel).toContainText('84 500 km');
   });
 
   /* El historial sigue al carro: la misma placa no puede crear un segundo
@@ -920,14 +948,16 @@ test.describe('recibir un vehículo', () => {
     await page.fill('#placa', '863 549');
     await page.locator('#marca').click();
 
-    await expect(page.locator('.recepcion__conocido')).toContainText(
-      'Ya lo conocemos',
-    );
+    await expect(page.locator('.conocido')).toContainText('Ya lo conocemos');
     // Y rellena lo que el Taller ya sabe, editable.
     await expect(page.locator('#marca')).toHaveValue('Toyota');
     await expect(page.locator('#cliente')).toHaveValue('Marielos Quesada');
     await expect(page.locator('#telefono')).toHaveValue('8888-1111');
 
+    await siguiente(page);
+    await page.locator('textarea').first().fill('Sigue sonando');
+    await siguiente(page);
+    await siguiente(page);
     await page.getByRole('button', { name: /Recibir veh/ }).click();
     await expect(page).toHaveURL(/\/$/);
 
@@ -936,20 +966,379 @@ test.describe('recibir un vehículo', () => {
     await expect(conEsaPlaca).toHaveCount(2);
   });
 
-  /* Un botón deshabilitado sin explicación es indistinguible de uno roto. */
-  test('dice qué falta mientras no se pueda recibir', async ({ page }) => {
+  /* Es el argumento de venta del producto: el glosario dice que el trabajo
+     declinado reaparece cuando el Vehículo regresa, y regresa justo acá. */
+  test('avisa el trabajo declinado con su monto al reconocer la placa', async ({
+    page,
+  }) => {
     await page.goto('/recepcion');
 
-    const enviar = page.getByRole('button', { name: /Recibir veh/ });
-    await expect(enviar).toBeDisabled();
-    await expect(page.locator('.recepcion__falta')).toContainText('Faltan');
+    await page.fill('#placa', '863 549');
+    await page.locator('#marca').click();
+
+    const aviso = page.locator('.pendiente');
+    await expect(aviso).toContainText('Quedó pendiente de antes');
+    await expect(aviso).toContainText('96 000');
+    await expect(aviso).toContainText('Cambio de faja de distribución');
+    // Con su motivo, que es lo que se vuelve a conversar.
+    await expect(aviso).toContainText('próxima visita');
+  });
+
+  /* Un botón deshabilitado sin explicación es indistinguible de uno roto. */
+  test('dice qué falta en cada paso, y no deja saltar hacia adelante', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+
+    const avanzar = page.getByRole('button', { name: 'Siguiente' });
+    await expect(avanzar).toBeDisabled();
+    await expect(page.locator('.pie__falta')).toContainText('Falta la placa');
+
+    // Y el riel tampoco deja adelantarse a un paso que no se ha alcanzado.
+    await expect(page.getByRole('button', { name: /Confirmar/ })).toBeDisabled();
 
     await page.fill('#placa', 'XYZ 111');
+    await expect(page.locator('.pie__falta')).toContainText('Falta la marca');
     await page.fill('#marca', 'Kia');
     await page.fill('#cliente', 'Alguien');
+    await expect(avanzar).toBeEnabled();
 
-    await expect(enviar).toBeEnabled();
-    await expect(page.locator('.recepcion__falta')).toHaveCount(0);
+    await avanzar.click();
+    await expect(page.locator('.pie__falta')).toContainText('al menos una cosa');
+  });
+
+  /* Volver atrás no puede castigar: es lo primero que se hace cuando el
+     Cliente se acuerda de algo a medio camino. */
+  test('volver atrás conserva lo escrito', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+    await page.locator('textarea').first().fill('Chilla al frenar');
+    await siguiente(page);
+
+    await page.getByRole('button', { name: 'Atrás' }).click();
+    await expect(page.locator('textarea').first()).toHaveValue(
+      'Chilla al frenar',
+    );
+    await page.getByRole('button', { name: 'Atrás' }).click();
+    await expect(page.locator('#marca')).toHaveValue('Mazda');
+  });
+
+  test('varias quejas quedan como varios Reportes, no como un párrafo', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page, 'MOT 45');
+    await siguiente(page);
+
+    await page.locator('textarea').first().fill('Chilla cuando freno');
+    await page.getByRole('button', { name: /Dijo otra cosa/ }).click();
+    await page
+      .locator('textarea')
+      .nth(1)
+      .fill('Y tampoco prende el aire acondicionado');
+
+    await siguiente(page);
+    await siguiente(page);
+    await expect(page.locator('.ficha__subtitulo').first()).toContainText('(2)');
+    await page.getByRole('button', { name: /Recibir veh/ }).click();
+
+    const panel = page.locator('mat-sidenav.shell__panel');
+    await expect(panel).toContainText('«Chilla cuando freno»');
+    await expect(panel).toContainText(
+      '«Y tampoco prende el aire acondicionado»',
+    );
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Lo que el sistema entiende de la queja.
+
+   La sugerencia se enseña SIEMPRE con su motivo y SIEMPRE se puede cambiar:
+   una etiqueta que aparece sola obliga a creerle a ciegas o a ignorarla
+   siempre, y las dos salidas son malas.
+   --------------------------------------------------------------------------- */
+test.describe('la sugerencia sobre la queja', () => {
+  test('marca lo reconocido y dice por qué lo propone', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.locator('textarea').first().fill('Chilla cuando freno');
+
+    await expect(page.locator('.queja__titulo')).toHaveText('Ruido al frenar');
+    const marcadas = page.locator('.opcion--marcada');
+    await expect(marcadas.filter({ hasText: 'Al frenar' })).toHaveCount(1);
+    await expect(marcadas.filter({ hasText: 'Ruido' })).toHaveCount(1);
+    await expect(marcadas.filter({ hasText: 'Mecánica' })).toHaveCount(1);
+
+    // Y cita las palabras del Cliente, no las del diccionario.
+    await expect(page.locator('.sugerencia__porque')).toContainText('«Chilla»');
+  });
+
+  /* Desmarcar algo y verlo volver solo dos segundos después —porque se siguió
+     dictando— es lo que hace que se deje de confiar en toda la pantalla. */
+  test('deja de proponer en el grupo que se toca a mano', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    const texto = page.locator('textarea').first();
+    await texto.fill('Chilla cuando freno');
+    const alFrenar = page
+      .locator('.opcion')
+      .filter({ hasText: 'Al frenar' })
+      .first();
+    await expect(alFrenar).toHaveClass(/opcion--marcada/);
+
+    await alFrenar.click();
+    await expect(alFrenar).not.toHaveClass(/opcion--marcada/);
+
+    // Se sigue escribiendo y NO vuelve a marcarse solo.
+    await texto.fill('Chilla cuando freno, sobre todo bajando');
+    await expect(alFrenar).not.toHaveClass(/opcion--marcada/);
+  });
+
+  /* Una moneda al aire con cara de certeza es peor que un espacio en blanco. */
+  test('no propone especialidad cuando no le alcanza', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page
+      .locator('textarea')
+      .first()
+      .fill('Le dieron un golpe y desde entonces suena el motor');
+
+    await expect(
+      page.locator('.opcion--marcada').filter({ hasText: 'Mecánica' }),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.opcion--marcada').filter({ hasText: 'Pintura' }),
+    ).toHaveCount(0);
+    await expect(page.locator('.sugerencia__porque')).toContainText(
+      'No alcanza para proponer',
+    );
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   El Dictado.
+
+   El motor de voz va SIMULADO, y no es una comodidad: la Web Speech API de
+   Chromium manda el audio a un servicio de Google que necesita una clave que
+   el navegador de pruebas no trae, así que el reconocimiento de verdad no se
+   puede ejercer sin un micrófono y una persona hablando. Lo que sí se puede
+   —y es lo que rompe— es toda la máquina de estados alrededor: qué entra al
+   campo, qué pasa cuando el motor falla, y que el campo siga funcionando sin
+   micrófono.
+   --------------------------------------------------------------------------- */
+interface VozSimulada {
+  parcial(texto: string): void;
+  final(texto: string): void;
+  fallar(codigo: string): void;
+  cerrar(): void;
+  sesiones(): number;
+}
+
+declare global {
+  interface Window {
+    __voz?: VozSimulada;
+  }
+}
+
+async function ponerMotorDeVoz(page: Page) {
+  await page.addInitScript(() => {
+    interface Sesion {
+      onresult: ((e: unknown) => void) | null;
+      onerror: ((e: unknown) => void) | null;
+      onend: (() => void) | null;
+      onstart: (() => void) | null;
+    }
+    let viva: Sesion | null = null;
+    let sesiones = 0;
+
+    class ReconocimientoFalso implements Sesion {
+      lang = '';
+      continuous = false;
+      interimResults = false;
+      maxAlternatives = 1;
+      onresult: ((e: unknown) => void) | null = null;
+      onerror: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      onstart: (() => void) | null = null;
+      onspeechstart: (() => void) | null = null;
+      onspeechend: (() => void) | null = null;
+      start() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const sesion: Sesion = this;
+        viva = sesion;
+        sesiones++;
+        this.onstart?.();
+      }
+      stop() {
+        this.onend?.();
+      }
+      abort() {
+        if (viva === (this as Sesion)) viva = null;
+      }
+    }
+
+    (window as unknown as Record<string, unknown>)['SpeechRecognition'] =
+      ReconocimientoFalso;
+
+    const emitir = (texto: string, isFinal: boolean) => {
+      const alternativa = { transcript: texto, confidence: 0.9 };
+      const resultado = Object.assign([alternativa], { isFinal, length: 1 });
+      const lista = Object.assign([resultado], { length: 1 });
+      viva?.onresult?.({ resultIndex: 0, results: lista });
+    };
+
+    window.__voz = {
+      parcial: (t: string) => emitir(t, false),
+      final: (t: string) => emitir(t, true),
+      fallar: (codigo: string) => viva?.onerror?.({ error: codigo }),
+      cerrar: () => viva?.onend?.(),
+      sesiones: () => sesiones,
+    };
+  });
+}
+
+test.describe('el dictado', () => {
+  test.beforeEach(async ({ page }) => {
+    await ponerMotorDeVoz(page);
+  });
+
+  test('lo dictado entra al campo y se añade a lo que ya había', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
+
+    /* Lo que se va oyendo se ve APARTE, no dentro del campo: metido dentro
+       habría que reescribirlo en cada parcial y el cursor se movería solo. */
+    await page.evaluate(() => window.__voz?.parcial('chilla cuando'));
+    await expect(page.locator('.campo__parcial')).toContainText('chilla cuando');
+    await expect(page.locator('textarea').first()).toHaveValue('');
+
+    await page.evaluate(() => window.__voz?.final('Chilla cuando freno'));
+    await expect(page.locator('textarea').first()).toHaveValue(
+      'Chilla cuando freno',
+    );
+
+    /* El Cliente habla en tandas. La segunda no puede borrar la primera. */
+    await page.evaluate(() => window.__voz?.final('y también vibra'));
+    await expect(page.locator('textarea').first()).toHaveValue(
+      'Chilla cuando freno y también vibra',
+    );
+  });
+
+  /* Lo dictado alimenta al intérprete igual que lo tecleado: si no, dictar
+     saldría peor que escribir, que es lo contrario de un acelerador. */
+  test('lo dictado también se interpreta', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
+    await page.evaluate(() => window.__voz?.final('Chilla cuando freno'));
+
+    await expect(page.locator('.queja__titulo')).toHaveText('Ruido al frenar');
+    await expect(
+      page.locator('.opcion--marcada').filter({ hasText: 'Mecánica' }),
+    ).toHaveCount(1);
+  });
+
+  /* Chromium cierra la sesión sola a los 15 s de silencio en modo continuo, y
+     ese plazo no está documentado en ningún lado. Sin reabrirla, el micrófono
+     se apaga a media conversación y nadie se entera. */
+  test('si el motor cierra la sesión solo, la vuelve a abrir', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
+    await expect.poll(() => page.evaluate(() => window.__voz?.sesiones())).toBe(
+      1,
+    );
+
+    await page.evaluate(() => window.__voz?.cerrar());
+    await expect.poll(() => page.evaluate(() => window.__voz?.sesiones())).toBe(
+      2,
+    );
+  });
+
+  /* Los ocho códigos de error de la API no se pueden enseñar tal cual: lo que
+     importa es qué puede hacer quien está de pie frente al Cliente. */
+  test('sin internet lo dice en una línea que apunta al teclado', async ({
+    page,
+  }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
+    await page.evaluate(() => window.__voz?.fallar('network'));
+
+    await expect(page.locator('.campo__problema')).toContainText(
+      'necesita internet',
+    );
+    await expect(page.locator('.campo__problema')).toContainText('escribir');
+
+    // Y el campo sigue funcionando, que es todo el punto de ADR 0004.
+    await page.locator('textarea').first().fill('Se escribe igual');
+    await expect(page.locator('textarea').first()).toHaveValue(
+      'Se escribe igual',
+    );
+  });
+
+  /* En iOS el constructor existe y el motor contesta `service-not-allowed`:
+     preguntar `'webkitSpeechRecognition' in window` da falso positivo, así que
+     el soporte se detecta por lo que el motor CONTESTA. */
+  test('si el motor dice que no, el micrófono desaparece', async ({ page }) => {
+    await page.goto('/recepcion');
+    await llenarElCarro(page);
+    await siguiente(page);
+
+    await page.getByRole('button', { name: /Dictar lo que dice/ }).click();
+    await page.evaluate(() => window.__voz?.fallar('service-not-allowed'));
+
+    await expect(page.getByRole('button', { name: /Dictar/ })).toHaveCount(0);
+  });
+});
+
+test.describe('sin motor de voz', () => {
+  /* La prueba de que la voz no se volvió el camino: quitando el micrófono, la
+     Recepción se completa igual. */
+  test('no hay botón de micrófono y la recepción se completa igual', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as Record<string, unknown>;
+      delete w['SpeechRecognition'];
+      delete w['webkitSpeechRecognition'];
+    });
+
+    await page.goto('/recepcion');
+    await llenarElCarro(page, 'SIN VOZ');
+    await siguiente(page);
+
+    await expect(page.getByRole('button', { name: /Dictar/ })).toHaveCount(0);
+
+    await page.locator('textarea').first().fill('Todo escrito a mano');
+    await siguiente(page);
+    await siguiente(page);
+    await page.getByRole('button', { name: /Recibir veh/ }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('mat-sidenav.shell__panel')).toContainText(
+      '«Todo escrito a mano»',
+    );
   });
 });
 
