@@ -24,9 +24,7 @@ describe('qué se entiende de la queja', () => {
       'En la mañana cuesta que prenda, hace un ruido y no arranca',
     );
 
-    expect(r.senales).toEqual(
-      expect.arrayContaining(['no-enciende', 'ruido']),
-    );
+    expect(r.senales).toEqual(expect.arrayContaining(['no-enciende', 'ruido']));
     expect(r.titulo).toBe('No enciende en frío');
   });
 
