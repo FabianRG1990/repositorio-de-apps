@@ -19,6 +19,13 @@ import type {
 import type { VehiculoConocido } from '../../data-access/db/recepcion';
 import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
+import {
+  ETIQUETA_CUANDO,
+  ETIQUETA_ESPECIALIDAD_REPORTE,
+  ETIQUETA_SENAL,
+  ETIQUETA_TANQUE,
+  tanqueLegible,
+} from '../../data-access/etiquetas-reporte';
 import { interpretar } from '../../data-access/interpretar-reporte';
 import {
   CampoDictado,
@@ -62,28 +69,19 @@ const PASOS: readonly DefinicionDePaso[] = [
   { id: 'ficha', titulo: 'Confirmar', icono: ['fas', 'circle-check'] },
 ];
 
-const CUANDOS: readonly Opcion[] = [
-  { id: 'al-frenar', etiqueta: 'Al frenar' },
-  { id: 'al-arrancar', etiqueta: 'Al arrancar' },
-  { id: 'en-frio', etiqueta: 'En frío' },
-  { id: 'al-acelerar', etiqueta: 'Al acelerar' },
-  { id: 'al-girar', etiqueta: 'Al girar' },
-  { id: 'a-velocidad', etiqueta: 'En carretera' },
-  { id: 'siempre', etiqueta: 'Siempre' },
-];
+/* Las etiquetas salen del vocabulario común: el panel de detalle enseña estas
+   mismas claves, y una señal escrita de dos formas distintas en la misma app
+   se lee como dos cosas distintas. */
+const comoOpciones = <C extends string>(
+  etiquetas: Record<C, string>,
+): readonly Opcion[] =>
+  (Object.entries(etiquetas) as [C, string][]).map(([id, etiqueta]) => ({
+    id,
+    etiqueta,
+  }));
 
-const SENALES: readonly Opcion[] = [
-  { id: 'ruido', etiqueta: 'Ruido' },
-  { id: 'vibracion', etiqueta: 'Vibración' },
-  { id: 'olor', etiqueta: 'Olor' },
-  { id: 'humo', etiqueta: 'Humo' },
-  { id: 'luz-tablero', etiqueta: 'Luz en el tablero' },
-  { id: 'fuga', etiqueta: 'Fuga' },
-  { id: 'no-enciende', etiqueta: 'No enciende' },
-  { id: 'se-apaga', etiqueta: 'Se apaga' },
-  { id: 'tira-agua', etiqueta: 'Entra agua' },
-  { id: 'golpe-visible', etiqueta: 'Golpe' },
-];
+const CUANDOS = comoOpciones(ETIQUETA_CUANDO);
+const SENALES = comoOpciones(ETIQUETA_SENAL);
 
 /* Atajos para "¿desde cuándo?". El campo sigue siendo texto libre: nadie
    llega diciendo una fecha, dice "como dos semanas". */
@@ -94,21 +92,8 @@ const DESDE_CUANDO: readonly Opcion[] = [
   { id: 'Hace rato', etiqueta: 'Hace rato' },
 ];
 
-const ESPECIALIDADES: readonly Opcion[] = [
-  { id: 'mecanica', etiqueta: 'Mecánica' },
-  { id: 'electricidad', etiqueta: 'Electricidad' },
-  { id: 'pintura', etiqueta: 'Pintura' },
-];
-
-/* Cuartos de tanque, que es lo que la aguja permite leer: nadie mira el
-   tablero y dice "31 %". */
-const TANQUE: readonly Opcion[] = [
-  { id: '0', etiqueta: 'Vacío' },
-  { id: '1', etiqueta: '¼' },
-  { id: '2', etiqueta: '½' },
-  { id: '3', etiqueta: '¾' },
-  { id: '4', etiqueta: 'Lleno' },
-];
+const ESPECIALIDADES = comoOpciones(ETIQUETA_ESPECIALIDAD_REPORTE);
+const TANQUE = comoOpciones(ETIQUETA_TANQUE);
 
 /** Una queja mientras se está recogiendo, antes de tener identidad. */
 interface Queja {
@@ -537,11 +522,7 @@ export class Recepcion {
     }
   }
 
-  protected etiquetaTanque(cuartos: CuartosDeTanque | null): string {
-    return (
-      TANQUE.find((t) => t.id === String(cuartos))?.etiqueta ?? 'Sin anotar'
-    );
-  }
+  protected readonly etiquetaTanque = tanqueLegible;
 
   protected etiquetasDe(
     opciones: readonly Opcion[],
