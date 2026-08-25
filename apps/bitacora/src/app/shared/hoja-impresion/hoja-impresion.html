@@ -1,0 +1,211 @@
+@let doc = documento(); @let o = orden(); @if (doc && o) {
+<article class="hoja" [attr.data-documento]="doc">
+  <!-- Cabecera común. La placa manda en las tres: es lo que identifica al
+       carro en el mostrador y en el patio. -->
+  <header class="hoja__cabecera">
+    <div class="hoja__identidad">
+      <p class="hoja__rotulo">{{ rotulo[doc] }}</p>
+      <p class="hoja__placa">{{ o.placa }}</p>
+      <p class="hoja__carro">{{ o.vehiculo }}</p>
+    </div>
+    <div class="hoja__meta">
+      <p><strong>{{ o.folio }}</strong></p>
+      <p>{{ hoy | date: "d 'de' MMMM y" }}</p>
+      <p>{{ o.cliente }}</p>
+      @if (doc !== 'taller') {
+      <p>{{ o.estado }}</p>
+      }
+    </div>
+  </header>
+
+  <!-- ------------------------------------------------- lo que dijo -------- -->
+  <!-- Va en las tres. Es la queja del Cliente y es lo que hay que reproducir
+       para diagnosticar; sin ella el papel no dice por qué entró el carro. -->
+  @if (o.reportes.length) {
+  <section class="hoja__bloque">
+    <h2>Lo que reporta el cliente</h2>
+    @for (r of o.reportes; track r.textual) {
+    <div class="hoja__queja">
+      <p class="hoja__queja-titulo">
+        {{ r.titulo }} @if (r.especialidad) {
+        <span class="hoja__esp">{{ especialidadDe(r.especialidad) }}</span>
+        }
+      </p>
+      <p class="hoja__dijo">«{{ r.textual }}»</p>
+      @if (metaDe(r); as meta) {
+      <p class="hoja__meta-queja">{{ meta }}</p>
+      }
+    </div>
+    }
+  </section>
+  }
+
+  <!-- ------------------------------------------------- para el taller ----- -->
+  @if (doc === 'taller') {
+  <section class="hoja__bloque">
+    <h2>Por hacer</h2>
+    @for (l of aprobadas(); track l.descripcion) {
+    <!-- Casilla para marcar: el papel se trabaja con lapicero encima. -->
+    <p class="hoja__casilla">
+      <span class="hoja__cuadro" aria-hidden="true"></span>
+      <span class="hoja__casilla-texto">
+        {{ l.descripcion }}
+        <span class="hoja__esp">{{ nombreEspecialidad[l.especialidad] }}</span>
+      </span>
+      <span class="hoja__horas">Horas: __________</span>
+    </p>
+    } @empty {
+    <p class="hoja__vacio">Sin trabajos todavía. Diagnosticar.</p>
+    }
+  </section>
+
+  <section class="hoja__bloque">
+    <h2>Cómo entró</h2>
+    <p>
+      {{ o.entrada.odometro !== null ? kilometros(o.entrada.odometro) : 'Sin
+      kilometraje' }} · {{ tanque(o.entrada.combustible) }} de tanque
+    </p>
+    @if (o.entrada.danosPrevios) {
+    <p><strong>Ya traía:</strong> {{ o.entrada.danosPrevios }}</p>
+    } @if (o.entrada.objetosDentro) {
+    <p><strong>Lleva adentro:</strong> {{ o.entrada.objetosDentro }}</p>
+    }
+  </section>
+
+  <section class="hoja__bloque hoja__notas">
+    <h2>Notas del técnico</h2>
+    <p class="hoja__renglon"></p>
+    <p class="hoja__renglon"></p>
+    <p class="hoja__renglon"></p>
+  </section>
+
+  <footer class="hoja__pie">
+    <span>Técnico ______________________</span>
+    <span>Terminado ______________</span>
+  </footer>
+  }
+
+  <!-- ------------------------------------------------- para el cliente ---- -->
+  @if (doc === 'cliente') {
+  <section class="hoja__bloque">
+    <h2>Lo que se hizo</h2>
+    <table class="hoja__tabla">
+      <thead>
+        <tr>
+          <th>Trabajo</th>
+          <th>Especialidad</th>
+          <th class="num">Horas</th>
+          <th class="num">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of aprobadas(); track l.descripcion) {
+        <tr>
+          <td>{{ l.descripcion }}</td>
+          <td>{{ nombreEspecialidad[l.especialidad] }}</td>
+          <td class="num">{{ l.horas }}</td>
+          <td class="num">{{ colones(l.monto) }}</td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="4">Todavía sin trabajos.</td>
+        </tr>
+        }
+        <tr class="hoja__total">
+          <td colspan="3">Total</td>
+          <td class="num">{{ colones(totalAprobado()) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Lo declinado va en el papel del Cliente a propósito: es lo que lo trae
+       de vuelta, y en la mano se lee cuando ya no hay nadie vendiéndolo. -->
+  @if (declinadas().length) {
+  <section class="hoja__bloque hoja__pendiente">
+    <h2>Quedó pendiente</h2>
+    @for (l of declinadas(); track l.descripcion) {
+    <p class="hoja__monto-linea">
+      <span>{{ l.descripcion }}</span>
+      <span>{{ colones(l.monto) }}</span>
+    </p>
+    }
+    <p class="hoja__nota">
+      Se lo recordamos en la próxima visita. Los precios pueden variar.
+    </p>
+  </section>
+  }
+
+  <footer class="hoja__pie">
+    <span>Recibido conforme ______________________________</span>
+    <span>Fecha ______________</span>
+  </footer>
+  }
+
+  <!-- ------------------------------------------------- para archivo ------- -->
+  @if (doc === 'archivo') {
+  <section class="hoja__bloque">
+    <h2>Estado de entrada</h2>
+    <p>
+      {{ o.entrada.odometro !== null ? kilometros(o.entrada.odometro) : 'Sin
+      kilometraje' }} · {{ tanque(o.entrada.combustible) }} de tanque · entró
+      hace {{ o.tiempoParado }} h
+    </p>
+    <p>
+      <strong>Ya traía:</strong>
+      {{ o.entrada.danosPrevios || 'sin daños anotados' }}
+    </p>
+    <p>
+      <strong>Lleva adentro:</strong>
+      {{ o.entrada.objetosDentro || 'nada anotado' }}
+    </p>
+  </section>
+
+  <section class="hoja__bloque">
+    <h2>Trabajos</h2>
+    <table class="hoja__tabla">
+      <thead>
+        <tr>
+          <th>Trabajo</th>
+          <th>Especialidad</th>
+          <th class="num">Horas</th>
+          <th class="num">Monto</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of o.lineas; track l.descripcion) {
+        <tr>
+          <td>{{ l.descripcion }}</td>
+          <td>{{ nombreEspecialidad[l.especialidad] }}</td>
+          <td class="num">{{ l.horas }}</td>
+          <td class="num">{{ colones(l.monto) }}</td>
+          <td>{{ l.declinada ? 'Declinado' : 'Aprobado' }}</td>
+        </tr>
+        }
+        <tr class="hoja__total">
+          <td colspan="3">Aprobado</td>
+          <td class="num">{{ colones(totalAprobado()) }}</td>
+          <td></td>
+        </tr>
+        @if (totalDeclinado()) {
+        <tr>
+          <td colspan="3">Declinado</td>
+          <td class="num">{{ colones(totalDeclinado()) }}</td>
+          <td></td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    @for (l of declinadas(); track l.descripcion) { @if (l.motivoDeclinacion) {
+    <p class="hoja__nota">{{ l.descripcion }} — «{{ l.motivoDeclinacion }}»</p>
+    } }
+  </section>
+
+  <footer class="hoja__pie">
+    <span>Entregado a ______________________________</span>
+    <span>Fecha ______________</span>
+  </footer>
+  }
+</article>
+}

@@ -491,3 +491,64 @@ body {
     background-attachment: fixed;
   }
 }
+
+/* ------------------------------ la impresión ------------------------------
+   Tres papeles distintos —taller, cliente, archivo— y una sola regla que tapa
+   la app para dejar solo el que toca.
+
+   Se tapa con `visibility` y no con `display: none`: la ventana de la Orden se
+   pinta en la CAPA SUPERIOR del navegador, fuera del flujo del documento, y
+   ocultar a sus ancestros con `display` no la alcanza. `visibility: hidden` sí
+   se hereda hasta ahí.
+
+   El tamaño del papel NO se fija. `size: auto` deja mandar a la impresora, que
+   es lo que no falla en un taller con la impresora que tenga; fijar Carta hace
+   que una A4 salga con la última línea cortada, y al revés.
+   -------------------------------------------------------------------------- */
+@page {
+  size: auto;
+  /* Una pulgada, que es el margen seguro de cualquier impresora de oficina y
+     el que ningún cabezal recorta. */
+  margin: 1in;
+}
+
+@media print {
+  html[data-imprimiendo] {
+    background: #fff;
+  }
+
+  html[data-imprimiendo] body {
+    background: #fff;
+    /* El velo del `<dialog>` seguiría pintado encima del papel. */
+    overflow: visible;
+  }
+
+  html[data-imprimiendo] body * {
+    visibility: hidden;
+  }
+
+  html[data-imprimiendo] app-hoja-impresion,
+  html[data-imprimiendo] app-hoja-impresion * {
+    visibility: visible;
+  }
+
+  /* Sacada del flujo para que no herede el alto de los cajones ni empiece
+     desplazada por lo que la app tenga encima. */
+  html[data-imprimiendo] app-hoja-impresion {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+  }
+
+  /* El velo del diálogo se pinta aunque su dueño esté invisible. */
+  html[data-imprimiendo] dialog::backdrop {
+    display: none;
+  }
+
+  /* Los recuadros y filetes del papel son estructura, no decoración: sin esto
+     el navegador los descarta al ahorrar tinta y la tabla pierde sus reglas. */
+  html[data-imprimiendo] app-hoja-impresion * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

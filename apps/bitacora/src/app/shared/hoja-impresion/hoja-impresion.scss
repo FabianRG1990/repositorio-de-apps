@@ -1,0 +1,251 @@
+/* En pantalla no existe. La hoja se pinta solo mientras se imprime. */
+:host {
+  display: none;
+}
+
+@media print {
+  :host {
+    display: block;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   El papel.
+
+   NO usa los tokens de la piel: el papel no tiene piel de oficina ni de
+   taller, y un fondo oscuro impreso es un cartucho gastado. Negro sobre
+   blanco, y las medidas en unidades absolutas —el papel tiene tamaño fijo, a
+   diferencia de la pantalla—.
+   --------------------------------------------------------------------------- */
+
+.hoja {
+  color: #000;
+  background: #fff;
+  font-family: InterVariable, system-ui, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.4;
+}
+
+.hoja__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12pt;
+  padding-bottom: 6pt;
+  border-bottom: 2pt solid #000;
+}
+
+.hoja__rotulo {
+  margin: 0;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* La placa se lee a un brazo de distancia cuando el papel está en el
+   parabrisas, así que es lo más grande de la hoja. */
+.hoja__placa {
+  margin: 2pt 0 0;
+  font-size: 26pt;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings:
+    'cv08' 1,
+    'cv05' 1,
+    'case' 1;
+}
+
+.hoja[data-documento='taller'] .hoja__placa {
+  font-size: 34pt;
+}
+
+.hoja__carro {
+  margin: 3pt 0 0;
+  font-size: 11pt;
+}
+
+.hoja__meta {
+  text-align: right;
+  font-size: 9.5pt;
+}
+
+.hoja__meta p {
+  margin: 0 0 1pt;
+}
+
+/* --- bloques -------------------------------------------------------------- */
+
+/* Un bloque no se parte entre dos páginas: media tabla de montos en la hoja
+   siguiente es media tabla que nadie firma. */
+.hoja__bloque {
+  margin-top: 12pt;
+  break-inside: avoid;
+}
+
+.hoja__bloque h2 {
+  margin: 0 0 5pt;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #444;
+}
+
+.hoja__bloque p {
+  margin: 0 0 3pt;
+}
+
+.hoja__vacio {
+  font-style: italic;
+  color: #444;
+}
+
+/* --- la queja ------------------------------------------------------------- */
+
+.hoja__queja {
+  margin-bottom: 7pt;
+  padding-left: 7pt;
+  border-left: 2pt solid #000;
+  break-inside: avoid;
+}
+
+.hoja__queja-titulo {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Entrecomillado y en cursiva: son palabras del Cliente, no del Taller. */
+.hoja__dijo {
+  margin: 1pt 0 0;
+  font-style: italic;
+}
+
+.hoja__meta-queja {
+  margin: 1pt 0 0;
+  font-size: 9pt;
+  color: #444;
+}
+
+/* La especialidad va en TEXTO y no en color: la mitad de los talleres imprime
+   en blanco y negro, y ahí un cuadrito de color es un cuadrito gris. */
+.hoja__esp {
+  font-size: 8.5pt;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #444;
+}
+
+/* --- casillas del taller -------------------------------------------------- */
+
+.hoja__casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: 6pt;
+  margin: 0 0 6pt;
+  break-inside: avoid;
+}
+
+.hoja__cuadro {
+  flex: none;
+  width: 11pt;
+  height: 11pt;
+  border: 1pt solid #000;
+  margin-top: 1.5pt;
+}
+
+.hoja__casilla-texto {
+  flex: 1 1 auto;
+}
+
+.hoja__horas {
+  flex: none;
+  font-size: 9pt;
+  color: #444;
+}
+
+/* Renglones para escribir a mano. El papel del taller vuelve con anotaciones;
+   sin sitio, vuelven en el margen. */
+.hoja__renglon {
+  height: 16pt;
+  border-bottom: 0.5pt solid #999;
+  margin: 0 0 5pt;
+}
+
+/* --- tablas --------------------------------------------------------------- */
+
+.hoja__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+.hoja__tabla th {
+  text-align: left;
+  padding: 0 6pt 3pt 0;
+  border-bottom: 1pt solid #000;
+  font-size: 8pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hoja__tabla td {
+  padding: 4pt 6pt 4pt 0;
+  border-bottom: 0.5pt solid #bbb;
+  vertical-align: top;
+}
+
+/* Una fila entera o nada: partida a mitad de página deja de leerse. */
+.hoja__tabla tr {
+  break-inside: avoid;
+}
+
+.hoja__tabla .num {
+  text-align: right;
+  padding-right: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hoja__total td {
+  font-weight: 700;
+  border-bottom: 0;
+  border-top: 1pt solid #000;
+  padding-top: 5pt;
+}
+
+.hoja__monto-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: 12pt;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo pendiente va en recuadro: en el papel del Cliente es lo que se relee en
+   la casa, y sin marco se pierde entre el resto. */
+.hoja__pendiente {
+  padding: 7pt 9pt;
+  border: 1pt solid #000;
+}
+
+.hoja__nota {
+  margin-top: 3pt;
+  font-size: 9pt;
+  color: #444;
+  font-style: italic;
+}
+
+/* --- pie ------------------------------------------------------------------ */
+
+.hoja__pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 16pt;
+  margin-top: 22pt;
+  padding-top: 5pt;
+  border-top: 0.5pt solid #999;
+  font-size: 9.5pt;
+  break-inside: avoid;
+}
