@@ -2812,6 +2812,58 @@ test.describe('el vehículo sin recoger', () => {
    entregar: acá no se calcula nada, y sin fecha escrita el Vehículo no
    aparece nunca.
    --------------------------------------------------------------------------- */
+/* El papel del Cliente ya decía "se lo recordamos en la próxima visita". Con
+   el ciclo cerrado esa visita tiene día, y el Cliente se va con él en la mano
+   en vez de con una promesa. */
+test.describe('la próxima visita en los papeles', () => {
+  test('va en el del cliente y en el de archivo, no en el del taller', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __papeles: string[] }).__papeles = [];
+      window.print = () => {
+        (window as unknown as { __papeles: string[] }).__papeles.push(
+          document.querySelector('app-hoja-impresion')?.textContent ?? '',
+        );
+      };
+    });
+
+    await page.goto('/');
+    await page
+      .locator('li.fila')
+      .filter({ hasText: 'A1-2421' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await page.fill('#proxima-visita', '2026-12-01');
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await expect(page.locator('.ciclo__entregada')).toBeVisible();
+
+    for (const cual of ['El cliente', 'Archivo', 'El taller']) {
+      await page.getByRole('button', { name: cual, exact: true }).click();
+    }
+
+    /* El papel se arma y se imprime tras dos `requestAnimationFrame`: leerlo
+       de una vez lo lee antes de que exista. */
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => (window as unknown as { __papeles: string[] }).__papeles.length,
+        ),
+      )
+      .toBe(3);
+
+    const papeles = await page.evaluate(
+      () => (window as unknown as { __papeles: string[] }).__papeles,
+    );
+    expect(papeles[0]).toContain('1 de diciembre de 2026');
+    expect(papeles[1]).toContain('1 de diciembre de 2026');
+    /* El del taller va al parabrisas y lo lee el mecánico: no lleva montos ni
+       fechas de cliente, solo lo que hay que hacerle al carro. */
+    expect(papeles[2]).not.toContain('diciembre');
+  });
+});
+
 /* En pantalla estrecha la tira de pestañas se queda en iconos. El rótulo se
    escondía con `display: none`, que lo saca TAMBIÉN del árbol de
    accesibilidad: cuatro pestañas seguidas sin nombre (WCAG 2.2 SC 4.1.2). */
