@@ -1,0 +1,111 @@
+@let lista = conUrl();
+
+<section class="galeria">
+  <header class="galeria__cabecera">
+    <h3 class="galeria__titulo">
+      {{ etiqueta() }} @if (lista.length) {
+      <span class="galeria__cuenta">· {{ lista.length }}</span>
+      }
+    </h3>
+
+    @if (editable()) {
+    <!--
+      `capture="environment"` abre la cámara trasera directamente en un
+      teléfono y el selector de archivos en escritorio. No se construye una
+      cámara propia: `getUserMedia` obligaría a hacer visor, disparador,
+      enfoque y rotación, y el sistema operativo ya trae todo eso mejor hecho.
+    -->
+    <label class="galeria__tomar" [class.galeria__tomar--ocupada]="ocupado()">
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        class="solo-lectores"
+        (change)="alElegirArchivos($event)"
+      />
+      <fa-icon [icon]="['fas', 'camera']" />
+      <span>{{ ocupado() ? 'Guardando…' : 'Tomar fotos' }}</span>
+    </label>
+    }
+  </header>
+
+  @if (lista.length) {
+  <ul class="tira">
+    @for (foto of lista; track foto.id) {
+    <li class="tira__foto">
+      <button
+        type="button"
+        class="tira__ver"
+        (click)="abrir(foto.id)"
+        [attr.aria-label]="'Ver la foto a pantalla completa'"
+      >
+        <!-- `loading="lazy"` no aplica: son URL de objeto ya en memoria. Lo
+             que sí importa es el alto fijo, para que la tira no salte. -->
+        <img [src]="foto.url" alt="" />
+      </button>
+
+      @if (editable()) {
+      <button
+        type="button"
+        class="tira__quitar"
+        aria-label="Quitar esta foto"
+        (click)="quitada.emit(foto.id)"
+      >
+        <fa-icon [icon]="['fas', 'xmark']" />
+      </button>
+      }
+    </li>
+    }
+  </ul>
+
+  <p class="galeria__peso">{{ pesoLegible(peso()) }} en el aparato</p>
+  }
+
+  <!--
+    Llenar el disco no puede ser una sorpresa: sin este aviso, la primera
+    señal sería que guardar deja de funcionar en mitad de una recepción.
+  -->
+  @if (disco.apretado()) {
+  <p class="galeria__apretado" role="status">
+    <fa-icon [icon]="['fas', 'circle-exclamation']" />
+    Queda poco espacio en este aparato. Conviene liberar antes de seguir
+    sacando fotos.
+  </p>
+  } @else {
+  <p class="galeria__vacia">
+    Sin fotos. Las de cómo entró el carro son las que contestan un "usted me lo
+    rayó".
+  </p>
+  }
+</section>
+
+<!--
+  El visor. `<dialog>` nativo otra vez: trampa de foco, `Esc` y fondo inerte
+  sin librería, igual que la ventana de la Orden.
+-->
+<!--
+  eslint-disable @angular-eslint/template/click-events-have-key-events,
+  @angular-eslint/template/interactive-supports-focus --
+
+  El clic es sobre el velo, para cerrar. Su equivalente de teclado ya existe y
+  lo pone el navegador: `Esc` cierra un `<dialog>` abierto con `showModal()`.
+  Hacer el visor enfocable lo metería en el orden de tabulación como si fuera
+  un control, que es lo contrario de lo que es.
+-->
+<dialog #visor class="visor" (close)="alCerrarVisor()" (click)="cerrarVisor()">
+  @if (abierta(); as foto) {
+  <img class="visor__foto" [src]="foto.url" alt="Foto del vehículo" />
+  }
+  <button
+    app-boton
+    tono="callado"
+    alto="chico"
+    type="button"
+    class="visor__cerrar"
+    aria-label="Cerrar la foto"
+    (click)="cerrarVisor()"
+  >
+    <fa-icon [icon]="['fas', 'xmark']" />
+  </button>
+</dialog>

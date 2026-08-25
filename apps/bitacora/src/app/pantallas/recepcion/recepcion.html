@@ -352,6 +352,18 @@
         (cambiado)="escribirEntrada('objetosDentro', $event)"
       />
 
+      <!--
+        Las Fotos van en este paso porque es el momento que el ADR 0006 nombra:
+        se sacan al recibir, caminando alrededor del carro, justo cuando se
+        están anotando los daños que ya traía.
+      -->
+      <app-galeria-fotos
+        etiqueta="Fotos de cómo entró"
+        [fotos]="fotos()"
+        (agregadas)="agregarFotos($event)"
+        (quitada)="quitarFoto($event)"
+      />
+
       <div class="campo campo--ancho">
         <label for="quienEntrega">Quién entrega</label>
         <input
