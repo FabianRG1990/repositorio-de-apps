@@ -16,7 +16,6 @@ import type {
   SenalDeFalla,
 } from '../../data-access/db/esquema';
 import type { VehiculoConocido } from '../../data-access/db/recepcion';
-import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
 import {
   ETIQUETA_CUANDO,
@@ -172,7 +171,6 @@ function alternar<T extends string>(lista: readonly T[], id: T): readonly T[] {
 export class Recepcion {
   readonly #datos = inject(BitacoraDatos);
   readonly #ordenes = inject(OrdenesStore);
-  readonly #detalle = inject(DetalleStore);
   readonly #router = inject(Router);
 
   protected readonly pasos = PASOS;
@@ -504,12 +502,17 @@ export class Recepcion {
         await this.#datos.puestoActual(),
       );
 
-      /* Se sale al Tablero con la Orden nueva ya seleccionada y su detalle
-         abierto: quien acaba de recibir un carro lo siguiente que hace es
-         comprobar que quedó donde tenía que quedar. */
+      /* Se sale al Tablero con la Orden nueva ya SELECCIONADA: quien acaba de
+         recibir un carro lo siguiente que hace es comprobar que quedó donde
+         tenía que quedar, y para eso alcanza con verla resaltada en la lista y
+         resumida en el panel.
+
+         No se pide la Orden. Antes sí, porque pedirla abría el panel; desde
+         #108 abre una ventana modal, y aparecer con un modal encima después de
+         recibir un carro tapa justo lo que se quería comprobar. Quien quiera la
+         Orden entera la abre. */
       await this.#router.navigateByUrl('/');
       this.#ordenes.seleccionar(orden.folio);
-      this.#detalle.pedir();
     } catch (falla) {
       /* No queda nada escrito a medias: `recibir` es una sola transacción. */
       this.error.set(
