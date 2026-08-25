@@ -9,6 +9,8 @@ import {
   type CuandoPasa,
   type CuartosDeTanque,
   type EstadoOrden,
+  type MedioDeAviso,
+  type Pagador,
   type SenalDeFalla,
 } from './db/esquema';
 import { interpretar } from './interpretar-reporte';
@@ -16,7 +18,16 @@ import { interpretar } from './interpretar-reporte';
 export type TonoEstado = 'ok' | 'espera' | 'riesgo';
 export type ClaveEspecialidad = 'mecanica' | 'electricidad' | 'pintura';
 
+/** Quién dijo que sí, y por dónde. Es lo que sostiene al Taller en una disputa. */
+export interface ConstanciaVista {
+  readonly autorizadaPor: string;
+  readonly medio: MedioDeAviso;
+  readonly autorizadaEn: string;
+}
+
 export interface LineaServicio {
+  /** Hace falta para poder actuar sobre ella: autorizar, declinar, deshacer. */
+  readonly id: string;
   readonly descripcion: string;
   readonly especialidad: ClaveEspecialidad;
   readonly horas: number;
@@ -24,6 +35,9 @@ export interface LineaServicio {
   /** Lo que el Taller recomendó y el Cliente no aprobó. Conserva su motivo. */
   readonly declinada: boolean;
   readonly motivoDeclinacion: string | null;
+  readonly pagador: Pagador;
+  /** `null` mientras nadie la haya autorizado. */
+  readonly autorizacion: ConstanciaVista | null;
 }
 
 /**
@@ -53,10 +67,14 @@ export interface EstadoDeEntrada {
 
 /** Lo que la pantalla necesita de una Orden, ya compuesto. */
 export interface Orden {
+  /** Hace falta para escribirle encima: anotar trabajos cuelga de este id. */
+  readonly id: string;
   readonly folio: string;
   readonly placa: string;
   readonly vehiculo: string;
   readonly cliente: string;
+  /** Para armar el enlace de WhatsApp con el que se pide la autorización. */
+  readonly telefono: string;
   readonly estado: string;
   /** La clave del dominio, para filtrar. `estado` es la etiqueta que se lee. */
   readonly estadoClave: EstadoOrden;
@@ -208,6 +226,27 @@ export class OrdenesStore {
             .toArray(),
         ]);
 
+        /* Las constancias de TODAS las líneas de la Orden en una sola
+           consulta: una por línea multiplicaba las lecturas por el número de
+           trabajos, y `liveQuery` las repite en cada cambio de la base. */
+        const constancias = new Map(
+          (
+            await db.autorizaciones
+              .where('lineaId')
+              .anyOf(lineas.map((l) => l.id))
+              .toArray()
+          )
+            .filter((a) => a.borradoEn === NO_BORRADO)
+            .map((a) => [
+              a.lineaId,
+              {
+                autorizadaPor: a.autorizadaPor,
+                medio: a.medio,
+                autorizadaEn: a.autorizadaEn,
+              },
+            ]),
+        );
+
         const presentacion = PRESENTACION[orden.estado];
         /* Lo declinado no cuenta como Especialidad tocada: nadie lo está
            trabajando, así que pintar su color en la fila diría que sí. */
@@ -218,12 +257,14 @@ export class OrdenesStore {
         );
 
         return {
+          id: orden.id,
           folio: orden.folio,
           placa: placa?.placa ?? '',
           vehiculo: [vehiculo?.marca, vehiculo?.modelo, vehiculo?.anio]
             .filter(Boolean)
             .join(' '),
           cliente: cliente?.nombre ?? '',
+          telefono: cliente?.telefono ?? '',
           estado: presentacion.etiqueta,
           estadoClave: orden.estado,
           tono: presentacion.tono,
@@ -253,12 +294,15 @@ export class OrdenesStore {
             objetosDentro: orden.objetosDentro ?? '',
           },
           lineas: lineas.map((l) => ({
+            id: l.id,
             descripcion: l.descripcion,
             especialidad: l.especialidad,
             horas: l.horasFacturadas,
             monto: l.monto,
             declinada: l.declinadaEn !== NO_BORRADO,
             motivoDeclinacion: l.motivoDeclinacion,
+            pagador: l.pagador,
+            autorizacion: constancias.get(l.id) ?? null,
           })),
           especialidades: ORDEN_ESPECIALIDADES.filter((e) => tocadas.has(e)),
         } satisfies Orden;
