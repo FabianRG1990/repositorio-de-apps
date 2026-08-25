@@ -6,7 +6,9 @@
 
     @if (dictado.hayMicrofono()) {
     <button
-      app-boton tono="contorno" alto="chico"
+      app-boton
+      tono="contorno"
+      alto="chico"
       type="button"
       class="campo__micro"
       [class.campo__micro--activo]="escuchandoEste()"
