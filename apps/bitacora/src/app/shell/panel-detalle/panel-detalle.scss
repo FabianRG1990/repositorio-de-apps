@@ -8,6 +8,9 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
+  /* Alto completo para que el botón de "Ver la orden" pueda empujarse al pie
+     con `margin-top: auto` y no baile según lo que la Orden tenga. */
+  min-height: 100%;
 }
 
 .panel__encabezado {
@@ -101,4 +104,31 @@ app-insignia-estado {
   border-top: 1px solid var(--app-border);
   color: var(--app-text-muted);
   font-size: 0.85rem;
+}
+
+/* --- lo que el resumen añadió -------------------------------------------- */
+
+.panel__especialidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.panel__declinado {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  color: var(--app-warning);
+}
+
+.panel__mas {
+  font-size: 0.8125rem;
+  color: var(--app-text-soft);
+}
+
+/* El botón se queda abajo, siempre en el mismo sitio, aunque el resumen crezca
+   o encoja según lo que la Orden tenga. */
+.panel__pie {
+  margin-top: auto;
+  padding-top: 1rem;
 }

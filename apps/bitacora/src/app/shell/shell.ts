@@ -17,6 +17,7 @@ import { filter, startWith } from 'rxjs';
 import { DetalleStore } from '../data-access/detalle.store';
 import { PerfilStore } from '../data-access/perfil.store';
 import { MenuLateral } from './menu-lateral/menu-lateral';
+import { DialogoOrden } from '../shared/dialogo-orden/dialogo-orden';
 import { PanelDetalle } from './panel-detalle/panel-detalle';
 
 /**
@@ -41,6 +42,7 @@ const APAISADO_BAJO = '(max-height: 520px) and (orientation: landscape)';
     FontAwesomeModule,
     MenuLateral,
     PanelDetalle,
+    DialogoOrden,
   ],
 })
 export class Shell {
@@ -116,6 +118,7 @@ export class Shell {
   /* `viewChild` no puede ir en un campo `#privado`: el compilador lo lee desde
      fuera de la clase para conectarlo con la plantilla (NG1053). */
   protected readonly panelDetalle = viewChild.required<MatSidenav>('panel');
+  protected readonly ventanaOrden = viewChild.required(DialogoOrden);
 
   constructor() {
     /* Se entra eligiendo un Perfil (ADR 0005). La comprobación va acá y no en
@@ -127,16 +130,16 @@ export class Shell {
       void this.#router.navigateByUrl('/entrar');
     }
 
-    /* Ver orden PIDE el detalle; cómo se enseña lo decide el shell, porque
-       depende de la anchura y eso una fila de la lista no lo sabe. El contador
-       arranca en 0 y ese primer valor no abre nada: si no, el panel se abriría
-       solo al cargar la app en una tableta. */
+    /* Ver orden PIDE la Orden, y ahora se enseña en su ventana y no en el
+       panel. El panel derecho mide 310 px: ahí las Líneas con sus montos, las
+       quejas y el estado de entrada se convertían en una columna larguísima de
+       texto envuelto. El panel se queda con el vistazo.
+
+       El contador arranca en 0 y ese primer valor no abre nada: si no, la
+       ventana se abriría sola al cargar la app. */
     effect(() => {
       if (this.#detalle.peticiones() === 0) return;
-      untracked(() => {
-        if (this.esEstrecho()) void this.panelDetalle().open();
-        else this.panelFijado.set(true);
-      });
+      untracked(() => this.ventanaOrden().abrir());
     });
   }
 

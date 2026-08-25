@@ -5,28 +5,28 @@ import {
   inject,
 } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
-import { InsigniaEstado } from '../../shared/insignia-estado/insignia-estado';
-import {
-  ETIQUETA_CUANDO,
-  ETIQUETA_SENAL,
-  listar,
-  tanqueLegible,
-} from '../../data-access/etiquetas-reporte';
+import { DetalleStore } from '../../data-access/detalle.store';
 import {
   OrdenesStore,
   tiempoParadoLegible,
 } from '../../data-access/ordenes.store';
-import { kilometros } from '../../shared/formato';
-import {
-  FichaRecepcion,
-  type DatosDeFicha,
-} from '../../shared/ficha-recepcion/ficha-recepcion';
+import { Boton } from '../../shared/boton/boton';
+import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
+import { colones } from '../../shared/formato';
+import { InsigniaEstado } from '../../shared/insignia-estado/insignia-estado';
 
 /**
  * El panel derecho del estándar: contextual al contenido central. En el diseño
- * de referencia ese sitio lo ocupa el carrito de compra; acá lo ocupa el detalle
- * de la Orden que esté seleccionada, que es el equivalente de dominio.
+ * de referencia ese sitio lo ocupa el carrito de compra; acá lo ocupa el
+ * **resumen** de la Orden que esté seleccionada.
+ *
+ * Resumen y no la Orden entera. El panel mide 310 px de ancho, y ahí las
+ * Líneas de servicio con sus montos, las quejas del Cliente y el estado de
+ * entrada se convertían en una columna larguísima de texto envuelto: había que
+ * leer en vertical algo que existe para verse de un vistazo. Lo que queda es
+ * lo que se responde sin leer —cuánto lleva parado, qué carro, quién, en qué
+ * estado, cuánto suma y por qué entró— y un botón que abre la Orden completa
+ * en su ventana.
  *
  * No navega ni cambia de ruta: solo refleja lo que el centro tiene elegido.
  */
@@ -35,54 +35,35 @@ import {
   templateUrl: './panel-detalle.html',
   styleUrl: './panel-detalle.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FontAwesomeModule,
-    InsigniaEstado,
-    EtiquetaEspecialidad,
-    FichaRecepcion,
-  ],
+  imports: [FontAwesomeModule, InsigniaEstado, EtiquetaEspecialidad, Boton],
 })
 export class PanelDetalle {
   readonly store = inject(OrdenesStore);
+  readonly #detalle = inject(DetalleStore);
+
   protected readonly tiempo = tiempoParadoLegible;
-  protected readonly tanque = tanqueLegible;
-  protected readonly kilometros = kilometros;
+  protected readonly colones = colones;
 
-  /**
-   * Lo que el Cliente dijo al entregar el carro, con la MISMA ficha que se
-   * enseñó al recibirlo.
-   *
-   * Reusar el componente no es ahorro de código: es lo que garantiza que lo
-   * que se confirmó en el mostrador y lo que se lee tres días después sean
-   * literalmente la misma cosa. Sin cabecera, porque el panel ya tiene la
-   * suya con el Folio, el Vehículo y el Cliente.
-   */
-  protected readonly ficha = computed<DatosDeFicha | null>(() => {
-    const orden = this.store.seleccionada();
-    if (!orden) return null;
+  protected readonly aprobadas = computed(() =>
+    (this.store.seleccionada()?.lineas ?? []).filter((l) => !l.declinada),
+  );
 
-    return {
-      placa: orden.placa,
-      carro: orden.vehiculo,
-      cliente: orden.cliente,
-      telefono: '',
-      quienEntrega: '',
-      odometro: orden.entrada.odometro,
-      combustible: tanqueLegible(orden.entrada.combustible),
-      danosPrevios: orden.entrada.danosPrevios,
-      objetosDentro: orden.entrada.objetosDentro,
-      quejas: orden.reportes.map((r) => ({
-        titulo: r.titulo,
-        textual: r.textual,
-        especialidad: r.especialidad,
-        meta: [
-          listar(ETIQUETA_SENAL, r.senales),
-          listar(ETIQUETA_CUANDO, r.cuando),
-          r.desdeCuando ? `desde ${r.desdeCuando}` : '',
-        ]
-          .filter(Boolean)
-          .join(' · '),
-      })),
-    };
-  });
+  protected readonly declinadas = computed(() =>
+    (this.store.seleccionada()?.lineas ?? []).filter((l) => l.declinada),
+  );
+
+  protected readonly totalAprobado = computed(() =>
+    this.aprobadas().reduce((t, l) => t + l.monto, 0),
+  );
+
+  protected readonly totalDeclinado = computed(() =>
+    this.declinadas().reduce((t, l) => t + l.monto, 0),
+  );
+
+  /* Pide la Orden por el mismo contador que usa la fila de la lista, en vez de
+     alcanzar la ventana directamente: el panel no sabe —ni tiene por qué—
+     dónde está montada. */
+  protected verLaOrden() {
+    this.#detalle.pedir();
+  }
 }
