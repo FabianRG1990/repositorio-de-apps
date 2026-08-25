@@ -6,7 +6,6 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { BitacoraDatos } from '../../data-access/db/bitacora-db';
@@ -41,6 +40,7 @@ import {
   GrupoOpciones,
   type Opcion,
 } from '../../shared/grupo-opciones/grupo-opciones';
+import { Boton } from '../../shared/boton/boton';
 
 export type Paso = 'carro' | 'queja' | 'entrada' | 'ficha';
 
@@ -161,7 +161,7 @@ function alternar<T extends string>(lista: readonly T[], id: T): readonly T[] {
   styleUrl: './recepcion.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatButtonModule,
+    Boton,
     FontAwesomeModule,
     CampoDictado,
     GrupoOpciones,

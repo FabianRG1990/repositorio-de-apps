@@ -6,7 +6,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { ConfiguracionTallerStore } from '../../data-access/configuracion-taller.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
 import { InsigniaEstado } from '../insignia-estado/insignia-estado';
@@ -14,6 +13,7 @@ import {
   tiempoParadoLegible,
   type Orden,
 } from '../../data-access/ordenes.store';
+import { Boton } from '../boton/boton';
 
 /**
  * Una Orden en la lista. Es el componente que une los dos prototipos: la fila
@@ -62,7 +62,7 @@ import {
   templateUrl: './fila-orden.html',
   styleUrl: './fila-orden.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, InsigniaEstado, EtiquetaEspecialidad],
+  imports: [Boton, InsigniaEstado, EtiquetaEspecialidad],
   host: {
     class: 'fila',
     '[class.fila--seleccionada]': 'seleccionada()',

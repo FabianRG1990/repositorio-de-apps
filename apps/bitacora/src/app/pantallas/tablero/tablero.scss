@@ -28,15 +28,6 @@
   font-size: 0.85rem;
 }
 
-/* La acción primaria de la pantalla. Va más alta que la secundaria de la
-   fila: #18 §5.2 pide 72 px para la acción principal con guante. */
-.pantalla__accion {
-  --mat-button-filled-container-height: calc(var(--app-boton-alto) + 8px);
-  --mat-button-filled-label-text-weight: 590;
-  --mat-button-filled-container-color: var(--app-boton-fondo);
-  --mat-button-filled-label-text-color: var(--app-boton-tinta);
-}
-
 .lista {
   /* La fila se reordena según lo que mide ESTA lista, no la ventana: acá está
      el contenedor que sus `@container` consultan. */

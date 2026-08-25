@@ -183,7 +183,9 @@
           </h3>
           @if (quejas().length > 1) {
           <button
-            matButton
+            app-boton
+            tono="peligro"
+            alto="chico"
             type="button"
             class="queja__quitar"
             (click)="quitarQueja(q.clave)"
@@ -237,7 +239,9 @@
           <div class="queja__atajos">
             @for (d of desdeCuando; track d.id) {
             <button
-              matButton="outlined"
+              app-boton
+              tono="contorno"
+              alto="chico"
               type="button"
               class="queja__atajo"
               (click)="elegirDesdeCuando(q.clave, d.id)"
@@ -277,7 +281,8 @@
       }
 
       <button
-        matButton="outlined"
+        app-boton
+        tono="contorno"
         type="button"
         class="queja__agregar"
         (click)="agregarQueja()"
@@ -386,7 +391,9 @@
   <!-- El pie no se mueve: los dos botones están siempre donde uno los dejó. -->
   <div class="pie">
     <button
-      matButton="outlined"
+      app-boton
+      tono="callado"
+      alto="grande"
       type="button"
       class="pie__atras"
       [disabled]="indicePaso() === 0"
@@ -401,7 +408,9 @@
       <p class="pie__falta" role="status">{{ falta }}</p>
       } @if (paso_ === 'ficha') {
       <button
-        matButton="filled"
+        app-boton
+        tono="solido"
+        alto="grande"
         type="button"
         class="pie__seguir"
         [disabled]="guardando()"
@@ -412,7 +421,9 @@
       </button>
       } @else {
       <button
-        matButton="filled"
+        app-boton
+        tono="solido"
+        alto="grande"
         type="button"
         class="pie__seguir"
         [disabled]="!!faltaParaSeguir()"

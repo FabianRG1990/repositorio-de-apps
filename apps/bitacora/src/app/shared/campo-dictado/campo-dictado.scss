@@ -20,19 +20,26 @@
   color: var(--app-text-muted);
 }
 
-/* El botón queda a la altura táctil de #18 §5.2 aun siendo secundario: se
-   pulsa de pie, con prisa y a veces con guante. */
 .campo__micro {
-  --mat-button-outlined-container-height: 2.25rem;
-  --mat-button-outlined-label-text-weight: 590;
   flex: none;
 }
 
+/* Escuchando. No es el tono de "peligro" de la familia —parar de dictar no
+   destruye nada— pero sí necesita salirse del reposo: es el único aviso
+   permanente de que el micrófono está abierto. */
 .campo__micro--activo {
-  --mat-button-outlined-container-color: var(--app-danger-fondo);
-  --mat-button-outlined-label-text-color: var(--app-danger);
-  --mat-button-outlined-outline-color: var(--app-danger-borde);
+  border-color: var(--app-danger-borde);
+  border-left-color: var(--app-danger-borde);
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
 }
+
+.campo__micro--activo:hover {
+  border-color: var(--app-danger-borde);
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}
+
 
 /* Late mientras escucha. Es la única señal continua de que el micrófono está
    abierto, y por eso NO puede ser solo el color del botón: §7.2.5.3 pide que

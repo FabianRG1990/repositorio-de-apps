@@ -6,9 +6,9 @@ import {
   input,
   output,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Dictado } from '../../data-access/dictado';
+import { Boton } from '../boton/boton';
 
 /**
  * El texto y de dónde salió.
@@ -40,7 +40,7 @@ export interface Escrito {
   templateUrl: './campo-dictado.html',
   styleUrl: './campo-dictado.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, FontAwesomeModule],
+  imports: [Boton, FontAwesomeModule],
 })
 export class CampoDictado {
   protected readonly dictado = inject(Dictado);

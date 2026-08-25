@@ -8,12 +8,12 @@ import {
   ListaPestanas,
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
-import { MatButtonModule } from '@angular/material/button';
 import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
 import { FilaOrden } from '../../shared/fila-orden/fila-orden';
 import { DetalleStore } from '../../data-access/detalle.store';
 import { OrdenesStore } from '../../data-access/ordenes.store';
 import { colones } from '../../shared/formato';
+import { Boton } from '../../shared/boton/boton';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'en-taller', label: 'En el taller', icon: ['fas', 'warehouse'] },
@@ -31,7 +31,7 @@ const PESTANAS: readonly Pestana[] = [
   templateUrl: './ordenes.html',
   styleUrl: './ordenes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListaPestanas, FilaOrden, EtiquetaEspecialidad, MatButtonModule],
+  imports: [ListaPestanas, FilaOrden, EtiquetaEspecialidad, Boton],
 })
 export class Ordenes {
   readonly store = inject(OrdenesStore);

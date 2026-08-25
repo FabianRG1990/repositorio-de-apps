@@ -11,8 +11,11 @@
 
     <!-- Lleva a Recepción, que es donde se recibe un Vehículo. Antes no hacía
          nada: un botón primario que no responde enseña que la app está rota
-         aunque el resto funcione. -->
-    <a matButton="filled" class="pantalla__accion" routerLink="/recepcion">
+         aunque el resto funcione.
+
+         `alto="grande"` porque es la acción principal de la pantalla: #18 §5.2
+         pide el escalón de arriba para la acción principal con guante. -->
+    <a app-boton tono="solido" alto="grande" class="pantalla__accion" routerLink="/recepcion">
       <fa-icon [icon]="['fas', 'car-side']" />
       Recibir vehículo
     </a>

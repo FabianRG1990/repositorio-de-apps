@@ -188,10 +188,6 @@
 /* La acción secundaria mantiene el piso táctil de #18 §5.2, que es más alto
    que los 40 px del token de Material. */
 .fila__accion {
-  --mat-button-outlined-container-height: var(--app-boton-alto);
-  --mat-button-outlined-label-text-weight: 590;
-  --mat-button-outlined-outline-color: var(--app-border-strong);
-  --mat-button-outlined-label-text-color: var(--app-accent);
   flex: none;
 }
 
