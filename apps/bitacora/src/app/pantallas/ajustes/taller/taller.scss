@@ -97,7 +97,8 @@
   color: var(--app-text-muted);
 }
 
-.campo input {
+.campo input,
+.campo select {
   /* Piso táctil de #18 §5.2: Ajustes también se toca desde una tableta. */
   min-height: var(--app-boton-alto);
   padding: 0.5rem 0.75rem;
@@ -108,7 +109,8 @@
   font: inherit;
 }
 
-.campo input:focus-visible {
+.campo input:focus-visible,
+.campo select:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
   border-color: var(--app-accent-strong);
@@ -244,7 +246,11 @@
   min-width: 9rem;
 }
 
+/* Ancho fijo para que las Especialidades caigan a plomo. "Asesor", "Técnico"
+   y "Dueño" miden distinto, y sin esto la tercera columna baila unos píxeles
+   por fila — poco para verlo, suficiente para que la lista se sienta torcida. */
 .persona__papel {
+  min-width: 4.5rem;
   font-size: 0.875rem;
   color: var(--app-text-soft);
 }
@@ -290,24 +296,35 @@
   color: var(--app-text-soft);
 }
 
+/* Bloque, no flex: un `fieldset` en flex mete a la leyenda como un hijo más
+   de la rejilla y el grupo entero se desarma —la leyenda por un lado y cada
+   casilla por el otro, repartidas en vertical—. Los checkboxes van en su
+   propia caja flex por dentro, que es donde sí hace falta. */
 .campo--especialidades {
+  /* En su propia línea, debajo del nombre y el papel. En la misma fila nunca
+     iban a cuadrar: los otros dos son etiqueta sobre control y este es
+     etiqueta sobre casillas, más bajas, así que alinearlos por la base dejaba
+     los tres rótulos a tres alturas distintas. Y el orden que resulta se lee
+     solo: primero quién es, después qué sabe hacer. */
+  flex-basis: 100%;
   border: 0;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
+  display: block;
 
   legend {
-    /* Con `float` la leyenda deja de ser la caja aparte que el navegador le
-       da por defecto y se alinea con las etiquetas de los demás campos. */
-    float: left;
-    width: 100%;
     padding: 0;
     font-size: 0.8125rem;
     color: var(--app-text-soft);
   }
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
 }
 
 .opcion {

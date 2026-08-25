@@ -357,13 +357,19 @@
 
       <div class="campo">
         <label for="persona-papel">Papel</label>
+        <!-- `[selected]` en cada opción y no `[value]` en el select: sin
+             formularios de Angular de por medio, la propiedad `value` se fija
+             antes de que existan las opciones y el desplegable se queda
+             enseñando la primera. Decía "Asesor" mientras el valor era
+             "Técnico". -->
         <select
           id="persona-papel"
-          [value]="personaPapel()"
           (change)="personaPapel.set($any($event.target).value)"
         >
           @for (papel of papeles; track papel) {
-          <option [value]="papel">{{ nombrePapel[papel] }}</option>
+          <option [value]="papel" [selected]="papel === personaPapel()">
+            {{ nombrePapel[papel] }}
+          </option>
           }
         </select>
       </div>
@@ -372,16 +378,18 @@
       @if (personaPapel() === 'tecnico') {
       <fieldset class="campo campo--especialidades">
         <legend>Especialidades</legend>
-        @for (esp of taller.especialidades(); track esp) {
-        <label class="opcion">
-          <input
-            type="checkbox"
-            [checked]="tiene(esp)"
-            (change)="alternarEspecialidad(esp)"
-          />
-          {{ nombreEspecialidad[esp] }}
-        </label>
-        }
+        <div class="opciones">
+          @for (esp of taller.especialidades(); track esp) {
+          <label class="opcion">
+            <input
+              type="checkbox"
+              [checked]="tiene(esp)"
+              (change)="alternarEspecialidad(esp)"
+            />
+            {{ nombreEspecialidad[esp] }}
+          </label>
+          }
+        </div>
       </fieldset>
       }
 
