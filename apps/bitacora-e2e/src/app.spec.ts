@@ -501,20 +501,24 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
   /* El agujero que Ver orden vino a tapar: en una tableta el panel está
      cerrado, así que tocar la fila seleccionaba una Orden y no pasaba nada
      visible. */
-  test('en tableta Ver orden abre el panel con la Orden pulsada', async ({
+  /* En una tableta el panel está cerrado, así que pulsar una fila seleccionaba
+     una Orden y no pasaba nada visible. Ver orden tapa ese agujero — y desde
+     #108 lo hace abriendo la VENTANA, que no depende de que haya sitio al
+     lado. */
+  test('en tableta Ver orden abre la ventana con la Orden pulsada', async ({
     page,
   }) => {
     await preparar(page, 'oficina', 'normal', { width: 520, height: 900 });
 
-    const panel = page.locator('mat-sidenav.shell__panel');
-    await expect(panel).toBeHidden();
+    const ventana = page.locator('dialog.ventana');
+    await expect(ventana).toBeHidden();
 
     const primera = page.locator('li.fila').first();
     const folio = (await primera.locator('.fila__folio').textContent())?.trim();
     await primera.getByRole('button', { name: /Ver orden/ }).click();
 
-    await expect(panel).toBeVisible();
-    await expect(panel.locator('.panel__encabezado')).toContainText(
+    await expect(ventana).toBeVisible();
+    await expect(ventana.locator('.od__folio')).toContainText(
       'Orden ' + folio,
     );
   });
@@ -927,15 +931,21 @@ test.describe('recibir un vehículo', () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.locator('li.fila')).toHaveCount(antes + 1);
 
+    /* El panel RESUME: el carro, el cliente, el estado y por qué entró. Lo
+       textual y el kilometraje viven en la ventana, que es donde caben. */
     const panel = page.locator('mat-sidenav.shell__panel');
     await expect(panel).toContainText('Mazda BT-50 2020');
     await expect(panel).toContainText('BNT 907');
     // El Folio se muestra completo, con su letra (ADR 0010).
     await expect(panel).toContainText(/Orden A1-\d+/);
+    await expect(panel).not.toContainText('«Se calienta');
+
     /* Y la queja sobrevive a la Recepción, en las palabras del Cliente: si no,
        la ficha sería una pantalla bonita que no deja nada. */
-    await expect(panel).toContainText('«Se calienta cuando queda en presa»');
-    await expect(panel).toContainText('84 500 km');
+    await page.getByRole('button', { name: /Ver la orden/ }).click();
+    const ventana = page.locator('dialog.ventana');
+    await expect(ventana).toContainText('«Se calienta cuando queda en presa»');
+    await expect(ventana).toContainText('84 500 km');
   });
 
   /* El historial sigue al carro: la misma placa no puede crear un segundo
@@ -1049,9 +1059,10 @@ test.describe('recibir un vehículo', () => {
     );
     await page.getByRole('button', { name: /Recibir veh/ }).click();
 
-    const panel = page.locator('mat-sidenav.shell__panel');
-    await expect(panel).toContainText('«Chilla cuando freno»');
-    await expect(panel).toContainText(
+    await page.getByRole('button', { name: /Ver la orden/ }).click();
+    const ventana = page.locator('dialog.ventana');
+    await expect(ventana).toContainText('«Chilla cuando freno»');
+    await expect(ventana).toContainText(
       '«Y tampoco prende el aire acondicionado»',
     );
   });
@@ -1344,7 +1355,8 @@ test.describe('sin motor de voz', () => {
     await page.getByRole('button', { name: /Recibir veh/ }).click();
 
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator('mat-sidenav.shell__panel')).toContainText(
+    await page.getByRole('button', { name: /Ver la orden/ }).click();
+    await expect(page.locator('dialog.ventana')).toContainText(
       '«Todo escrito a mano»',
     );
   });
@@ -1443,5 +1455,315 @@ test.describe('las pestañas de Órdenes', () => {
     const toyota = page.locator('li.fila').filter({ hasText: '863 549' });
     // Mecánica está declinada en una línea y aprobada en dos: sale una vez.
     await expect(toyota.locator('app-etiqueta-especialidad')).toHaveCount(1);
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   La ventana de la Orden (#108).
+
+   El panel derecho mide 310 px y ahí la Orden entera se volvía una columna
+   larguísima de texto envuelto. El panel resume; la Orden se abre en un
+   `<dialog>` nativo, que es quien trae la trampa de foco, el `Esc` y la
+   devolución del foco sin librería.
+   --------------------------------------------------------------------------- */
+test.describe('la ventana de la Orden', () => {
+  const abrirLaOrden = async (page: Page, placa: string) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: placa })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    return page.locator('dialog.ventana');
+  };
+
+  test('se abre como modal de verdad, no como una caja flotante', async ({
+    page,
+  }) => {
+    const ventana = await abrirLaOrden(page, '742 118');
+
+    await expect(ventana).toBeVisible();
+    /* `:modal` solo acierta con un `<dialog>` abierto por `showModal()`. Es lo
+       que separa una ventana con trampa de foco y fondo inerte de un `<div>`
+       posicionado encima. */
+    await expect(ventana).toHaveJSProperty('open', true);
+    expect(await ventana.evaluate((d) => d.matches(':modal'))).toBe(true);
+  });
+
+  test('trae la Orden entera: quejas, montos y cómo entró', async ({
+    page,
+  }) => {
+    const ventana = await abrirLaOrden(page, '742 118');
+
+    // Las palabras del Cliente, tal como las dijo.
+    await expect(ventana).toContainText(
+      '«En la mañana cuesta que prenda, hace un ruido y no arranca»',
+    );
+    await expect(ventana).toContainText('«Y también chilla cuando freno despacio»');
+    // Los trabajos con su monto, y el total de lo APROBADO.
+    await expect(ventana).toContainText('Diagnóstico de carga');
+    await expect(ventana.locator('.od__total')).toContainText(/25\s000/u);
+    // Lo declinado, aparte y con su motivo.
+    await expect(ventana.locator('.od__declinado')).toContainText(/178\s000/u);
+    await expect(ventana.locator('.od__declinado')).toContainText(
+      'Va a cotizar el repuesto',
+    );
+    // Y el estado de entrada.
+    await expect(ventana).toContainText(/61\s870 km/u);
+  });
+
+  /* El total es de lo APROBADO. Sumar lo declinado sería cobrarle al Cliente
+     algo que dijo que no. */
+  test('el total no incluye lo declinado', async ({ page }) => {
+    const ventana = await abrirLaOrden(page, '742 118');
+
+    const total = await ventana.locator('.od__total .num').innerText();
+    /* El separador de miles de `es-CR` es un espacio FINO INSEPARABLE, no uno
+       normal: comparar contra "25 000" tecleado a mano falla aunque el número
+       esté bien. `\s` sí lo cubre. */
+    expect(total).toMatch(/25\s000/u);
+    expect(total).not.toMatch(/178\s000/u);
+  });
+
+  test('Esc la cierra y devuelve el foco al botón que la abrió', async ({
+    page,
+  }) => {
+    const ventana = await abrirLaOrden(page, '742 118');
+    await expect(ventana).toBeVisible();
+
+    await page.keyboard.press('Escape');
+
+    await expect(ventana).toBeHidden();
+    /* Lo devuelve el navegador, no nosotros: es la mitad del motivo de usar el
+       `<dialog>` nativo en vez de un `<div>`. */
+    expect(
+      await page.evaluate(() => document.activeElement?.textContent?.trim()),
+    ).toContain('Ver orden');
+  });
+
+  /* Con `showModal` el fondo queda inerte pero la página SIGUE desplazándose
+     detrás: con la rueda sobre el velo, el tablero se movía debajo. */
+  test('mientras está abierta, la página de atrás no se desplaza', async ({
+    page,
+  }) => {
+    await expect(await abrirLaOrden(page, '742 118')).toBeVisible();
+
+    /* Se mira el estilo EN LÍNEA y no el calculado: el `overflow` del elemento
+       raíz se propaga al viewport, y el valor calculado del propio elemento
+       vuelve a "visible" aunque el efecto esté aplicado. */
+    expect(
+      await page.evaluate(() => document.documentElement.style.overflow),
+    ).toBe('hidden');
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog.ventana')).toBeHidden();
+    /* El evento `close` no es síncrono con `close()`: la ventana ya no se ve
+       mientras el manejador que limpia todavía no corrió. */
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.style.overflow))
+      .toBe('');
+  });
+
+  test('el panel de al lado resume, no repite la Orden', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page.locator('li.fila').filter({ hasText: '742 118' }).click();
+
+    const panel = page.locator('mat-sidenav.shell__panel');
+    // Lo del vistazo: sí.
+    await expect(panel).toContainText('Tiempo parado');
+    await expect(panel).toContainText('Nissan Frontier 2021');
+    await expect(panel).toContainText('No enciende en frío');
+    // La Orden entera: no.
+    await expect(panel).not.toContainText('«En la mañana');
+    await expect(panel).not.toContainText('Diagnóstico de carga');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Los botones (#108).
+
+   Eran de Material y no compartían una sola seña con la referencia visual. Lo
+   que se comprueba acá son las señas, no que "se vean bien": el radio, el
+   filete de acento y la esquinita son medibles.
+   --------------------------------------------------------------------------- */
+test.describe('los botones', () => {
+  test('no queda ninguno de Material', async ({ page }) => {
+    for (const [ruta, anclaje] of [
+      ['/', 'li.fila'],
+      ['/recepcion', '#placa'],
+      ['/ordenes', 'li.fila'],
+    ]) {
+      await page.goto(ruta);
+      // Se espera a que la pantalla exista, en vez de a un reloj.
+      await expect(page.locator(anclaje).first()).toBeVisible();
+      expect(
+        await page.locator('.mat-mdc-button-base').count(),
+        `en ${ruta}`,
+      ).toBe(0);
+    }
+  });
+
+  test('llevan las señas de la referencia, medidas', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+
+    const señas = await page.evaluate(() => {
+      const leer = (sel: string) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        const c = getComputedStyle(el);
+        const despues = getComputedStyle(el, '::after');
+        return {
+          radio: c.borderRadius,
+          bordeIzq: c.borderLeftWidth,
+          espaciado: c.letterSpacing,
+          esquinita: despues.width,
+        };
+      };
+      return {
+        referencia: leer('.menu__item--activo'),
+        principal: leer('.pantalla__accion'),
+        secundario: leer('.fila__accion'),
+      };
+    });
+
+    // El item de menú es la pieza que ya replicaba la referencia.
+    expect(señas.principal).toMatchObject({
+      radio: señas.referencia?.radio,
+      bordeIzq: señas.referencia?.bordeIzq,
+      espaciado: señas.referencia?.espaciado,
+      esquinita: señas.referencia?.esquinita,
+    });
+    expect(señas.secundario).toMatchObject({
+      radio: señas.referencia?.radio,
+      esquinita: señas.referencia?.esquinita,
+    });
+  });
+
+  /* La acción principal se sale un escalón hacia arriba de la escalera táctil:
+     #18 §5.2 pide el de arriba para la acción principal con guante. */
+  test('el principal es más alto que el secundario', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+
+    const alto = (sel: string) =>
+      page.locator(sel).first().evaluate((e) => e.getBoundingClientRect().height);
+
+    expect(await alto('.pantalla__accion')).toBeGreaterThan(
+      await alto('.fila__accion'),
+    );
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Las impresiones (#108).
+
+   `window.print()` abre un diálogo del sistema que Playwright no puede cerrar,
+   así que se sustituye por una función que anota QUÉ había en el papel en ese
+   instante. Es justo lo que hay que comprobar: que el papel exista y que lleve
+   lo que le toca a cada lector.
+   --------------------------------------------------------------------------- */
+test.describe('los tres papeles', () => {
+  const capturar = async (page: Page) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __papeles: unknown[] }).__papeles = [];
+      window.print = () => {
+        const hoja = document.querySelector('app-hoja-impresion');
+        (window as unknown as { __papeles: unknown[] }).__papeles.push({
+          documento: document.documentElement.dataset['imprimiendo'],
+          texto: hoja?.textContent ?? '',
+        });
+      };
+    });
+  };
+
+  const leerPapeles = (page: Page) =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __papeles: { documento: string; texto: string }[] })
+          .__papeles,
+    );
+
+  const abrirEImprimir = async (page: Page, boton: string) => {
+    await capturar(page);
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: '742 118' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await page.getByRole('button', { name: boton, exact: true }).click();
+    /* El papel no existe cuando se pulsa: la hoja se pinta solo para el
+       documento elegido, y el store espera dos cuadros antes de imprimir. */
+    await expect.poll(async () => (await leerPapeles(page)).length).toBe(1);
+    return (await leerPapeles(page))[0];
+  };
+
+  /* El mecánico no cotiza, ejecuta. Una hoja con precios pegada al parabrisas
+     es una hoja con precios circulando por el patio. */
+  test('el del taller lleva la queja y NO lleva montos', async ({ page }) => {
+    const papel = await abrirEImprimir(page, 'El taller');
+
+    expect(papel.documento).toBe('taller');
+    expect(papel.texto).toContain('742 118');
+    expect(papel.texto).toContain('«En la mañana cuesta que prenda');
+    expect(papel.texto).toContain('Diagnóstico de carga');
+    expect(papel.texto).toContain('Notas del técnico');
+    // Ni un colón.
+    expect(papel.texto).not.toContain('₡');
+  });
+
+  /* Lo declinado va en el papel del Cliente a propósito: es lo que lo trae de
+     vuelta, y se relee en la casa cuando ya no hay nadie vendiéndolo. */
+  test('el del cliente lleva montos y lo que quedó pendiente', async ({
+    page,
+  }) => {
+    const papel = await abrirEImprimir(page, 'El cliente');
+
+    expect(papel.documento).toBe('cliente');
+    expect(papel.texto).toMatch(/₡25\s000/u);
+    expect(papel.texto).toContain('Quedó pendiente');
+    expect(papel.texto).toMatch(/₡178\s000/u);
+    expect(papel.texto).toContain('Recibido conforme');
+  });
+
+  test('el de archivo lleva el estado de entrada y qué se declinó', async ({
+    page,
+  }) => {
+    const papel = await abrirEImprimir(page, 'Archivo');
+
+    expect(papel.documento).toBe('archivo');
+    expect(papel.texto).toContain('Estado de entrada');
+    expect(papel.texto).toMatch(/61\s870 km/u);
+    expect(papel.texto).toContain('Silla de bebé atrás');
+    expect(papel.texto).toContain('Declinado');
+  });
+
+  /* La bandera de `<html>` es lo que la hoja de impresión mira para tapar la
+     app. Si se quedara puesta, la pantalla quedaría en blanco. */
+  test('la bandera de impresión no se queda puesta', async ({ page }) => {
+    await abrirEImprimir(page, 'El taller');
+
+    expect(
+      await page.evaluate(() => document.documentElement.dataset['imprimiendo']),
+    ).toBeUndefined();
+  });
+
+  test('la ventana NO se cierra al imprimir', async ({ page }) => {
+    await abrirEImprimir(page, 'El taller');
+
+    /* Quien imprime casi siempre saca dos —la del taller y la del cliente— una
+       detrás de otra. */
+    await expect(page.locator('dialog.ventana')).toBeVisible();
+  });
+
+  test('en pantalla el papel no se ve nunca', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+
+    await expect(page.locator('app-hoja-impresion')).toBeHidden();
   });
 });
