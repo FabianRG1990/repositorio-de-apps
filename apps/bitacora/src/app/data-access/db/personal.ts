@@ -122,6 +122,31 @@ export class PersonalDelTaller {
     await this.repo.borrar(this.db.personas, id);
   }
 
+  /**
+   * Poner —o quitar— a nombre de quién queda una Orden ([ADR 0003]).
+   *
+   * `null` es un valor legítimo: en el taller el trabajo cambia de manos, y
+   * una Orden puede quedar sin dueño un rato mientras se decide quién la toma.
+   * Obligar a que siempre haya alguien produciría lo de siempre — que se elija
+   * al primero de la lista para poder seguir.
+   *
+   * No se comprueba la Especialidad contra la de la Persona: el [ADR 0003]
+   * dice que el Responsable *"responde por el trabajo, no necesariamente lo
+   * ejecuta todo"*, y en un taller mixto quien coordina una Orden de mecánica
+   * y pintura no hace los dos oficios.
+   */
+  async ponerResponsable(
+    ordenId: string,
+    personaId: string | null,
+  ): Promise<void> {
+    if (personaId && !(await this.db.personas.get(personaId))) {
+      throw new Error('Esa persona no existe.');
+    }
+    await this.repo.actualizar(this.db.ordenes, ordenId, {
+      responsableId: personaId,
+    });
+  }
+
   /** Cuántas Órdenes abiertas responde, para poder decirlo antes de la baja. */
   async ordenesAbiertasDe(id: string): Promise<number> {
     return (

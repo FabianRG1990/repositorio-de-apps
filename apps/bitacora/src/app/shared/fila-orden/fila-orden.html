@@ -27,7 +27,26 @@
     <span class="fila__placa identificador">{{ o.placa }}</span>
   </span>
 
-  <span class="fila__sub">{{ o.cliente }}</span>
+  <!-- El Responsable va en la línea del Cliente y NO en una columna propia:
+       la rejilla y sus tres densidades están medidas en #77, y una quinta
+       columna las volvería a abrir. Acá ya hay elipsis, así que lo que no
+       quepa se recorta sin descolocar nada.
+
+       Con el rótulo para quien no lo ve: visualmente el orden y el tono
+       distinguen "cliente" de "quien responde", pero leídos en voz alta son
+       dos nombres seguidos sin nada que los separe. -->
+  <span class="fila__sub">
+    {{ o.cliente }}
+    <span class="fila__sep" aria-hidden="true">·</span>
+    <span class="solo-lectores">Responsable:</span>
+    @if (o.responsable) {
+    <span class="fila__responsable">{{ o.responsable.nombre }}</span>
+    } @else {
+    <span class="fila__responsable fila__responsable--falta">
+      Sin responsable
+    </span>
+    }
+  </span>
 
   <!-- El nombre solo cabe cuando hay UNA especialidad. Con dos o tres se
        queda la marca de color y el nombre pasa al árbol de accesibilidad: si

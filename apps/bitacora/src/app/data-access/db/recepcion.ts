@@ -28,6 +28,15 @@ export interface DatosDeRecepcion {
   /** Puede no ser el Cliente: en una flotilla es un chofer distinto cada vez. */
   readonly quienEntrega: string;
   /**
+   * A nombre de quién queda ([ADR 0003]), o `null` si nadie la tomó todavía.
+   *
+   * Opcional a propósito: quien recibe el carro es el Asesor y quien responde
+   * suele ser otro, así que en la recepción el dato muchas veces no se sabe
+   * aún. Exigirlo produciría el de siempre — el primero de la lista, para
+   * poder seguir.
+   */
+  readonly responsableId?: string | null;
+  /**
    * Las quejas del Cliente, en el orden en que las dijo.
    *
    * Son varias a propósito: nadie llega diciendo una sola cosa. "Suena al
@@ -293,7 +302,7 @@ export class RecepcionDeVehiculos {
           vehiculoId,
           clienteId,
           quienEntrega: datos.quienEntrega.trim() || datos.cliente.trim(),
-          responsableId: null,
+          responsableId: datos.responsableId ?? null,
           estado: 'recibido',
           recibidoEn: momento,
           entregadoEn: NO_BORRADO,

@@ -1,0 +1,32 @@
+@let o = orden();
+
+<div class="responsable">
+  <label class="responsable__rotulo" for="responsable-orden">
+    A nombre de quién queda
+  </label>
+
+  <!-- `[selected]` en cada opción y no `[value]` en el select: sin formularios
+       de Angular, `value` se fija antes de que existan las opciones y el
+       control se queda enseñando la primera. -->
+  <select
+    id="responsable-orden"
+    class="responsable__select"
+    [class.responsable__select--falta]="!o.responsable"
+    (change)="poner($any($event.target).value)"
+  >
+    <option value="" [selected]="!o.responsable">Sin responsable</option>
+    @for (persona of candidatas(); track persona.id) {
+    <option [value]="persona.id" [selected]="persona.id === o.responsable?.id">
+      {{ persona.nombre }}
+    </option>
+    }
+  </select>
+
+  @if (!candidatas().length) {
+  <p class="responsable__nota">
+    Todavía no hay técnicos. Se agregan en Ajustes › Taller.
+  </p>
+  } @if (error(); as mensaje) {
+  <p class="responsable__error" role="alert">{{ mensaje }}</p>
+  }
+</div>
