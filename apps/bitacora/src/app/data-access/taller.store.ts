@@ -9,6 +9,8 @@ import type { Especialidad, Puesto, Tarifa } from './db/esquema';
 /** Lo que hay configurado, compuesto para las pantallas. */
 export interface ConfiguracionVista {
   readonly datos: DatosDelTaller;
+  /** Desde cuántos días avisado se señala un Vehículo sin recoger (ADR 0009). */
+  readonly diasParaSinRecoger: number;
   readonly especialidades: readonly Especialidad[];
   readonly tarifas: readonly Tarifa[];
   readonly puestos: readonly Puesto[];
@@ -16,6 +18,7 @@ export interface ConfiguracionVista {
 
 const VACIA: ConfiguracionVista = {
   datos: { nombre: '', telefono: '', direccion: '', cedulaJuridica: '' },
+  diasParaSinRecoger: 3,
   especialidades: [],
   tarifas: [],
   puestos: [],
@@ -63,6 +66,11 @@ export class TallerStore {
     () => this.configuracion().especialidades.length > 0,
   );
 
+  /** Desde cuántos días avisado un Vehículo cuenta como sin recoger. */
+  readonly diasParaSinRecoger = computed(
+    () => this.configuracion().diasParaSinRecoger,
+  );
+
   /** `mecanica` → 14000. Lo que la Tarifa sirve para sugerir. */
   readonly porHora = computed(() => {
     const mapa = new Map<Especialidad, number>();
@@ -89,6 +97,7 @@ export class TallerStore {
         direccion: taller.direccion ?? '',
         cedulaJuridica: taller.cedulaJuridica ?? '',
       },
+      diasParaSinRecoger: taller.diasParaSinRecoger ?? 3,
       especialidades: taller.especialidades,
       tarifas,
       puestos,

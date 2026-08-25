@@ -20,6 +20,9 @@ const ORDEN: Orden = {
   detalle: 'Bomba de agua pedida a San José',
   reportes: [],
   fotos: [],
+  aviso: null,
+  diasAvisado: null,
+  proximaVisita: null,
   entrada: {
     odometro: null,
     combustible: null,

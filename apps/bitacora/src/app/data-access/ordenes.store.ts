@@ -13,6 +13,7 @@ import {
   type Pagador,
   type SenalDeFalla,
 } from './db/esquema';
+import { diasSinRecoger } from './db/ciclo';
 import { interpretar } from './interpretar-reporte';
 
 export type TonoEstado = 'ok' | 'espera' | 'riesgo';
@@ -65,6 +66,13 @@ export interface EstadoDeEntrada {
   readonly objetosDentro: string;
 }
 
+/** Que se le avisó a Quien entrega, con fecha, persona y medio (ADR 0009). */
+export interface AvisoVisto {
+  readonly avisadoA: string;
+  readonly medio: MedioDeAviso;
+  readonly avisadoEn: string;
+}
+
 /** Lo que la pantalla necesita de una Orden, ya compuesto. */
 export interface Orden {
   /** Hace falta para escribirle encima: anotar trabajos cuelga de este id. */
@@ -86,6 +94,17 @@ export interface Orden {
   readonly reportes: readonly ReporteVisto[];
   /** Cómo entró el carro, en imágenes. Pertenecen a la Orden (ADR 0006). */
   readonly fotos: readonly { readonly id: string; readonly blob: Blob }[];
+  /** `null` mientras nadie le haya avisado al Cliente que está listo. */
+  readonly aviso: AvisoVisto | null;
+  /**
+   * Días desde el Aviso, o `null` si no se ha avisado.
+   *
+   * El reloj del Vehículo sin recoger arranca con el AVISO y no con el trabajo
+   * terminado: un carro listo del que nadie se enteró no es uno que el Cliente
+   * esté dejando ahí, es uno al que el Taller no ha llamado.
+   */
+  readonly diasAvisado: number | null;
+  readonly proximaVisita: string | null;
   readonly entrada: EstadoDeEntrada;
   readonly lineas: readonly LineaServicio[];
   /* Las Especialidades que toca la Orden, sin repetir y en orden fijo. Se
@@ -211,7 +230,7 @@ export class OrdenesStore {
 
     return Promise.all(
       ordenes.map(async (orden) => {
-        const [vehiculo, cliente, placa, lineas, reportes, fotos] =
+        const [vehiculo, cliente, placa, lineas, reportes, fotos, avisos] =
           await Promise.all([
             db.vehiculos.get(orden.vehiculoId),
             db.clientes.get(orden.clienteId),
@@ -228,6 +247,7 @@ export class OrdenesStore {
               .equals([orden.id, NO_BORRADO])
               .toArray(),
             db.fotos.where('ordenId').equals(orden.id).toArray(),
+            db.avisos.where('ordenId').equals(orden.id).toArray(),
           ]);
 
         /* Las constancias de TODAS las líneas de la Orden en una sola
@@ -250,6 +270,8 @@ export class OrdenesStore {
               },
             ]),
         );
+
+        const vigente = avisos.find((a) => a.borradoEn === NO_BORRADO);
 
         const presentacion = PRESENTACION[orden.estado];
         /* Lo declinado no cuenta como Especialidad tocada: nadie lo está
@@ -297,6 +319,15 @@ export class OrdenesStore {
             .filter((f) => f.borradoEn === NO_BORRADO)
             .sort((a, b) => a.tomadaEn.localeCompare(b.tomadaEn))
             .map((f) => ({ id: f.id, blob: f.blob })),
+          aviso: vigente
+            ? {
+                avisadoA: vigente.avisadoA,
+                medio: vigente.medio,
+                avisadoEn: vigente.avisadoEn,
+              }
+            : null,
+          diasAvisado: diasSinRecoger(vigente?.avisadoEn ?? null),
+          proximaVisita: orden.proximaVisita,
           entrada: {
             odometro: orden.odometro ?? null,
             combustible: orden.combustible ?? null,
