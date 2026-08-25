@@ -186,3 +186,42 @@ export function diasSinRecoger(
   const transcurrido = ahora - new Date(avisadoEn).getTime();
   return Math.max(0, Math.floor(transcurrido / 86_400_000));
 }
+
+/**
+ * El mensaje de "le tocaba volver".
+ *
+ * Bitácora no manda nada por su cuenta ([ADR 0011]): la lista dice a quién
+ * llamar, una persona decide y envía. Es el mismo mecanismo del Aviso de
+ * listo y de la Autorización.
+ *
+ * Si quedó trabajo declinado, va en el mensaje. El [ADR 0011] lo dice: la
+ * visita planificada y el trabajo que el Cliente no aprobó son dos caminos
+ * hacia la misma conversación, y el Asesor que llama sin eso a mano llama sin
+ * saber qué proponer.
+ */
+export function mensajeDeProximaVisita(datos: {
+  readonly taller: string;
+  readonly vehiculo: string;
+  readonly placa: string;
+  readonly fecha: string;
+  readonly pendiente: readonly string[];
+}): string {
+  const saludo = datos.taller
+    ? `Buenas, le escribimos de ${datos.taller}.`
+    : 'Buenas, le escribimos del taller.';
+
+  return [
+    saludo,
+    '',
+    `Su ${datos.vehiculo} (${datos.placa}) tenía revisión para el ${datos.fecha}.`,
+    ...(datos.pendiente.length
+      ? [
+          '',
+          'Quedó pendiente de la última visita:',
+          ...datos.pendiente.map((p) => `- ${p}`),
+        ]
+      : []),
+    '',
+    '¿Le parece si lo agendamos?',
+  ].join('\n');
+}

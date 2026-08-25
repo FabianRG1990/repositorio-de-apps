@@ -205,6 +205,24 @@ export class OrdenesStore {
     ),
   );
 
+  /**
+   * Los carros que ya salieron y tienen fecha para volver ([ADR 0011]).
+   *
+   * Solo los entregados. Uno al que se le deshizo la entrega conserva su
+   * fecha —la escribió una persona pensando en el carro— pero está en el
+   * Taller: recordarle al Cliente que vuelva sería ruido.
+   *
+   * En ISO el orden alfabético ES el cronológico, y esa es la mitad de la
+   * razón por la que la fecha se guarda así.
+   */
+  readonly proximasVisitas = computed(() =>
+    this.#vista()
+      .filter((o) => o.estadoClave === 'entregado' && o.proximaVisita)
+      .sort((a, b) =>
+        (a.proximaVisita ?? '').localeCompare(b.proximaVisita ?? ''),
+      ),
+  );
+
   readonly seleccionada = computed(
     () =>
       this.#vista().find((o) => o.folio === this.#folioSeleccionado()) ?? null,

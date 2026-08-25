@@ -1,3 +1,75 @@
-<div class="pantalla">
-  <p>La Próxima visita la pone el Asesor al entregar, no el sistema.</p>
+<div class="visitas">
+  @if (cuantas() === 0) {
+  <!--
+    El vacío se explica en vez de dejar la pantalla en blanco: acá no aparece
+    nada por su cuenta. Sin fecha escrita al entregar, el carro no entra nunca
+    a esta lista (ADR 0011), y quien abra la pantalla tiene que poder saber
+    que eso es lo esperado y no una falla.
+  -->
+  <div class="vacio">
+    <fa-icon class="vacio__icono" [icon]="['fas', 'calendar-check']" />
+    <p class="vacio__titulo">Todavía no hay ninguna visita apuntada.</p>
+    <p class="vacio__nota">
+      La fecha se escribe al entregar el vehículo, en la ventana de la orden. El
+      sistema no la calcula: acá sale lo que el asesor apuntó.
+    </p>
+  </div>
+  } @else { @for (grupo of grupos(); track grupo.monton) {
+  <section class="grupo" [attr.data-monton]="grupo.monton">
+    <h3 class="grupo__titulo">
+      {{ grupo.titulo }}
+      <span class="grupo__cuenta">{{ grupo.visitas.length }}</span>
+    </h3>
+    <p class="grupo__nota">{{ grupo.nota }}</p>
+
+    <ul class="lista">
+      @for (v of grupo.visitas; track v.id) {
+      <li class="visita">
+        <div class="visita__fecha">
+          <span class="visita__dia">{{ fechaLarga(v.proximaVisita!) }}</span>
+          <span class="visita__cuando">{{ cuando(v) }}</span>
+        </div>
+
+        <div class="visita__carro">
+          <span class="visita__modelo">{{ v.vehiculo }}</span>
+          <span class="visita__placa identificador">{{ v.placa }}</span>
+          <span class="visita__cliente">{{ v.cliente }}</span>
+        </div>
+
+        <!-- Lo que el Cliente no aprobó la última vez. El ADR 0011 lo llama
+             el otro camino hacia la misma conversación: llamar sin esto a
+             mano es llamar sin saber qué proponer. -->
+        @if (pendiente(v).length) {
+        <ul class="pendiente">
+          @for (l of pendiente(v); track l.id) {
+          <li class="pendiente__linea">
+            <fa-icon [icon]="['fas', 'circle-minus']" />
+            <span class="pendiente__que">{{ l.descripcion }}</span>
+            <span class="pendiente__monto identificador">
+              {{ colones(l.monto) }}
+            </span>
+          </li>
+          }
+        </ul>
+        }
+
+        <!-- Bitácora no manda nada por su cuenta: arma el texto y una persona
+             decide y envía (ADR 0009 y 0011). -->
+        <a
+          app-boton
+          tono="contorno"
+          class="visita__llamar"
+          [href]="enlace(v)"
+          target="_blank"
+          rel="noopener"
+        >
+          <fa-icon [icon]="['fas', 'comment-dots']" />
+          Escribirle
+          <span class="solo-lectores"> a {{ v.cliente }}</span>
+        </a>
+      </li>
+      }
+    </ul>
+  </section>
+  } }
 </div>

@@ -1,0 +1,218 @@
+.visitas {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+}
+
+/* --- el vacío ------------------------------------------------------------- */
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin: auto;
+  max-width: 32rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.vacio__icono {
+  font-size: 2.5rem;
+  color: var(--app-text-soft);
+}
+
+.vacio__titulo {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 590;
+  color: var(--app-text);
+}
+
+.vacio__nota {
+  margin: 0;
+  color: var(--app-text-muted);
+  text-wrap: balance;
+}
+
+/* --- los montones --------------------------------------------------------- */
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.grupo__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 680;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+}
+
+/* El número al lado del título contesta "cuántas llamadas son" sin contar. */
+.grupo__cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--app-capa-hover);
+  color: var(--app-text);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* Las vencidas son las de hoy: el montón entero se enciende, no una fila. */
+.grupo[data-monton='pasadas'] .grupo__titulo {
+  color: var(--app-danger);
+}
+
+.grupo[data-monton='pasadas'] .grupo__cuenta {
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}
+
+.grupo__nota {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}
+
+/* --- cada visita ---------------------------------------------------------- */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Misma seña que la fila del tablero y que el botón: rectángulo redondeado
+   con filete a la izquierda. La lista de llamadas no es otra casa. */
+.visita {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    'fecha carro llamar'
+    'fecha pendiente llamar';
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid var(--app-border-lista);
+  border-radius: 0.95rem;
+  background: var(--app-capa-reposo);
+}
+
+.grupo[data-monton='pasadas'] .visita {
+  border-left-color: var(--app-danger-borde);
+}
+
+.visita__fecha {
+  grid-area: fecha;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.visita__dia {
+  font-weight: 590;
+  color: var(--app-text);
+}
+
+.visita__cuando {
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}
+
+.grupo[data-monton='pasadas'] .visita__cuando {
+  color: var(--app-danger);
+}
+
+.visita__carro {
+  grid-area: carro;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.6rem;
+  min-width: 0;
+}
+
+.visita__modelo {
+  font-weight: 590;
+  color: var(--app-text);
+}
+
+.visita__cliente {
+  font-size: 0.875rem;
+  color: var(--app-text-muted);
+}
+
+.pendiente {
+  grid-area: pendiente;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pendiente__linea {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--app-text-muted);
+}
+
+.pendiente__monto {
+  color: var(--app-text-soft);
+}
+
+.visita__llamar {
+  grid-area: llamar;
+  flex: none;
+}
+
+/* En una tableta en vertical las tres columnas no caben: la fecha manda,
+   así que se apila debajo de ella en vez de encoger el modelo. */
+@media (max-width: 52rem) {
+  .visita {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'fecha'
+      'carro'
+      'pendiente'
+      'llamar';
+    align-items: start;
+  }
+
+  .visita__llamar {
+    justify-self: start;
+    margin-top: 0.35rem;
+  }
+}
+
+.identificador {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings:
+    'cv08' 1,
+    'cv05' 1,
+    'case' 1;
+}
