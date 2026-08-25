@@ -439,8 +439,12 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
     page,
   }) => {
     await preparar(page, 'taller', 'normal');
-    await page.locator('.pantalla__accion').focus();
-    await page.keyboard.press('Tab');
+
+    /* Se enfoca la fila DIRECTAMENTE en vez de tabular desde el botón: desde
+       #114 el filtro por Especialidad se mete en medio del orden de
+       tabulación, y lo que este test mide es el anillo de la FILA. Tabular a
+       ciegas medía lo que hubiera delante. */
+    await page.locator('.fila__cuerpo').first().focus();
 
     const anillo = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
@@ -873,16 +877,20 @@ test.describe('lo que la auditoría del 2026-08-22 encontró roto', () => {
     await expect(page.locator('.cuadro__titulo')).toHaveText('Recepción');
   });
 
-  /* Ajustes abría en la pestaña Taller, que es un párrafo: el Dueño entraba a
-     la app y veía la única pantalla con cero contenido. */
-  test('Ajustes abre en la pestaña que tiene contenido', async ({ page }) => {
+  /* Ajustes se movió a Apariencia en #101 porque Taller era un párrafo: el
+     Dueño entraba a la app y veía la única pantalla con cero contenido. Desde
+     #114 las tres tienen contenido, así que vuelve a abrir en Taller — que es
+     lo que el Dueño viene a hacer. */
+  test('Ajustes abre en Taller, que es lo que el Dueño viene a hacer', async ({
+    page,
+  }) => {
     await page.goto('/ajustes');
 
     await expect(page.locator('[role="tabpanel"]')).toHaveAttribute(
       'id',
-      'panel-apariencia',
+      'panel-taller',
     );
-    await expect(page.getByRole('radio').first()).toBeVisible();
+    await expect(page.locator('#taller-nombre')).toBeVisible();
   });
 });
 
@@ -2310,5 +2318,234 @@ test.describe('las fotos del vehículo', () => {
       () => (window as unknown as { __papeles: string[] }).__papeles[0],
     );
     expect(papel).not.toContain('<img');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Lo que el Dueño configura (#114).
+
+   El ADR 0008 le dio al Perfil Dueño cuatro atribuciones y llevaban sin
+   construir desde entonces: hasta este ticket entraba a la app y lo único que
+   podía tocar era el color.
+   --------------------------------------------------------------------------- */
+test.describe('los ajustes del Taller', () => {
+  test('los datos del taller se guardan y salen en el papel', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __papeles: string[] }).__papeles = [];
+      window.print = () => {
+        (window as unknown as { __papeles: string[] }).__papeles.push(
+          document.querySelector('app-hoja-impresion')?.textContent ?? '',
+        );
+      };
+    });
+
+    await page.goto('/ajustes');
+    await page.fill('#taller-nombre', 'Taller Los Yoses');
+    await page.fill('#taller-telefono', '2253-8080');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await expect(page.locator('.aviso--bueno')).toContainText('Guardado');
+
+    /* Un comprobante sin nombre ni teléfono no sirve para volver a llamar, y
+       hasta este ticket los tres papeles salían sin membrete. */
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await page.getByRole('button', { name: 'El cliente', exact: true }).click();
+
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          () => (window as unknown as { __papeles: string[] }).__papeles[0],
+        ),
+      )
+      .toContain('Taller Los Yoses');
+  });
+
+  /* El ADR 0010 hizo que la letra encabece el Folio y que cada Puesto lleve su
+     consecutivo para que dos sin conexión nunca acuñen el mismo. Esa promesa
+     se cae si dos comparten letra. */
+  test('no deja repetir la letra de un Puesto, y dice por qué', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('button', { name: /Agregar un puesto/ }).click();
+    await page.fill('#letra-nueva', 'A1');
+    await page.fill('#nombre-nuevo', 'Otro');
+    await page.getByRole('button', { name: 'Crear', exact: true }).click();
+
+    await expect(page.locator('.aviso--malo')).toContainText('folios iguales');
+    await expect(page.locator('.puesto:not(.puesto--nuevo)')).toHaveCount(1);
+  });
+
+  test('un puesto con letra libre se crea', async ({ page }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('button', { name: /Agregar un puesto/ }).click();
+    await page.fill('#letra-nueva', 'B');
+    await page.fill('#nombre-nuevo', 'Tablet del patio');
+    await page.getByRole('button', { name: 'Crear', exact: true }).click();
+
+    await expect(page.locator('.puesto')).toHaveCount(2);
+    await expect(page.locator('.puesto').last()).toContainText('B');
+  });
+
+  /* Sin Puesto no se acuña Folio, y sin Folio no se recibe un carro. */
+  test('no deja quitar el último puesto', async ({ page }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('button', { name: 'Quitar', exact: true }).click();
+
+    await expect(page.locator('.aviso--malo')).toContainText(
+      'al menos un puesto',
+    );
+    await expect(page.locator('.puesto')).toHaveCount(1);
+  });
+
+  /* Al resto no se le OFRECE editar, que no es lo mismo que prohibírselo
+     (ADR 0005 y 0013): se le enseña el valor, no un campo apagado. */
+  test('al Asesor se le enseña, no se le ofrece editar', async ({ page }) => {
+    await page.addInitScript(() =>
+      localStorage.setItem('bitacora.perfil', 'asesor'),
+    );
+    await page.goto('/ajustes');
+
+    await expect(page.locator('.solo-lectura')).toBeVisible();
+    await expect(page.locator('#taller-nombre')).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: /Agregar un puesto/ }),
+    ).toHaveCount(0);
+  });
+
+  test('la tarifa sugiere el monto al anotar un trabajo', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: '742 118' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+
+    await page.getByRole('button', { name: /Anotar trabajo/ }).click();
+    await page.fill('#trabajo-desc', 'Cambio de pastillas');
+    await page.fill('#trabajo-horas', '2');
+    await page
+      .locator('.anotar .opcion')
+      .filter({ hasText: 'Mecánica' })
+      .click();
+
+    /* 2 h × ₡14 000 de la tarifa sembrada. Es una SUGERENCIA: el monto sigue
+       escribiéndose a mano porque incluye repuestos (ADR 0021). */
+    const sugerencia = page.locator('.anotar__sugerencia');
+    await expect(sugerencia).toContainText(/28\s000/u);
+
+    await sugerencia.click();
+    await expect(page.locator('#trabajo-monto')).toHaveValue('28000');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   El filtro del tablero (#114).
+
+   El ADR 0003 y el ADR 0008 lo prometieron y nunca se había construido: es "la
+   única configuración que cambia lo que se ve".
+   --------------------------------------------------------------------------- */
+test.describe('el filtro del tablero', () => {
+  test('con tres especialidades aparece y filtra de verdad', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+
+    const filtro = page.locator('.pantalla__filtro');
+    await expect(filtro).toBeVisible();
+
+    const todas = await page.locator('li.fila').count();
+
+    const pintura = filtro.locator('.opcion').filter({ hasText: 'Pintura' });
+    await pintura.click();
+    /* Se espera a que la opción quede marcada antes de contar: contar en el
+       mismo instante del clic lee la lista sin filtrar. */
+    await expect(pintura).toHaveClass(/opcion--marcada/);
+
+    const dePintura = await page.locator('li.fila').count();
+    expect(dePintura).toBeGreaterThan(0);
+    expect(dePintura).toBeLessThan(todas);
+    await expect(page.locator('.pantalla__conteo')).toContainText(
+      'de esa especialidad',
+    );
+  });
+
+  /* Un solo gesto para poner y quitar, en vez de un botón de "todas" que ocupa
+     sitio y dice menos. */
+  test('volver a pulsar la misma quita el filtro', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    const todas = await page.locator('li.fila').count();
+
+    const pintura = page
+      .locator('.pantalla__filtro .opcion')
+      .filter({ hasText: 'Pintura' });
+    await pintura.click();
+    await expect(page.locator('li.fila')).not.toHaveCount(todas);
+
+    await pintura.click();
+    await expect(page.locator('li.fila')).toHaveCount(todas);
+  });
+
+  /* Es LA consecuencia visible de configurar las Especialidades, y la razón
+     por la que ese ajuste importa (ADR 0003 y 0008). */
+  test('con una sola especialidad configurada, el filtro no aparece', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page
+      .locator('[role="tab"]')
+      .filter({ hasText: /Especialidades/i })
+      .click();
+
+    for (const quitar of ['Pintura', 'Electricidad']) {
+      await page
+        .locator('app-ajustes-especialidades .opcion')
+        .filter({ hasText: quitar })
+        .click();
+      await expect(
+        page
+          .locator('app-ajustes-especialidades .opcion')
+          .filter({ hasText: quitar }),
+      ).not.toHaveClass(/opcion--marcada/);
+    }
+
+    await expect(page.locator('.especialidades__consecuencia')).toContainText(
+      'no ofrece filtrar',
+    );
+
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await expect(page.locator('.pantalla__filtro')).toHaveCount(0);
+  });
+
+  /* Cada Línea lleva Especialidad (ADR 0001): sin ninguna no habría de dónde
+     elegirla, y el Taller no podría recibir un carro. */
+  test('el taller no puede quedarse sin especialidades', async ({ page }) => {
+    await page.goto('/ajustes');
+    await page
+      .locator('[role="tab"]')
+      .filter({ hasText: /Especialidades/i })
+      .click();
+
+    for (const quitar of ['Pintura', 'Electricidad', 'Mecánica']) {
+      await page
+        .locator('app-ajustes-especialidades .opcion')
+        .filter({ hasText: quitar })
+        .click();
+    }
+
+    await expect(
+      page.locator('app-ajustes-especialidades .aviso--malo'),
+    ).toContainText('al menos una Especialidad');
   });
 });
