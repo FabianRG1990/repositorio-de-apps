@@ -32,6 +32,7 @@ const DATOS = {
   combustible: 2 as const,
   danosPrevios: 'Rayón en la puerta trasera derecha',
   objetosDentro: '',
+  fotos: [] as Blob[],
 };
 
 beforeEach(async () => {

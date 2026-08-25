@@ -9,6 +9,7 @@ import {
   type MedioDeAviso,
   type SenalDeFalla,
 } from './esquema';
+import { FotosDeLaOrden } from './fotos';
 import { RecepcionDeVehiculos } from './recepcion';
 import { TrabajosDeLaOrden } from './trabajos';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
@@ -283,6 +284,7 @@ export class BitacoraDatos {
     this.vehiculos,
   );
   readonly trabajos = new TrabajosDeLaOrden(this.db, this.repo);
+  readonly fotos = new FotosDeLaOrden(this.db, this.repo);
 
   /** El Puesto desde el que este aparato acuña Folios. Fase 1 tiene uno solo. */
   async puestoActual(): Promise<string> {
