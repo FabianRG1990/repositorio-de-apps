@@ -1,4 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
+import { statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 /* A Bitácora se entra eligiendo un Perfil (ADR 0005). Estas pruebas no ejercen
    esa pantalla —tiene la suya, más abajo—, así que arrancan con el Perfil ya
@@ -101,6 +104,13 @@ test.describe('cajones laterales', () => {
     const margenIzquierdo = () =>
       contenido.evaluate((el) => parseFloat(getComputedStyle(el).marginLeft));
 
+    /* El cajón entra ANIMANDO desde cero, así que leer el margen enseguida lo
+       agarra a medio camino: en una corrida cargada salió 19 px, y entonces el
+       "ancho" contra el que se compara acababa siendo MENOR que el riel y la
+       prueba fallaba diciendo que colapsar lo había ensanchado. Se espera a que
+       el cajón esté abierto del todo — el riel ronda los 100 px, así que
+       cualquier cosa por encima de 200 ya es el menú entero. */
+    await expect.poll(margenIzquierdo).toBeGreaterThan(200);
     const margenAncho = await margenIzquierdo();
 
     await page.locator('.cuadro__hamburguesa').click();
@@ -2016,5 +2026,289 @@ test.describe('editar la Orden', () => {
     await anotar(page, 'Otro trabajo', '10000');
 
     await expect(panel).toContainText('2 aprobados');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Las Fotos del Vehículo (#112).
+
+   El ADR 0006 las decidió hace meses: pertenecen a la Orden, se sacan al
+   recibir, y muestran cómo entró el carro. La tabla existía desde #74 y nadie
+   la había llenado nunca.
+
+   La foto de prueba se genera con entropía parecida a la de una cámara —
+   degradados, manchas y grano—: un lienzo plano se comprimiría a casi nada y
+   la medición no diría nada.
+   --------------------------------------------------------------------------- */
+test.describe('las fotos del vehículo', () => {
+  /** Una foto grande y con grano, escrita a disco para poder subirla. */
+  async function fotoDePrueba(page: Page): Promise<string> {
+    const base64 = await page.evaluate(() => {
+      const ANCHO = 2400;
+      const ALTO = 1800;
+      const c = document.createElement('canvas');
+      c.width = ANCHO;
+      c.height = ALTO;
+      const ctx = c.getContext('2d');
+      if (!ctx) throw new Error('sin canvas');
+
+      let semilla = 7;
+      const azar = () => {
+        semilla = (semilla * 1103515245 + 12345) % 2147483648;
+        return semilla / 2147483648;
+      };
+
+      const fondo = ctx.createLinearGradient(0, 0, 0, ALTO);
+      fondo.addColorStop(0, '#8fb4d6');
+      fondo.addColorStop(1, '#4b5058');
+      ctx.fillStyle = fondo;
+      ctx.fillRect(0, 0, ANCHO, ALTO);
+
+      for (let i = 0; i < 500; i++) {
+        ctx.beginPath();
+        ctx.fillStyle = `hsl(${azar() * 360} 50% ${20 + azar() * 55}%)`;
+        ctx.globalAlpha = 0.3 + azar() * 0.5;
+        ctx.ellipse(
+          azar() * ANCHO,
+          azar() * ALTO,
+          20 + azar() * 260,
+          20 + azar() * 180,
+          azar() * Math.PI,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const img = ctx.getImageData(0, 0, ANCHO, ALTO);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const ruido = (azar() - 0.5) * 46;
+        img.data[i] += ruido;
+        img.data[i + 1] += ruido;
+        img.data[i + 2] += ruido;
+      }
+      ctx.putImageData(img, 0, 0);
+
+      return c.toDataURL('image/jpeg', 0.92).split(',')[1];
+    });
+
+    const ruta = join(tmpdir(), `bitacora-foto-${Date.now()}.jpg`);
+    writeFileSync(ruta, Buffer.from(base64, 'base64'));
+    return ruta;
+  }
+
+  const subir = async (page: Page, ruta: string, cuantas = 1) => {
+    await page
+      .locator('app-galeria-fotos input[type=file]')
+      .setInputFiles(Array.from({ length: cuantas }, () => ruta));
+  };
+
+  test('se sacan al recibir y quedan en la Orden', async ({ page }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+
+    await page.goto('/recepcion');
+    await page.fill('#placa', 'FOT 001');
+    await page.fill('#marca', 'Toyota');
+    await page.fill('#cliente', 'Prueba de Fotos');
+    await page.getByRole('button', { name: 'Siguiente' }).click();
+    await page.locator('textarea').first().fill('Le quiero mostrar un rayón');
+    await page.getByRole('button', { name: 'Siguiente' }).click();
+
+    await subir(page, ruta, 2);
+    await expect(page.locator('.tira__foto')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Siguiente' }).click();
+    await page.getByRole('button', { name: /Recibir veh/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+
+    /* Y siguen ahí después de guardar: las Fotos se escriben en la MISMA
+       transacción que la Orden. */
+    await page
+      .locator('li.fila')
+      .filter({ hasText: 'FOT 001' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(2);
+  });
+
+  /* Comprimir no es una optimización: es lo que hace viable guardar fotos en
+     el navegador. Sin esto, veinte fotos por Orden acaban con la cuota. */
+  test('lo guardado pesa una fracción de lo que entró', async ({ page }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+    const original = statSync(ruta).size;
+
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta);
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(1);
+
+    const guardado = await page.evaluate(
+      () =>
+        new Promise<number>((resolver) => {
+          const p = indexedDB.open('bitacora');
+          p.onsuccess = () => {
+            const tx = p.result.transaction('fotos', 'readonly');
+            const todo = tx.objectStore('fotos').getAll();
+            todo.onsuccess = () =>
+              resolver(
+                todo.result.reduce(
+                  (t: number, f: { blob: Blob }) => t + f.blob.size,
+                  0,
+                ),
+              );
+          };
+        }),
+    );
+
+    // Un orden de magnitud, por lo menos. Medido: unas 35 veces.
+    expect(guardado).toBeLessThan(original / 5);
+    expect(guardado).toBeGreaterThan(0);
+  });
+
+  /* 1600 px de lado largo: de sobra para probar "este rayón ya venía", y no es
+     una foto de catálogo. */
+  test('se reduce a 1600 px de lado largo', async ({ page }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta);
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(1);
+
+    const medida = await page
+      .locator('.tira__ver img')
+      .first()
+      .evaluate((i: HTMLImageElement) => ({
+        ancho: i.naturalWidth,
+        alto: i.naturalHeight,
+      }));
+
+    expect(Math.max(medida.ancho, medida.alto)).toBe(1600);
+  });
+
+  /* El canvas descarta el EXIF al recomprimir, y eso incluye la etiqueta de
+     rotación: sin tratarla, las fotos de teléfono salen acostadas. */
+  test('el navegador aplica la orientación al decodificar', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    expect(
+      await page.evaluate(async () => {
+        const b = await fetch(
+          'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+        ).then((r) => r.blob());
+        await createImageBitmap(b, { imageOrientation: 'from-image' });
+        return true;
+      }),
+    ).toBe(true);
+  });
+
+  test('se abren a pantalla completa y se cierran con Esc', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta);
+    await page.locator('.tira__ver').first().click();
+
+    const visor = page.locator('dialog.visor');
+    await expect(visor).toBeVisible();
+    expect(await visor.evaluate((d) => d.matches(':modal'))).toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(visor).toBeHidden();
+  });
+
+  test('una foto que salió mal se quita', async ({ page }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta, 2);
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(2);
+
+    await page.locator('dialog.ventana .tira__quitar').first().click();
+
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(1);
+  });
+
+  /* Las Fotos pertenecen a la ORDEN (ADR 0006): las de un carro no aparecen en
+     la Orden de otro. */
+  test('las fotos son de su Orden y no de otra', async ({ page }) => {
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+
+    const filas = page.locator('li.fila');
+    await filas
+      .nth(0)
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta);
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+
+    await filas
+      .nth(1)
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(0);
+  });
+
+  /* Las fotos son para la pantalla: en una impresora láser de taller salen
+     como una mancha gris y queman tóner. */
+  test('no salen en los papeles impresos', async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __papeles: string[] }).__papeles = [];
+      window.print = () => {
+        (window as unknown as { __papeles: string[] }).__papeles.push(
+          document.querySelector('app-hoja-impresion')?.innerHTML ?? '',
+        );
+      };
+    });
+
+    await page.goto('/');
+    const ruta = await fotoDePrueba(page);
+    await page
+      .locator('li.fila')
+      .first()
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await subir(page, ruta);
+    await expect(page.locator('dialog.ventana .tira__foto')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Archivo', exact: true }).click();
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          () => (window as unknown as { __papeles: string[] }).__papeles.length,
+        ),
+      )
+      .toBe(1);
+
+    const papel = await page.evaluate(
+      () => (window as unknown as { __papeles: string[] }).__papeles[0],
+    );
+    expect(papel).not.toContain('<img');
   });
 });
