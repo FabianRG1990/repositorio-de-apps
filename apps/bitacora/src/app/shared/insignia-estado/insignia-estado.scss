@@ -55,3 +55,18 @@
 .insignia[data-tono='riesgo']::before {
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
+
+/* Comparte el color con `riesgo` —las dos piden una llamada hoy— y NO la
+   forma: el rombo es el repuesto que no llega, problema del Taller; el
+   cuadrado es el carro que nadie recoge, problema del Cliente. Con la misma
+   figura el tablero volvería a juntar los dos casos que el ADR 0009 separó,
+   y bajo el sol del patio la figura aguanta más que el color. */
+.insignia[data-tono='sin-recoger'] {
+  color: var(--app-danger);
+  background: var(--app-danger-fondo);
+  border-color: var(--app-danger-borde);
+}
+
+.insignia[data-tono='sin-recoger']::before {
+  border-radius: 0.15rem;
+}

@@ -7,6 +7,7 @@ import {
   output,
 } from '@angular/core';
 import { ConfiguracionTallerStore } from '../../data-access/configuracion-taller.store';
+import { TallerStore } from '../../data-access/taller.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
 import { InsigniaEstado } from '../insignia-estado/insignia-estado';
 import {
@@ -72,6 +73,7 @@ import { Boton } from '../boton/boton';
 })
 export class FilaOrden {
   readonly #configuracion = inject(ConfiguracionTallerStore);
+  readonly #taller = inject(TallerStore);
 
   readonly orden = input.required<Orden>();
   readonly seleccionada = input(false);
@@ -90,5 +92,31 @@ export class FilaOrden {
 
   protected readonly tiempo = computed(() =>
     tiempoParadoLegible(this.orden().tiempoParado),
+  );
+
+  /**
+   * El carro listo que nadie vino a buscar ([ADR 0009]).
+   *
+   * Se exige `listo`, y no solo que haya Aviso: un carro que se avisó y
+   * después volvió a proceso —porque algo salió mal— sigue teniendo su Aviso,
+   * y sin esta condición el tablero lo señalaría como abandonado mientras el
+   * Taller le está metiendo mano.
+   *
+   * El umbral se lee acá y no se pasa por `@Input`, igual que la densidad:
+   * bastaría con que una pantalla olvidara reenviarlo para tener dos umbrales
+   * distintos en la misma lista.
+   */
+  protected readonly sinRecoger = computed(() => {
+    const o = this.orden();
+    return (
+      o.estadoClave === 'listo' &&
+      o.diasAvisado !== null &&
+      o.diasAvisado >= this.#taller.diasParaSinRecoger()
+    );
+  });
+
+  /** `Sin recoger · 4 d`. El número es lo accionable: dice cuánto lleva. */
+  protected readonly textoSinRecoger = computed(
+    () => `Sin recoger · ${this.orden().diasAvisado} d`,
   );
 }

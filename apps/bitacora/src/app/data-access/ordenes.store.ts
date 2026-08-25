@@ -16,7 +16,15 @@ import {
 import { diasSinRecoger } from './db/ciclo';
 import { interpretar } from './interpretar-reporte';
 
-export type TonoEstado = 'ok' | 'espera' | 'riesgo';
+/**
+ * El peso visual de un estado.
+ *
+ * `sin-recoger` no es un estado de la Orden: es el carro listo que nadie vino
+ * a buscar ([ADR 0009]). Va aparte de `riesgo` a propósito — un carro que
+ * espera un repuesto es un problema del Taller y uno que espera dueño es un
+ * problema del Cliente, y son dos llamadas distintas.
+ */
+export type TonoEstado = 'ok' | 'espera' | 'riesgo' | 'sin-recoger';
 export type ClaveEspecialidad = 'mecanica' | 'electricidad' | 'pintura';
 
 /** Quién dijo que sí, y por dónde. Es lo que sostiene al Taller en una disputa. */
