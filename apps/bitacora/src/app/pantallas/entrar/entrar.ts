@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -15,6 +17,7 @@ import {
   type Perfil,
 } from '../../data-access/perfil.store';
 import { QuienUsaStore } from '../../data-access/quien-usa.store';
+import { TallerStore } from '../../data-access/taller.store';
 
 const ICONO: Record<Perfil, IconProp> = {
   asesor: ['fas', 'headset'],
@@ -49,6 +52,7 @@ export class Entrar {
   readonly #perfiles = inject(PerfilStore);
   readonly #router = inject(Router);
   protected readonly quienUsa = inject(QuienUsaStore);
+  protected readonly taller = inject(TallerStore);
 
   protected readonly perfiles = PERFILES;
   protected readonly etiqueta = ETIQUETA_PERFIL;
@@ -58,18 +62,35 @@ export class Entrar {
   /** El Papel ya elegido mientras se pregunta quién es. `null` en el paso 1. */
   protected readonly preguntando = signal<Perfil | null>(null);
 
+  constructor() {
+    /**
+     * Entrar solo cuando ya se SABE que no hay a quién preguntar.
+     *
+     * La decisión no se puede tomar al pulsar el Papel. El personal llega por
+     * `liveQuery`, y en el primer arranque la base tarda un instante: leerlo
+     * en ese momento devuelve una lista vacía que significa "todavía no ha
+     * llegado", no "no hay nadie". Quien pulsara rápido se saltaba el segundo
+     * paso sin que nadie se lo saltara — y de forma distinta cada vez, que es
+     * lo peor de todo.
+     *
+     * `cargado` es el mismo centinela que el TallerStore ya usaba para no
+     * confundir esas dos cosas en el filtro del tablero.
+     */
+    effect(() => {
+      if (this.preguntando() === null) return;
+      if (!this.taller.cargado()) return;
+      if (this.quienUsa.hayAQuienPreguntar()) return;
+
+      /* Nadie de ese Papel configurado: el huevo y la gallina del primer
+         arranque. El Dueño tiene que poder entrar a crear la primera
+         Persona. */
+      untracked(() => this.#entrar());
+    });
+  }
+
   protected elegir(perfil: Perfil) {
     this.#perfiles.elegir(perfil);
-
-    /* Sin nadie de ese Papel configurado no hay segundo paso: una pantalla con
-       un título y ninguna opción se ve como una app rota, y además es el huevo
-       y la gallina del primer arranque —el Dueño tiene que poder entrar a
-       crear la primera Persona. */
-    if (this.quienUsa.hayAQuienPreguntar()) {
-      this.preguntando.set(perfil);
-      return;
-    }
-    this.#entrar();
+    this.preguntando.set(perfil);
   }
 
   protected soy(personaId: string) {

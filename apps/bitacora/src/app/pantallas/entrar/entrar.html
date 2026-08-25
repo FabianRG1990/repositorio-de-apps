@@ -9,8 +9,13 @@
       decirlo y ponerlo después.
     </p>
 
+    <!-- Hasta que la base conteste no se pinta la lista: vacía significaría
+         "no hay nadie", y en el primer arranque significa "todavía no ha
+         llegado". Enseñar cero opciones un instante y tres al siguiente se ve
+         como que la app dudó. -->
     <ul class="entrada__lista">
-      @for (persona of quienUsa.candidatas(); track persona.id) {
+      @if (taller.cargado()) { @for (persona of quienUsa.candidatas(); track
+      persona.id) {
       <li>
         <!-- Icono de persona y no el del Papel: el Papel ya lo dice el
              subtítulo, y repetirlo tres veces dejaba los dos pasos con la
@@ -21,7 +26,7 @@
           <span class="perfil__oficio">{{ etiqueta[perfil] }}</span>
         </button>
       </li>
-      }
+      } }
     </ul>
 
     <div class="entrada__salidas">
