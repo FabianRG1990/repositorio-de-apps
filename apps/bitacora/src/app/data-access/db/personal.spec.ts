@@ -185,6 +185,66 @@ describe('la baja', () => {
   });
 });
 
+describe('a nombre de quién queda una Orden', () => {
+  it('se pone y se quita', async () => {
+    const persona = await personal.crear({
+      nombre: 'Luis Vargas',
+      papel: 'tecnico',
+      especialidades: [],
+    });
+    const orden = await ordenDe(null);
+
+    await personal.ponerResponsable(orden.id, persona.id);
+    expect((await db.ordenes.get(orden.id))?.responsableId).toBe(persona.id);
+
+    /* Quitarlo es legítimo: una Orden puede quedar sin dueño un rato mientras
+       se decide quién la toma. */
+    await personal.ponerResponsable(orden.id, null);
+    expect((await db.ordenes.get(orden.id))?.responsableId).toBeNull();
+  });
+
+  it('no acepta a alguien que no existe', async () => {
+    const orden = await ordenDe(null);
+    await expect(
+      personal.ponerResponsable(orden.id, 'persona-inventada'),
+    ).rejects.toThrow(/no existe/);
+    expect((await db.ordenes.get(orden.id))?.responsableId).toBeNull();
+  });
+
+  it('sigue aceptando a quien ya se dio de baja', async () => {
+    const persona = await personal.crear({
+      nombre: 'Luis Vargas',
+      papel: 'tecnico',
+      especialidades: [],
+    });
+    await personal.quitar(persona.id);
+    const orden = await ordenDe(null);
+
+    /* La fila sigue ahí, así que el nombre se puede seguir escribiendo. Es lo
+       que permite devolverle una Orden a quien la respondía sin tener que
+       darlo de alta otra vez. */
+    await expect(
+      personal.ponerResponsable(orden.id, persona.id),
+    ).resolves.not.toThrow();
+  });
+
+  it('no comprueba la Especialidad contra la de la Orden', async () => {
+    const pintor = await personal.crear({
+      nombre: 'Kenneth Soto',
+      papel: 'tecnico',
+      especialidades: ['pintura'],
+    });
+    const orden = await ordenDe(null);
+
+    /* El ADR 0003: el Responsable "responde por el trabajo, no necesariamente
+       lo ejecuta todo". En un taller mixto quien coordina una Orden de
+       mecánica y pintura no hace los dos oficios. */
+    await expect(
+      personal.ponerResponsable(orden.id, pintor.id),
+    ).resolves.not.toThrow();
+  });
+});
+
 describe('la lista', () => {
   it('sale por nombre y no por papel', async () => {
     for (const nombre of ['Óscar Mora', 'Ana Rojas', 'luis vargas']) {
