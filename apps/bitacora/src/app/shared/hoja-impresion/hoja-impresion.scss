@@ -249,3 +249,28 @@
   font-size: 9.5pt;
   break-inside: avoid;
 }
+
+/* --- membrete ------------------------------------------------------------- */
+
+/* Quién es el taller. Va arriba del todo, separado de la cabecera de la Orden
+   por un filete fino: son dos identidades distintas —el taller y el carro— y
+   juntarlas hace que ninguna de las dos se lea de un vistazo. */
+.hoja__membrete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8pt;
+  padding-bottom: 4pt;
+  margin-bottom: 8pt;
+  border-bottom: 0.5pt solid #999;
+}
+
+.hoja__taller {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.hoja__taller-datos {
+  font-size: 8.5pt;
+  color: #444;
+}

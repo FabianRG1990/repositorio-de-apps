@@ -18,6 +18,7 @@ import {
   mensajeDeAutorizacion,
 } from '../../data-access/db/trabajos';
 import { ETIQUETA_ESPECIALIDAD_REPORTE } from '../../data-access/etiquetas-reporte';
+import { TallerStore } from '../../data-access/taller.store';
 import type { Orden } from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
@@ -77,6 +78,7 @@ const TRABAJO_VACIO = {
 })
 export class TrabajosOrden {
   readonly #datos = inject(BitacoraDatos);
+  readonly #taller = inject(TallerStore);
 
   readonly orden = input.required<Orden>();
 
@@ -97,6 +99,27 @@ export class TrabajosOrden {
   protected readonly quienAutoriza = signal('');
   protected readonly medio = signal<MedioDeAviso>('whatsapp');
   protected readonly motivo = signal('');
+
+  /**
+   * Lo que la Tarifa sugiere para las horas escritas.
+   *
+   * Es una SUGERENCIA y no un cálculo, tal como el ADR 0021 lo dejó dicho: la
+   * tarifa cubre la mano de obra y el monto incluye repuestos, que es donde
+   * #15 encontró que la mecánica hace su dinero. Se enseña al lado del campo y
+   * se puede pulsar para copiarla; el campo se sigue escribiendo a mano.
+   */
+  protected readonly montoSugerido = computed(() => {
+    const t = this.trabajo();
+    const horas = Number.parseFloat(t.horas);
+    const porHora = this.#taller.porHora().get(t.especialidad);
+    if (!Number.isFinite(horas) || horas <= 0 || !porHora) return null;
+    return Math.round(horas * porHora);
+  });
+
+  protected usarSugerencia() {
+    const sugerido = this.montoSugerido();
+    if (sugerido) this.escribirTrabajo('monto', String(sugerido));
+  }
 
   protected readonly aprobadas = computed(() =>
     this.orden().lineas.filter((l) => !l.declinada),

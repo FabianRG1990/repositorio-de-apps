@@ -2,6 +2,19 @@
 <article class="hoja" [attr.data-documento]="doc">
   <!-- Cabecera común. La placa manda en las tres: es lo que identifica al
        carro en el mostrador y en el patio. -->
+  <!-- El membrete: quién es el taller. Va arriba del todo y en los tres
+       papeles, porque los tres salen del taller y a los tres hay que poder
+       volver. -->
+  @let taller = membrete();
+  <header class="hoja__membrete">
+    <span class="hoja__taller">{{ taller.nombre }}</span>
+    <span class="hoja__taller-datos">
+      @if (taller.telefono) { Tel. {{ taller.telefono }} } @if
+      (taller.direccion) { · {{ taller.direccion }} } @if
+      (taller.cedulaJuridica) { · Céd. jur. {{ taller.cedulaJuridica }} }
+    </span>
+  </header>
+
   <header class="hoja__cabecera">
     <div class="hoja__identidad">
       <p class="hoja__rotulo">{{ rotulo[doc] }}</p>

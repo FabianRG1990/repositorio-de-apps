@@ -13,6 +13,7 @@ import {
   tanqueLegible,
 } from '../../data-access/etiquetas-reporte';
 import { ImpresionStore } from '../../data-access/impresion.store';
+import { TallerStore } from '../../data-access/taller.store';
 import {
   ETIQUETA_ESPECIALIDAD,
   OrdenesStore,
@@ -49,10 +50,17 @@ import { colones, kilometros } from '../formato';
 export class HojaImpresion {
   readonly #impresion = inject(ImpresionStore);
   readonly #ordenes = inject(OrdenesStore);
+  readonly #taller = inject(TallerStore);
 
   protected readonly documento = this.#impresion.documento;
   protected readonly orden = this.#ordenes.seleccionada;
   protected readonly hoy = new Date();
+
+  /* El membrete. Un comprobante sin nombre ni teléfono no sirve para volver a
+     llamar, y hasta #114 los tres papeles salían sin ninguno de los dos. */
+  protected readonly membrete = computed(
+    () => this.#taller.configuracion().datos,
+  );
 
   protected readonly colones = colones;
   protected readonly kilometros = kilometros;

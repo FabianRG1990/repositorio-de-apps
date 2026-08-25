@@ -91,8 +91,19 @@
         [value]="t.monto"
         (input)="escribirTrabajo('monto', $any($event.target).value)"
       />
-      <!-- Se escribe, no se calcula: el monto incluye repuestos. -->
+      <!-- Se escribe, no se calcula: el monto incluye repuestos. La tarifa
+           SUGIERE la mano de obra, que es lo único que sabe cubrir. -->
+      @if (montoSugerido(); as sugerido) {
+      <button
+        type="button"
+        class="anotar__sugerencia"
+        (click)="usarSugerencia()"
+      >
+        Mano de obra: {{ colones(sugerido) }} · usar
+      </button>
+      } @else {
       <p class="anotar__ayuda">Con repuestos incluidos.</p>
+      }
     </div>
 
     <div class="anotar__pie">

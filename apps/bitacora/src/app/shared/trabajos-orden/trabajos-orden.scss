@@ -254,3 +254,28 @@
   font-size: 0.875rem;
   color: var(--app-text-soft);
 }
+
+/* La sugerencia de la tarifa. Es un botón y no un texto porque se puede
+   pulsar para copiarla al campo — y se ve que es pulsable. */
+.anotar__sugerencia {
+  align-self: flex-start;
+  padding: 0.2rem 0.5rem;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--app-text-soft);
+  font: inherit;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.anotar__sugerencia:hover {
+  border-color: var(--app-accent-strong);
+  color: var(--app-text);
+}
+
+.anotar__sugerencia:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
