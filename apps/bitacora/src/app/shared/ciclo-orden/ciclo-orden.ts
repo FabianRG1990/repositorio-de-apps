@@ -164,7 +164,9 @@ export class CicloOrden {
   }
 
   protected async deshacerEntrega() {
-    await this.#operar(() => this.#datos.ciclo.deshacerEntrega(this.orden().id));
+    await this.#operar(() =>
+      this.#datos.ciclo.deshacerEntrega(this.orden().id),
+    );
   }
 
   protected cancelar() {

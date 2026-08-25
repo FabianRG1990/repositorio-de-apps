@@ -14,8 +14,7 @@
   <div class="ciclo__entregada">
     <p class="ciclo__entregada-texto">
       <fa-icon [icon]="['fas', 'circle-check']" />
-      Entregado.
-      @if (o.proximaVisita) {
+      Entregado. @if (o.proximaVisita) {
       <span>Próxima visita: {{ fechaLarga(o.proximaVisita) }}.</span>
       }
     </p>
@@ -49,8 +48,8 @@
     @if (o.aviso; as a) {
     <p class="aviso-listo__hecho">
       <fa-icon [icon]="['fas', 'circle-check']" />
-      Avisado a {{ a.avisadoA }} {{ etiquetaMedio[a.medio] }}
-      @if (o.diasAvisado) {
+      Avisado a {{ a.avisadoA }} {{ etiquetaMedio[a.medio] }} @if
+      (o.diasAvisado) {
       <span class="aviso-listo__dias">
         · hace {{ o.diasAvisado }} {{ o.diasAvisado === 1 ? 'día' : 'días' }}
       </span>

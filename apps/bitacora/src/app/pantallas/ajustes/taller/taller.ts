@@ -68,7 +68,8 @@ export class AjustesTaller {
   /* Lo que se va a ver en el tablero, dicho con palabras. Un "3" suelto en
      una casilla no dice qué va a pasar con él. */
   protected readonly ecoDelUmbral = computed(() => {
-    const n = Number.parseInt(this.dias(), 10) || this.taller.diasParaSinRecoger();
+    const n =
+      Number.parseInt(this.dias(), 10) || this.taller.diasParaSinRecoger();
     return n === 1
       ? 'Se marca al día siguiente de avisarle al cliente.'
       : `Se marca a los ${n} días de avisarle al cliente.`;
