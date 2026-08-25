@@ -128,6 +128,10 @@ _Evitar_: aprobación, OK del cliente
 La fecha en que el Asesor cree que el Vehículo debería volver, escrita a mano al cerrar la Orden. No se calcula: no hay intervalos ni kilometraje, solo el criterio de quien atendió el carro.
 _Evitar_: mantenimiento programado, cita, vencimiento
 
+**Papel de la Orden**:
+Lo que se imprime de una Orden. Son **tres documentos distintos**, no el mismo con distinto encabezado: el del Taller va al parabrisas y no lleva montos, el del Cliente dice qué se hizo y qué quedó pendiente, y el de archivo lleva todo con el estado de entrada. Cambia el contenido porque cambia quién lo lee.
+_Evitar_: reporte, PDF, impresión, ticket, comprobante (a secas)
+
 **Aviso de listo**:
 La constancia de que el Taller le comunicó a Quien entrega que puede venir a recoger el Vehículo, con la fecha y la persona a la que se le avisó. Es un hecho registrado, no el mensaje en sí: el mensaje viaja por WhatsApp, fuera de Bitácora.
 _Evitar_: notificación, alerta, recordatorio
