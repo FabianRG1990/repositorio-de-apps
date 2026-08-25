@@ -1,0 +1,298 @@
+@let o = orden();
+
+<section class="trabajos">
+  <header class="trabajos__cabecera">
+    <h3 class="trabajos__titulo">Trabajos · {{ o.lineas.length }}</h3>
+
+    <div class="trabajos__acciones">
+      <!--
+        El mensaje se arma acá y lo manda WhatsApp, no Bitácora (ADR 0007). Es
+        un enlace y no un botón porque eso es literalmente lo que hace: salir a
+        otra app.
+      -->
+      @if (enlaceWhatsApp(); as enlace) {
+      <a
+        app-boton
+        tono="contorno"
+        alto="chico"
+        [href]="enlace"
+        target="_blank"
+        rel="noopener"
+      >
+        <fa-icon [icon]="['fas', 'comment-dots']" />
+        Pedir autorización
+      </a>
+      }
+      <button
+        app-boton
+        tono="solido"
+        alto="chico"
+        type="button"
+        (click)="abrirAnotar()"
+      >
+        <fa-icon [icon]="['fas', 'plus']" />
+        Anotar trabajo
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+  <p class="trabajos__error" role="alert">{{ error() }}</p>
+  }
+
+  <!-- ------------------------------------------------- anotar ------------- -->
+  @if (anotando()) { @let t = trabajo();
+  <div class="anotar">
+    <div class="anotar__campo anotar__campo--ancho">
+      <label for="trabajo-desc">¿Qué hay que hacerle?</label>
+      <input
+        id="trabajo-desc"
+        [value]="t.descripcion"
+        placeholder="Cambio de pastillas delanteras"
+        (input)="escribirTrabajo('descripcion', $any($event.target).value)"
+      />
+    </div>
+
+    <app-grupo-opciones
+      nombre="trabajo-esp"
+      etiqueta="¿A quién le toca?"
+      [opciones]="especialidades"
+      [seleccionadas]="[t.especialidad]"
+      [multiple]="false"
+      (elegida)="escribirTrabajo('especialidad', $event)"
+    />
+
+    <!-- El Pagador es de la Línea, no de la Orden (ADR 0002). -->
+    <app-grupo-opciones
+      nombre="trabajo-pagador"
+      etiqueta="¿Quién lo paga?"
+      [opciones]="pagadores"
+      [seleccionadas]="[t.pagador]"
+      [multiple]="false"
+      (elegida)="escribirTrabajo('pagador', $event)"
+    />
+
+    <div class="anotar__campo anotar__campo--corto">
+      <label for="trabajo-horas">Horas</label>
+      <input
+        id="trabajo-horas"
+        inputmode="decimal"
+        [value]="t.horas"
+        (input)="escribirTrabajo('horas', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="anotar__campo anotar__campo--corto">
+      <label for="trabajo-monto">Monto</label>
+      <input
+        id="trabajo-monto"
+        inputmode="numeric"
+        placeholder="62000"
+        [value]="t.monto"
+        (input)="escribirTrabajo('monto', $any($event.target).value)"
+      />
+      <!-- Se escribe, no se calcula: el monto incluye repuestos. -->
+      <p class="anotar__ayuda">Con repuestos incluidos.</p>
+    </div>
+
+    <div class="anotar__pie">
+      <button
+        app-boton
+        tono="solido"
+        alto="chico"
+        type="button"
+        [disabled]="!!faltaParaAnotar || guardando()"
+        (click)="anotar()"
+      >
+        {{ guardando() ? 'Guardando…' : 'Anotar' }}
+      </button>
+      <button
+        app-boton
+        tono="callado"
+        alto="chico"
+        type="button"
+        (click)="cancelar()"
+      >
+        Cancelar
+      </button>
+      @if (faltaParaAnotar; as falta) {
+      <p class="anotar__falta" role="status">{{ falta }}</p>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ------------------------------------------------- la lista ----------- -->
+  @if (o.lineas.length) {
+  <ul class="lista">
+    @for (l of o.lineas; track l.id) {
+    <li class="trabajo" [class.trabajo--declinada]="l.declinada">
+      <div class="trabajo__fila">
+        <span class="trabajo__que">{{ l.descripcion }}</span>
+        <app-etiqueta-especialidad [especialidad]="l.especialidad" />
+        @if (l.pagador === 'aseguradora') {
+        <span class="trabajo__pagador">Paga la aseguradora</span>
+        }
+        <span class="trabajo__horas">{{ l.horas }} h</span>
+        <span class="trabajo__monto identificador">{{ colones(l.monto) }}</span>
+      </div>
+
+      <!-- El estado de la Línea: quién dijo que sí, o por qué dijo que no. -->
+      <div class="trabajo__estado">
+        @if (l.declinada) {
+        <span class="trabajo__declinado">
+          <fa-icon [icon]="['fas', 'circle-minus']" />
+          Declinado @if (l.motivoDeclinacion) {
+          <em>«{{ l.motivoDeclinacion }}»</em>
+          }
+        </span>
+        <button
+          app-boton
+          tono="callado"
+          alto="chico"
+          type="button"
+          (click)="deshacerDeclinacion(l.id)"
+        >
+          Deshacer
+        </button>
+        } @else if (l.autorizacion; as c) {
+        <span class="trabajo__autorizado">
+          <fa-icon [icon]="['fas', 'circle-check']" />
+          Autorizado por {{ c.autorizadaPor }} {{ etiquetaMedio[c.medio] }}
+        </span>
+        <button
+          app-boton
+          tono="peligro"
+          alto="chico"
+          type="button"
+          (click)="abrirDeclinar(l.id)"
+        >
+          Declinar
+        </button>
+        } @else {
+        <span class="trabajo__esperando">Sin respuesta del cliente</span>
+        <button
+          app-boton
+          tono="contorno"
+          alto="chico"
+          type="button"
+          (click)="abrirAutorizar(l.id)"
+        >
+          Autorizar
+        </button>
+        <button
+          app-boton
+          tono="peligro"
+          alto="chico"
+          type="button"
+          (click)="abrirDeclinar(l.id)"
+        >
+          Declinar
+        </button>
+        }
+      </div>
+
+      <!-- La constancia dice QUIÉN y POR QUÉ MEDIO: es lo único que sostiene
+           al taller en una disputa (#15). -->
+      @if (autorizando() === l.id) {
+      <div class="formulario">
+        <div class="formulario__campo">
+          <label [attr.for]="'quien-' + l.id">¿Quién lo autorizó?</label>
+          <input
+            [id]="'quien-' + l.id"
+            [value]="quienAutoriza()"
+            (input)="quienAutoriza.set($any($event.target).value)"
+          />
+        </div>
+        <app-grupo-opciones
+          [nombre]="'medio-' + l.id"
+          etiqueta="¿Por dónde lo dijo?"
+          [opciones]="medios"
+          [seleccionadas]="[medio()]"
+          [multiple]="false"
+          (elegida)="medio.set($any($event))"
+        />
+        <div class="formulario__pie">
+          <button
+            app-boton
+            tono="solido"
+            alto="chico"
+            type="button"
+            [disabled]="!quienAutoriza().trim() || guardando()"
+            (click)="autorizar(l.id)"
+          >
+            Registrar el sí
+          </button>
+          <button
+            app-boton
+            tono="callado"
+            alto="chico"
+            type="button"
+            (click)="cancelar()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+      } @if (declinando() === l.id) {
+      <div class="formulario">
+        <div class="formulario__campo formulario__campo--ancho">
+          <label [attr.for]="'motivo-' + l.id">¿Por qué no lo quiso?</label>
+          <input
+            [id]="'motivo-' + l.id"
+            [value]="motivo()"
+            placeholder="Lo deja para la próxima visita"
+            (input)="motivo.set($any($event.target).value)"
+          />
+          <!-- El motivo se conserva y vuelve a proponerse cuando el carro
+               regrese, así que vale la pena escribirlo bien. -->
+          <p class="formulario__ayuda">
+            Se lo recordamos cuando el carro vuelva.
+          </p>
+        </div>
+        <div class="formulario__pie">
+          <button
+            app-boton
+            tono="peligro"
+            alto="chico"
+            type="button"
+            [disabled]="guardando()"
+            (click)="declinar(l.id)"
+          >
+            Declinar
+          </button>
+          <button
+            app-boton
+            tono="callado"
+            alto="chico"
+            type="button"
+            (click)="cancelar()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+      }
+    </li>
+    }
+  </ul>
+
+  <p class="trabajos__totales">
+    <span>
+      Aprobado ·
+      <strong class="identificador">{{ colones(totalAprobado()) }}</strong>
+    </span>
+    @if (totalDeclinado()) {
+    <span class="trabajos__total-declinado">
+      Declinado ·
+      <strong class="identificador">{{ colones(totalDeclinado()) }}</strong>
+    </span>
+    }
+  </p>
+  } @else if (!anotando()) {
+  <p class="trabajos__vacio">
+    Todavía sin trabajos. Se anotan al diagnosticar, que es cuando se sabe qué
+    tiene.
+  </p>
+  }
+</section>
