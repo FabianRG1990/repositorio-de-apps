@@ -7,10 +7,12 @@ import { InsigniaEstado } from '../insignia-estado/insignia-estado';
 import { FilaOrden } from './fila-orden';
 
 const ORDEN: Orden = {
+  id: 'orden-de-prueba',
   folio: 'A1-2418',
   placa: '863 549',
   vehiculo: 'Toyota Hilux 2019',
   cliente: 'Marielos Quesada',
+  telefono: '8888-1111',
   estado: 'Esperando repuesto',
   estadoClave: 'esperando-repuesto',
   tono: 'riesgo',
