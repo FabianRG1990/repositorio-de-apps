@@ -42,13 +42,10 @@
     }
   </span>
 
-  <!-- Un carro listo que nadie recoge deja de anunciarse como "listo": lo
-       que hay que hacer con él ya no es entregarlo, es llamar. El estado no
-       se pierde —solo un carro listo puede estar sin recoger—. -->
   <app-insignia-estado
     class="fila__estado"
-    [texto]="sinRecoger() ? textoSinRecoger() : o.estado"
-    [tono]="sinRecoger() ? 'sin-recoger' : o.tono"
+    [texto]="o.estado"
+    [tono]="o.tono"
   />
 
   <span class="fila__detalle">{{ o.detalle }}</span>

@@ -112,6 +112,8 @@ export interface Orden {
    * esté dejando ahí, es uno al que el Taller no ha llamado.
    */
   readonly diasAvisado: number | null;
+  /** Listo, avisado y ahí sigue: el carro que nadie vino a buscar. */
+  readonly sinRecoger: boolean;
   readonly proximaVisita: string | null;
   readonly entrada: EstadoDeEntrada;
   readonly lineas: readonly LineaServicio[];
@@ -261,10 +263,20 @@ export class OrdenesStore {
   async #componer(): Promise<readonly Orden[]> {
     const { db, tallerId } = this.#datos;
 
-    const ordenes = await db.ordenes
-      .where('[tallerId+borradoEn]')
-      .equals([tallerId, NO_BORRADO])
-      .toArray();
+    const [ordenes, taller] = await Promise.all([
+      db.ordenes
+        .where('[tallerId+borradoEn]')
+        .equals([tallerId, NO_BORRADO])
+        .toArray(),
+      db.talleres.get(tallerId),
+    ]);
+
+    /* El umbral se lee acá y no en cada pantalla. Al vivir en la Orden
+       compuesta, la fila del tablero, el panel de resumen y la cabecera de la
+       ventana cuentan todos la misma historia sin ponerse de acuerdo. Y como
+       `liveQuery` vigila también la tabla del Taller, cambiarlo en Ajustes
+       mueve el tablero sin que nadie refresque. */
+    const umbral = taller?.diasParaSinRecoger ?? 3;
 
     return Promise.all(
       ordenes.map(async (orden) => {
@@ -310,8 +322,27 @@ export class OrdenesStore {
         );
 
         const vigente = avisos.find((a) => a.borradoEn === NO_BORRADO);
+        const diasAvisado = diasSinRecoger(vigente?.avisadoEn ?? null);
 
-        const presentacion = PRESENTACION[orden.estado];
+        /* El carro listo que nadie vino a buscar ([ADR 0009]). Se exige
+           `listo`, y no solo que haya Aviso: uno avisado que volvió a proceso
+           —porque algo salió mal— conserva su Aviso, y sin esta condición el
+           tablero lo daría por abandonado mientras se le mete mano. */
+        const sinRecoger =
+          orden.estado === 'listo' &&
+          diasAvisado !== null &&
+          diasAvisado >= umbral;
+
+        /* Deja de anunciarse como "listo": lo que hay que hacer con él ya no
+           es entregarlo, es llamar. No se pierde nada — solo un carro listo
+           puede estar sin recoger — y así la fila, el resumen y la ventana
+           dicen lo mismo sin que nadie los sincronice. */
+        const presentacion = sinRecoger
+          ? {
+              etiqueta: `Sin recoger · ${diasAvisado} d`,
+              tono: 'sin-recoger' as const,
+            }
+          : PRESENTACION[orden.estado];
         /* Lo declinado no cuenta como Especialidad tocada: nadie lo está
            trabajando, así que pintar su color en la fila diría que sí. */
         const tocadas = new Set(
@@ -364,7 +395,8 @@ export class OrdenesStore {
                 avisadoEn: vigente.avisadoEn,
               }
             : null,
-          diasAvisado: diasSinRecoger(vigente?.avisadoEn ?? null),
+          diasAvisado,
+          sinRecoger,
           proximaVisita: orden.proximaVisita,
           entrada: {
             odometro: orden.odometro ?? null,

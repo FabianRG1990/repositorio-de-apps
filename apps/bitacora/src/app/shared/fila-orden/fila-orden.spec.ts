@@ -22,6 +22,7 @@ const ORDEN: Orden = {
   fotos: [],
   aviso: null,
   diasAvisado: null,
+  sinRecoger: false,
   proximaVisita: null,
   entrada: {
     odometro: null,
