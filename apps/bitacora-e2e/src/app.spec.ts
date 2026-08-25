@@ -856,7 +856,12 @@ test.describe('lo que la auditoría del 2026-08-22 encontró roto', () => {
      Orden". Desde la pantalla eso se lee como que la app dejó de responder. */
   test('volver a pulsar una Orden no borra su detalle', async ({ page }) => {
     await page.goto('/');
-    const cuerpo = page.locator('li.fila').first().locator('.fila__cuerpo');
+    /* Por folio y no por posición: el tablero ordena por Tiempo parado, así
+       que sembrar una Orden más vieja cambia quién va primera. */
+    const cuerpo = page
+      .locator('li.fila')
+      .filter({ hasText: 'A1-2418' })
+      .locator('.fila__cuerpo');
     const panel = page.locator('mat-sidenav.shell__panel');
 
     await cuerpo.click();
@@ -1395,7 +1400,7 @@ test.describe('las pestañas de Órdenes', () => {
   test('En el taller deja fuera lo entregado', async ({ page }) => {
     await abrir(page, 'En el taller');
 
-    await expect(filas(page)).toHaveCount(4);
+    await expect(filas(page)).toHaveCount(5);
     await expect(page.locator('[role="tabpanel"]')).not.toContainText(
       'Isuzu D-Max',
     );
@@ -1419,7 +1424,8 @@ test.describe('las pestañas de Órdenes', () => {
   }) => {
     await abrir(page, 'Por entregar');
 
-    await expect(filas(page)).toHaveCount(1);
+    // El Swift, avisado hace una hora, y el Terios, que lleva cinco días ahí.
+    await expect(filas(page)).toHaveCount(2);
     await expect(page.locator('[role="tabpanel"]')).toContainText(
       'Suzuki Swift',
     );
@@ -2547,5 +2553,249 @@ test.describe('el filtro del tablero', () => {
     await expect(
       page.locator('app-ajustes-especialidades .aviso--malo'),
     ).toContainText('al menos una Especialidad');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Cerrar el ciclo de la Orden (#116).
+
+   La máquina de estados quedó quieta tres tickets y bloqueaba dos decisiones
+   tomadas hace meses: el Aviso de listo (ADR 0009) y la Próxima visita
+   (ADR 0011), que se escribe al entregar — y entregar no existía.
+   --------------------------------------------------------------------------- */
+test.describe('el ciclo de la Orden', () => {
+  const abrirOrden = async (page: Page, texto: string) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: texto })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await expect(page.locator('dialog.ventana')).toBeVisible();
+  };
+
+  const mover = (page: Page, estado: string) =>
+    page
+      .locator('app-ciclo-orden label')
+      .filter({ hasText: estado })
+      .first()
+      .click();
+
+  test('mover el estado se ve en el tablero', async ({ page }) => {
+    await abrirOrden(page, 'A1-2418');
+
+    await mover(page, 'En proceso');
+
+    await page.keyboard.press('Escape');
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'A1-2418' }),
+    ).toContainText('En proceso');
+  });
+
+  /* El taller no va en línea recta: un carro vuelve de "listo" a "en proceso"
+     cuando algo sale mal. Una máquina rígida pelearía con él. */
+  test('el estado también camina hacia atrás', async ({ page }) => {
+    await abrirOrden(page, 'A1-2418');
+
+    await mover(page, 'Listo para entrega');
+    await mover(page, 'En diagnóstico');
+
+    await expect(page.locator('app-ciclo-orden')).toContainText(
+      'En diagnóstico',
+    );
+  });
+
+  test('el aviso de listo deja constancia y arma el mensaje', async ({
+    page,
+  }) => {
+    await abrirOrden(page, 'A1-2418');
+    await mover(page, 'Listo para entrega');
+
+    await expect(page.locator('.aviso-listo__pendiente')).toContainText(
+      'no se le ha avisado',
+    );
+
+    /* El mensaje lo arma Bitácora y lo manda WhatsApp: lo que se comprueba es
+       el enlace prellenado, no que salga la app (ADR 0007 y 0009). */
+    const enlace = await page
+      .locator('.aviso-listo a[app-boton]')
+      .getAttribute('href');
+    expect(enlace).toContain('wa.me/506');
+    expect(decodeURIComponent(enlace ?? '')).toContain('ya está listo');
+
+    await page.getByRole('button', { name: /Registrar que avis/ }).click();
+    await page.fill('#aviso-a', 'Don Beto');
+    await page.getByRole('button', { name: /Guardar la constancia/ }).click();
+
+    await expect(page.locator('.aviso-listo__hecho')).toContainText(
+      'Avisado a Don Beto por WhatsApp',
+    );
+  });
+
+  /* La pregunta que la Orden contesta es "¿se avisó, y cuándo?", en singular:
+     el aviso anterior se retira en vez de apilarse. */
+  test('volver a avisar deja un solo aviso', async ({ page }) => {
+    await abrirOrden(page, 'A1-2421');
+
+    await page.getByRole('button', { name: /Volver a avisar/ }).click();
+    await page.fill('#aviso-a', 'La secretaria');
+    await page.getByRole('button', { name: /Guardar la constancia/ }).click();
+
+    await expect(page.locator('.aviso-listo__hecho')).toHaveCount(1);
+    await expect(page.locator('.aviso-listo__hecho')).toContainText(
+      'La secretaria',
+    );
+  });
+
+  test('entregar saca el carro del tablero y guarda la próxima visita', async ({
+    page,
+  }) => {
+    await abrirOrden(page, 'A1-2421');
+
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await page.fill('#proxima-visita', '2026-12-01');
+    /* La fecha se repite con el mes en letras: el aparato la enseña en SU
+       formato, y una tableta en inglés pone mm/dd donde acá se lee dd/mm. */
+    await expect(page.locator('.formulario__eco')).toHaveText(
+      '1 de diciembre de 2026',
+    );
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+
+    await expect(page.locator('.ciclo__entregada')).toContainText(
+      'Próxima visita: 1 de diciembre de 2026',
+    );
+
+    await page.keyboard.press('Escape');
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'A1-2421' }),
+    ).toHaveCount(0);
+  });
+
+  /* Entregar es un clic que cambia el mundo y un dedo torpe sobre una tableta
+     no puede costar eso. */
+  test('deshacer la entrega devuelve el carro sin borrar la fecha', async ({
+    page,
+  }) => {
+    await abrirOrden(page, 'A1-2421');
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await page.fill('#proxima-visita', '2026-12-01');
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await expect(page.locator('.ciclo__entregada')).toBeVisible();
+
+    await page.getByRole('button', { name: /Deshacer la entrega/ }).click();
+
+    await expect(page.locator('app-ciclo-orden')).toContainText(
+      'Listo para entrega',
+    );
+    await page.keyboard.press('Escape');
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'A1-2421' }),
+    ).toHaveCount(1);
+  });
+
+  /* Con el trabajo terminado, entregar ES la acción de la ventana. Antes de
+     eso sigue estando —a veces el Cliente se lo lleva a medias— pero medido en
+     pantalla competía con "Anotar trabajo" en una Orden que ni siquiera tenía
+     el repuesto. */
+  test('entregar pesa lo que toca según dónde va el carro', async ({
+    page,
+  }) => {
+    await abrirOrden(page, 'A1-2418');
+    const boton = page.locator('.ciclo__entregar-boton');
+
+    await expect(boton).toHaveAttribute('data-tono', 'contorno');
+
+    await mover(page, 'Listo para entrega');
+
+    await expect(boton).toHaveAttribute('data-tono', 'solido');
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   El Vehículo sin recoger (#116, ADR 0009).
+
+   El tablero ordena por Tiempo parado, pero un carro que lleva días esperando
+   un repuesto y otro que lleva días listo sin que lo recojan son problemas
+   distintos: el primero es del Taller, el segundo es del Cliente.
+   --------------------------------------------------------------------------- */
+test.describe('el vehículo sin recoger', () => {
+  test('el tablero lo marca aparte del que espera repuesto', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const sinRecoger = page.locator('.insignia[data-tono="sin-recoger"]');
+    await expect(sinRecoger).toHaveCount(1);
+    await expect(sinRecoger).toContainText('Sin recoger');
+    // El número es lo accionable: dice cuánto lleva ahí.
+    await expect(sinRecoger).toContainText(/\d+ d/u);
+
+    /* El color no puede ser lo único que los separe (ANSI/HFES 100-2007
+       §7.2.5.3): el rombo es el repuesto que no llega, el cuadrado es el carro
+       que nadie recoge. */
+    const forma = (tono: string) =>
+      page
+        .locator(`.insignia[data-tono="${tono}"]`)
+        .first()
+        .evaluate((el) => getComputedStyle(el, '::before').clipPath);
+    expect(await forma('sin-recoger')).not.toBe(await forma('riesgo'));
+  });
+
+  /* Lo que se configura tiene que verse (ADR 0023): un umbral que no mueve el
+     tablero es un formulario que guarda en el vacío. */
+  test('el umbral de Ajustes mueve la marca del tablero', async ({ page }) => {
+    await page.goto('/ajustes');
+    await page.fill('#umbral-sin-recoger', '9');
+    await page.locator('#umbral-sin-recoger').blur();
+    await expect(page.locator('.umbral__eco')).toContainText('a los 9 días');
+
+    await page.goto('/');
+    await expect(
+      page.locator('.insignia[data-tono="sin-recoger"]'),
+    ).toHaveCount(0);
+
+    await page.goto('/ajustes');
+    await page.fill('#umbral-sin-recoger', '3');
+    await page.locator('#umbral-sin-recoger').blur();
+
+    await page.goto('/');
+    await expect(
+      page.locator('.insignia[data-tono="sin-recoger"]'),
+    ).toHaveCount(1);
+  });
+
+  /* Un umbral de cero días marcaría el carro en el mismo instante en que se
+     le avisa al Cliente. */
+  test('la casilla vacía devuelve el umbral que había', async ({ page }) => {
+    await page.goto('/ajustes');
+
+    await page.fill('#umbral-sin-recoger', '');
+    await page.locator('#umbral-sin-recoger').blur();
+
+    await expect(page.locator('#umbral-sin-recoger')).toHaveValue('3');
+  });
+
+  /* Un carro que se avisó y después volvió a proceso —porque algo salió mal—
+     sigue teniendo su Aviso. Marcarlo como abandonado mientras el Taller le
+     está metiendo mano sería mentir. */
+  test('vuelto a proceso deja de estar sin recoger', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .locator('li.fila')
+      .filter({ hasText: 'SJB 4472' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+
+    await page
+      .locator('app-ciclo-orden label')
+      .filter({ hasText: 'En proceso' })
+      .first()
+      .click();
+    await page.keyboard.press('Escape');
+
+    await expect(
+      page.locator('.insignia[data-tono="sin-recoger"]'),
+    ).toHaveCount(0);
   });
 });
