@@ -97,7 +97,7 @@ Cómo venía el Vehículo al recibirlo: kilometraje, cuartos de tanque, daños q
 _Evitar_: inventario, checklist, inspección de ingreso
 
 **Foto**:
-Una imagen del Vehículo tomada al recibirlo, guardada en la Orden. **Pertenece a la Orden, no a la Línea de servicio**: muestra cómo entró el carro, no justifica un cobro concreto.
+Una imagen del Vehículo tomada al recibirlo, guardada en la Orden. **Pertenece a la Orden, no a la Línea de servicio**: muestra cómo entró el carro, no justifica un cobro concreto. Se guarda reducida —1600 px de lado largo— porque es una constancia y no una foto de catálogo, y vive solo en el aparato donde se sacó.
 _Evitar_: evidencia, adjunto, imagen, inspección
 
 **Línea de servicio**:
