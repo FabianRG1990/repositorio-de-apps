@@ -15,8 +15,12 @@ Cuánto cobra el Taller la hora de una Especialidad. Son distintas entre oficios
 _Evitar_: precio, costo, rate
 
 **Puesto**:
-Cada lugar del Taller desde donde se crean Órdenes — la recepción, la tablet del patio. Tiene una letra que lo identifica y lleva su propia numeración de Folios, para que dos Puestos sin conexión nunca acuñen el mismo.
+Cada lugar del Taller desde donde se crean Órdenes — la recepción, la tablet del patio. Tiene una letra que lo identifica y lleva su propia numeración de Folios, para que dos Puestos sin conexión nunca acuñen el mismo. **La letra no puede quedar en blanco ni repetirse**, y siempre tiene que quedar al menos un Puesto: sin Puesto no se acuña Folio, y sin Folio no se recibe un carro.
 _Evitar_: dispositivo, terminal, equipo, caja
+
+**Tarifa**:
+Lo que el Taller cobra la hora de una Especialidad. **Sugiere** el monto de un trabajo, no lo calcula: la tarifa cubre la mano de obra y el monto incluye repuestos.
+_Evitar_: precio, costo, valor hora
 
 **Tiempo parado**:
 Cuánto lleva un Vehículo en el Taller desde que entró. Es el criterio que ordena el tablero — arriba lo que más duele.

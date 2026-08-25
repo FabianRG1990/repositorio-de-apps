@@ -13,7 +13,10 @@ import { OrdenesStore } from '../../data-access/ordenes.store';
 import { ETIQUETA_ESPECIALIDAD_REPORTE } from '../../data-access/etiquetas-reporte';
 import { TallerStore } from '../../data-access/taller.store';
 import { Boton } from '../../shared/boton/boton';
-import { GrupoOpciones, type Opcion } from '../../shared/grupo-opciones/grupo-opciones';
+import {
+  GrupoOpciones,
+  type Opcion,
+} from '../../shared/grupo-opciones/grupo-opciones';
 
 @Component({
   selector: 'app-tablero',
