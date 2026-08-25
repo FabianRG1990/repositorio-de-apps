@@ -1,0 +1,256 @@
+.trabajos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.trabajos__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.trabajos__titulo {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+.trabajos__acciones {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.trabajos__error {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--app-danger-borde);
+  border-radius: 0.6rem;
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}
+
+.trabajos__vacio {
+  margin: 0;
+  color: var(--app-text-soft);
+  font-style: italic;
+}
+
+/* --- la lista ------------------------------------------------------------- */
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Misma seña que el botón, la queja y el item de menú: rectángulo redondeado
+   con filete de acento a la izquierda. */
+.trabajo {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid var(--app-accent-strong);
+  border-radius: 0.95rem;
+  background: var(--app-capa-plana);
+}
+
+/* Lo declinado cambia de filete Y de forma —el texto se tacha—, no solo de
+   color: §7.2.5.3 pide que el color nunca sea el único portador. */
+.trabajo--declinada {
+  border-left-color: var(--app-danger-borde);
+}
+
+.trabajo--declinada .trabajo__que {
+  text-decoration: line-through;
+  text-decoration-color: var(--app-danger-borde);
+  color: var(--app-text-soft);
+}
+
+.trabajo__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.trabajo__que {
+  font-weight: 590;
+  min-width: 0;
+}
+
+.trabajo__pagador {
+  font-size: 0.8125rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 999px;
+  color: var(--app-text-muted);
+}
+
+/* Las horas y el monto se van al extremo y quedan alineados entre filas: es lo
+   que permite sumar con la vista sin leer cada renglón. */
+.trabajo__horas {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-text-soft);
+  font-size: 0.875rem;
+}
+
+.trabajo__monto {
+  font-variant-numeric: tabular-nums;
+  font-weight: 590;
+  min-width: 5.5rem;
+  text-align: right;
+}
+
+.trabajo__estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.trabajo__autorizado,
+.trabajo__declinado,
+.trabajo__esperando {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  margin-right: auto;
+}
+
+.trabajo__autorizado {
+  color: var(--app-success);
+}
+
+.trabajo__declinado {
+  color: var(--app-danger);
+}
+
+.trabajo__declinado em {
+  color: var(--app-text-muted);
+}
+
+.trabajo__esperando {
+  color: var(--app-text-soft);
+  font-style: italic;
+}
+
+/* --- totales -------------------------------------------------------------- */
+
+.trabajos__totales {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  margin: 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--app-border-lista);
+  font-size: 0.9375rem;
+}
+
+.trabajos__total-declinado {
+  color: var(--app-warning);
+}
+
+/* --- formularios ---------------------------------------------------------- */
+
+/* El de anotar es una rejilla; los de autorizar y declinar viven dentro de su
+   propia fila y se apilan. Los tres comparten el mismo aire y el mismo campo
+   para que no se lean como tres pantallas distintas. */
+.anotar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: 0.85rem 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 0.95rem;
+  background: var(--app-capa-reposo);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--app-border-strong);
+}
+
+.anotar__campo,
+.formulario__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.anotar__campo--ancho,
+.formulario__campo--ancho {
+  grid-column: 1 / -1;
+}
+
+.anotar__campo--corto {
+  max-width: 10rem;
+}
+
+.anotar__campo label,
+.formulario__campo label {
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-muted);
+}
+
+.anotar__campo input,
+.formulario__campo input {
+  /* Piso táctil de #18 §5.2: se llena de pie y a veces con guante. */
+  min-height: var(--app-boton-alto);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.6rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+  font: inherit;
+}
+
+.anotar__campo input:focus-visible,
+.formulario__campo input:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  border-color: var(--app-accent-strong);
+}
+
+.anotar__ayuda,
+.formulario__ayuda {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+}
+
+.anotar__pie,
+.formulario__pie {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Dice QUÉ falta y no solo que el botón está apagado: uno deshabilitado sin
+   explicación es indistinguible de uno roto. */
+.anotar__falta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}

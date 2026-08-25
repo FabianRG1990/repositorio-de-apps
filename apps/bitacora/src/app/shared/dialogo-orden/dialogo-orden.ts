@@ -26,6 +26,7 @@ import { Boton } from '../boton/boton';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
 import { colones, kilometros } from '../formato';
 import { InsigniaEstado } from '../insignia-estado/insignia-estado';
+import { TrabajosOrden } from '../trabajos-orden/trabajos-orden';
 
 /**
  * La Orden completa, en su propia ventana.
@@ -47,7 +48,13 @@ import { InsigniaEstado } from '../insignia-estado/insignia-estado';
   templateUrl: './dialogo-orden.html',
   styleUrl: './dialogo-orden.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FontAwesomeModule, Boton, EtiquetaEspecialidad, InsigniaEstado],
+  imports: [
+    FontAwesomeModule,
+    Boton,
+    EtiquetaEspecialidad,
+    InsigniaEstado,
+    TrabajosOrden,
+  ],
 })
 export class DialogoOrden {
   readonly store = inject(OrdenesStore);

@@ -79,70 +79,12 @@
         </ul>
       </section>
 
-      <section class="od__bloque">
-        <h3 class="od__titulo">Trabajos · {{ o.lineas.length }}</h3>
-
-        @if (o.lineas.length) {
-        <div class="od__tabla-caja">
-          <table class="od__tabla">
-            <thead>
-              <tr>
-                <th>Trabajo</th>
-                <th>Especialidad</th>
-                <th class="num">Horas</th>
-                <th class="num">Monto</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (l of o.lineas; track l.descripcion) {
-              <tr [class.declinada]="l.declinada">
-                <td>
-                  {{ l.descripcion }} @if (l.declinada) {
-                  <span class="solo-lectores"> (declinado)</span>
-                  }
-                </td>
-                <td>
-                  <app-etiqueta-especialidad [especialidad]="l.especialidad" />
-                </td>
-                <td class="num">{{ l.horas }}</td>
-                <td class="num">{{ colones(l.monto) }}</td>
-              </tr>
-              }
-              <tr class="od__total">
-                <td colspan="3">Aprobado</td>
-                <td class="num">{{ colones(totalAprobado()) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        } @else {
-        <p class="od__vacio">
-          Todavía sin trabajos: se agregan al diagnosticar, que es cuando se
-          sabe qué tiene.
-        </p>
-        }
-
-        <!-- Lo declinado se saca del renglón y se pone como aviso: es lo que se
-             vuelve a proponer cuando el carro regrese, y en una tabla se lee
-             como una línea más. -->
-        @if (declinadas().length) {
-        <div class="od__declinado">
-          <p class="od__declinado-cabecera">
-            <fa-icon [icon]="['fas', 'circle-exclamation']" />
-            <strong class="identificador">
-              {{ colones(totalDeclinado()) }}
-            </strong>
-            declinados · reaparecen cuando el vehículo vuelva
-          </p>
-          @for (l of declinadas(); track l.descripcion) { @if
-          (l.motivoDeclinacion) {
-          <p class="od__declinado-motivo">
-            {{ l.descripcion }} — «{{ l.motivoDeclinacion }}»
-          </p>
-          } }
-        </div>
-        }
-      </section>
+      <!--
+        Los trabajos son lo ÚNICO editable de la Orden, y por eso viven en su
+        propio componente: tres verbos —anotar, autorizar, declinar— con sus
+        formularios, contra el resto de la ventana que solo se lee.
+      -->
+      <app-trabajos-orden [orden]="o" />
 
       <section class="od__bloque">
         <h3 class="od__titulo">Cómo entró</h3>
