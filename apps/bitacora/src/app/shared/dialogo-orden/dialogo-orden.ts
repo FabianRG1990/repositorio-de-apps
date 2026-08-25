@@ -23,7 +23,10 @@ import {
   tiempoParadoLegible,
 } from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
+import { BitacoraDatos } from '../../data-access/db/bitacora-db';
+import { EspacioStore } from '../../data-access/espacio.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
+import { GaleriaFotos } from '../galeria-fotos/galeria-fotos';
 import { colones, kilometros } from '../formato';
 import { InsigniaEstado } from '../insignia-estado/insignia-estado';
 import { TrabajosOrden } from '../trabajos-orden/trabajos-orden';
@@ -54,12 +57,15 @@ import { TrabajosOrden } from '../trabajos-orden/trabajos-orden';
     EtiquetaEspecialidad,
     InsigniaEstado,
     TrabajosOrden,
+    GaleriaFotos,
   ],
 })
 export class DialogoOrden {
   readonly store = inject(OrdenesStore);
   readonly #documento = inject(DOCUMENT);
   readonly #impresion = inject(ImpresionStore);
+  readonly #datos = inject(BitacoraDatos);
+  readonly #disco = inject(EspacioStore);
 
   /* No puede ser `#privado`: Angular no admite un campo privado de JavaScript
      como destino de `viewChild` (NG1053). */
@@ -138,6 +144,30 @@ export class DialogoOrden {
    */
   protected imprimir(documento: DocumentoImpreso) {
     this.#impresion.imprimir(documento);
+  }
+
+  /**
+   * Guardar fotos desde la Orden.
+   *
+   * Se reduce y se guarda una por una, no todas a la vez: con cuatro fotos de
+   * 4 MB en paralelo el hilo se queda sin aire y la ventana deja de responder
+   * mientras dura. Una detrás de otra, cada una aparece al terminar.
+   */
+  protected async agregarFotos(archivos: readonly File[]) {
+    const orden = this.orden();
+    if (!orden) return;
+    await this.#datos.lista;
+    for (const archivo of archivos) {
+      await this.#datos.fotos.guardar(orden.id, archivo);
+    }
+    // Guardar fotos es lo único que mueve la aguja del disco de verdad.
+    await this.#disco.revisar();
+  }
+
+  protected async quitarFoto(fotoId: string) {
+    await this.#datos.lista;
+    await this.#datos.fotos.quitar(fotoId);
+    await this.#disco.revisar();
   }
 
   protected metaDe(reporte: {

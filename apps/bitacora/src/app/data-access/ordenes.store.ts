@@ -84,6 +84,8 @@ export interface Orden {
   readonly detalle: string;
   /** Lo que el Cliente dijo al entregar el carro, en sus palabras. */
   readonly reportes: readonly ReporteVisto[];
+  /** Cómo entró el carro, en imágenes. Pertenecen a la Orden (ADR 0006). */
+  readonly fotos: readonly { readonly id: string; readonly blob: Blob }[];
   readonly entrada: EstadoDeEntrada;
   readonly lineas: readonly LineaServicio[];
   /* Las Especialidades que toca la Orden, sin repetir y en orden fijo. Se
@@ -209,22 +211,24 @@ export class OrdenesStore {
 
     return Promise.all(
       ordenes.map(async (orden) => {
-        const [vehiculo, cliente, placa, lineas, reportes] = await Promise.all([
-          db.vehiculos.get(orden.vehiculoId),
-          db.clientes.get(orden.clienteId),
-          db.vehiculoPlacas
-            .where('[vehiculoId+vigenteHasta]')
-            .equals([orden.vehiculoId, ABIERTO])
-            .first(),
-          db.lineas
-            .where('[ordenId+borradoEn]')
-            .equals([orden.id, NO_BORRADO])
-            .toArray(),
-          db.reportes
-            .where('[ordenId+borradoEn]')
-            .equals([orden.id, NO_BORRADO])
-            .toArray(),
-        ]);
+        const [vehiculo, cliente, placa, lineas, reportes, fotos] =
+          await Promise.all([
+            db.vehiculos.get(orden.vehiculoId),
+            db.clientes.get(orden.clienteId),
+            db.vehiculoPlacas
+              .where('[vehiculoId+vigenteHasta]')
+              .equals([orden.vehiculoId, ABIERTO])
+              .first(),
+            db.lineas
+              .where('[ordenId+borradoEn]')
+              .equals([orden.id, NO_BORRADO])
+              .toArray(),
+            db.reportes
+              .where('[ordenId+borradoEn]')
+              .equals([orden.id, NO_BORRADO])
+              .toArray(),
+            db.fotos.where('ordenId').equals(orden.id).toArray(),
+          ]);
 
         /* Las constancias de TODAS las líneas de la Orden en una sola
            consulta: una por línea multiplicaba las lecturas por el número de
@@ -287,6 +291,12 @@ export class OrdenesStore {
               senales: r.senales,
               desdeCuando: r.desdeCuando,
             })),
+          /* En el orden en que se sacaron: la primera suele ser la del daño
+             que motivó la foto, y reordenar pierde ese dato. */
+          fotos: fotos
+            .filter((f) => f.borradoEn === NO_BORRADO)
+            .sort((a, b) => a.tomadaEn.localeCompare(b.tomadaEn))
+            .map((f) => ({ id: f.id, blob: f.blob })),
           entrada: {
             odometro: orden.odometro ?? null,
             combustible: orden.combustible ?? null,

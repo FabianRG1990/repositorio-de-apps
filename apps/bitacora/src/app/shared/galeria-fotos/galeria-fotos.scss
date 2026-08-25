@@ -1,0 +1,224 @@
+.galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.galeria__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.galeria__titulo {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+.galeria__cuenta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* El disparador es un `<label>` con el campo de archivo escondido dentro: así
+   se ve como el resto de los botones sin dejar de ser el control nativo, que
+   es el que abre la cámara. Se copian las mismas señas del botón propio. */
+.galeria__tomar {
+  position: relative;
+  overflow: hidden;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+
+  min-height: calc(var(--app-boton-alto) - 8px);
+  padding: 0 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid var(--app-accent-strong);
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.0892857143em;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.galeria__tomar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--app-esquina);
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  pointer-events: none;
+}
+
+.galeria__tomar:hover {
+  background: var(--app-capa-hover);
+  border-color: var(--app-border-strong);
+}
+
+/* El foco vive en el `<input>` escondido, así que el anillo se pinta acá. */
+.galeria__tomar:has(input:focus-visible) {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.galeria__tomar--ocupada {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.galeria__vacia {
+  margin: 0;
+  color: var(--app-text-soft);
+  font-style: italic;
+}
+
+.galeria__peso {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- la tira -------------------------------------------------------------- */
+
+/* En fila y con desplazamiento propio: una rejilla que crece hacia abajo
+   empuja el resto del formulario cada vez que se saca una foto, justo cuando
+   se está caminando alrededor del carro. */
+.tira {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0 0 0.3rem;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tira__foto {
+  position: relative;
+  flex: none;
+}
+
+.tira__ver {
+  display: block;
+  width: 7.5rem;
+  height: 5.6rem;
+  padding: 0;
+  border: 1px solid var(--app-border-lista);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--app-capa-plana);
+  cursor: pointer;
+}
+
+.tira__ver:hover {
+  border-color: var(--app-accent-strong);
+}
+
+.tira__ver:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.tira__ver img {
+  width: 100%;
+  height: 100%;
+  /* Recorta en vez de deformar: una foto estirada de un golpe deja de servir
+     como constancia de cómo era el golpe. */
+  object-fit: cover;
+  display: block;
+}
+
+.tira__quitar {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.4rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--app-danger-borde);
+  border-radius: 999px;
+  background: var(--app-surface-strong);
+  color: var(--app-danger);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.tira__quitar:hover {
+  background: var(--app-danger-fondo);
+}
+
+.tira__quitar:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* --- el visor ------------------------------------------------------------- */
+
+.visor {
+  padding: 0;
+  border: 0;
+  border-radius: 1rem;
+  background: transparent;
+  max-width: min(96vw, 72rem);
+  max-height: 92vh;
+  overflow: visible;
+}
+
+.visor::backdrop {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.visor__foto {
+  display: block;
+  max-width: min(96vw, 72rem);
+  max-height: 92vh;
+  width: auto;
+  height: auto;
+  border-radius: 1rem;
+}
+
+.visor__cerrar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  /* Sobre la foto, que puede ser clara o oscura: fondo propio para que la
+     equis se vea sobre cualquiera de las dos. */
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border-color: transparent;
+}
+
+.visor__cerrar:hover {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
+
+.galeria__apretado {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--app-warning-borde);
+  border-radius: 0.6rem;
+  background: var(--app-warning-fondo);
+  color: var(--app-warning);
+  font-size: 0.875rem;
+}

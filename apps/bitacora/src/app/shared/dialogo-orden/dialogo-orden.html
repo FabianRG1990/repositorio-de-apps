@@ -86,6 +86,16 @@
       -->
       <app-trabajos-orden [orden]="o" />
 
+      <!-- Las Fotos pertenecen a la Orden y no a la Línea (ADR 0006): enseñan
+           cómo entró el carro, no justifican un cobro concreto. -->
+      <section class="od__bloque">
+        <app-galeria-fotos
+          [fotos]="o.fotos"
+          (agregadas)="agregarFotos($event)"
+          (quitada)="quitarFoto($event)"
+        />
+      </section>
+
       <section class="od__bloque">
         <h3 class="od__titulo">Cómo entró</h3>
         <dl class="od__rejilla">

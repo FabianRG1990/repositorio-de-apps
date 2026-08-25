@@ -25,10 +25,15 @@ import {
   tanqueLegible,
 } from '../../data-access/etiquetas-reporte';
 import { interpretar } from '../../data-access/interpretar-reporte';
+import { reducir } from '../../data-access/db/fotos';
 import {
   CampoDictado,
   type Escrito,
 } from '../../shared/campo-dictado/campo-dictado';
+import {
+  GaleriaFotos,
+  type FotoParaVer,
+} from '../../shared/galeria-fotos/galeria-fotos';
 import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
 import { colones, kilometros } from '../../shared/formato';
 import {
@@ -166,6 +171,7 @@ function alternar<T extends string>(lista: readonly T[], id: T): readonly T[] {
     GrupoOpciones,
     EtiquetaEspecialidad,
     FichaRecepcion,
+    GaleriaFotos,
   ],
 })
 export class Recepcion {
@@ -204,6 +210,17 @@ export class Recepcion {
     danosPrevios: '',
     objetosDentro: '',
   });
+
+  /**
+   * Las Fotos que se van sacando, ya reducidas y todavía sin Orden.
+   *
+   * Se reducen en cuanto entran y no al guardar: comprimir cuatro fotos de
+   * 4 MB con el dedo sobre "Recibir vehículo" es medio segundo de pantalla
+   * congelada, y acá el trabajo se reparte mientras se camina alrededor del
+   * carro. La clave es un contador local porque todavía no hay identidad.
+   */
+  protected readonly fotos = signal<readonly FotoParaVer[]>([]);
+  #siguienteFoto = 0;
 
   protected readonly conocido = signal<VehiculoConocido | null>(null);
   protected readonly buscando = signal(false);
@@ -305,6 +322,20 @@ export class Recepcion {
   protected escribirOdometro(valor: string) {
     // Solo dígitos: el odómetro no lleva coma, ni punto, ni "km".
     this.entrada.update((x) => ({ ...x, odometro: valor.replace(/\D/g, '') }));
+  }
+
+  protected async agregarFotos(archivos: readonly File[]) {
+    for (const archivo of archivos) {
+      const blob = await reducir(archivo);
+      this.fotos.update((fs) => [
+        ...fs,
+        { id: `nueva-${this.#siguienteFoto++}`, blob },
+      ]);
+    }
+  }
+
+  protected quitarFoto(id: string) {
+    this.fotos.update((fs) => fs.filter((f) => f.id !== id));
   }
 
   protected elegirTanque(id: string) {
@@ -485,6 +516,7 @@ export class Recepcion {
           combustible: e.combustible,
           danosPrevios: e.danosPrevios,
           objetosDentro: e.objetosDentro,
+          fotos: this.fotos().map((f) => f.blob),
           reportes: this.quejasConTexto().map((q) => ({
             textual: q.textual,
             capturadoPor: q.capturadoPor,

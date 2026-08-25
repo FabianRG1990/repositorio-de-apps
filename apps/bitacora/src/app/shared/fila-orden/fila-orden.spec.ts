@@ -19,6 +19,7 @@ const ORDEN: Orden = {
   tiempoParado: 52,
   detalle: 'Bomba de agua pedida a San José',
   reportes: [],
+  fotos: [],
   entrada: {
     odometro: null,
     combustible: null,
