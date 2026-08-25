@@ -6,6 +6,7 @@ import {
   faArrowRight,
   faBars,
   faCalendarCheck,
+  faCamera,
   faCarSide,
   faChartLine,
   faCheck,
@@ -36,6 +37,7 @@ import {
   faXmark,
 } from '@fortawesome/pro-solid-svg-icons';
 import { ConfiguracionTallerStore } from './data-access/configuracion-taller.store';
+import { EspacioStore } from './data-access/espacio.store';
 
 @Component({
   imports: [RouterOutlet],
@@ -54,11 +56,17 @@ export class App {
        Ajustes, la apariencia no se aplicaría hasta abrirla. */
     inject(ConfiguracionTallerStore);
 
+    /* Se pide almacenamiento persistente al arrancar, no al guardar la primera
+       foto: lo que WebKit borra a los siete días sin interacción no son solo
+       las fotos, son TODAS las Órdenes. */
+    inject(EspacioStore);
+
     inject(FaIconLibrary).addIcons(
       faArrowLeft,
       faArrowRight,
       faBars,
       faCalendarCheck,
+      faCamera,
       faCarSide,
       faChartLine,
       faCheck,

@@ -1,3 +1,4 @@
+import { FotosDeLaOrden } from './fotos';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
 import {
   ABIERTO,
@@ -39,6 +40,15 @@ export interface DatosDeRecepcion {
   readonly combustible: CuartosDeTanque | null;
   readonly danosPrevios: string;
   readonly objetosDentro: string;
+  /**
+   * Las Fotos de cómo entró el carro, YA reducidas.
+   *
+   * Vienen reducidas y no en crudo porque comprimir es trabajo de CPU y no
+   * puede correr dentro de una transacción de Dexie: la transacción se cierra
+   * sola en cuanto el hilo cede el control. Se reducen antes, se escriben
+   * dentro.
+   */
+  readonly fotos: readonly Blob[];
 }
 
 /** Trabajo que el Taller propuso y el Cliente no aprobó, esperando su regreso. */
@@ -98,6 +108,7 @@ export class RecepcionDeVehiculos {
     private readonly repo: Repositorio,
     private readonly vehiculos: RepositorioVehiculos,
     private readonly ahora: () => string = () => new Date().toISOString(),
+    private readonly fotos = new FotosDeLaOrden(db, repo, ahora),
   ) {}
 
   /**
@@ -223,6 +234,7 @@ export class RecepcionDeVehiculos {
         this.db.propiedades,
         this.db.ordenes,
         this.db.reportes,
+        this.db.fotos,
         /* `lineas` entra al ámbito aunque acá no se escriba: `reconocer` las
            lee para traer lo declinado, y Dexie exige que la transacción
            interna sea un subconjunto de esta. Sin esto revienta en el primer
@@ -317,6 +329,12 @@ export class RecepcionDeVehiculos {
             posicion: posicion++,
           });
         }
+
+        /* Las Fotos van en la MISMA transacción que la Orden: una foto sin su
+           Orden, o una Orden sin las fotos que se le sacaron al carro, no
+           significan nada — y la segunda es la que deja al Taller sin con qué
+           contestar cuando alguien dice que el golpe no venía de antes. */
+        await this.fotos.guardarReducidas(orden.id, datos.fotos);
 
         return orden;
       },
