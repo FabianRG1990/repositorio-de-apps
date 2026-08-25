@@ -7,6 +7,7 @@ import {
   type Especialidad,
   type EstadoOrden,
   type MedioDeAviso,
+  type Papel,
   type SenalDeFalla,
 } from './esquema';
 import { CicloDeLaOrden } from './ciclo';
@@ -45,6 +46,36 @@ interface SemillaReporte {
   especialidad: Especialidad | null;
 }
 
+/** Alguien del Taller, con las Especialidades que solo el Técnico lleva. */
+interface SemillaPersona {
+  nombre: string;
+  papel: Papel;
+  especialidades?: readonly Especialidad[];
+}
+
+/**
+ * La gente del Taller.
+ *
+ * Se siembra por lo mismo que las Tarifas en #114: la sugerencia de
+ * Responsable necesita de dónde salir el primer día, y un taller de demo sin
+ * nadie adentro obligaría a configurar personal antes de poder mirar una
+ * pantalla.
+ *
+ * Los tres papeles del ADR 0005 están representados porque la pantalla de
+ * entrada ofrece los tres, y un Perfil sin nadie detrás se ve como un error.
+ */
+const PERSONAL: readonly SemillaPersona[] = [
+  { nombre: 'Ana Rojas', papel: 'asesor' },
+  { nombre: 'Fabián Ureña', papel: 'dueno' },
+  {
+    nombre: 'Luis Vargas',
+    papel: 'tecnico',
+    especialidades: ['mecanica', 'electricidad'],
+  },
+  { nombre: 'Kenneth Soto', papel: 'tecnico', especialidades: ['pintura'] },
+  { nombre: 'Marta Cordero', papel: 'tecnico', especialidades: ['mecanica'] },
+];
+
 interface SemillaOrden {
   placa: string;
   marca: string;
@@ -53,6 +84,14 @@ interface SemillaOrden {
   cliente: string;
   telefono: string;
   estado: EstadoOrden;
+  /**
+   * A nombre de quién queda, por su nombre y no por su id (ADR 0003).
+   *
+   * Sin definir es una Orden que todavía no tomó nadie, que es un estado real
+   * y no un hueco de la semilla: hay que poder verla para saber que se
+   * distingue.
+   */
+  responsable?: string;
   /** Horas desde que entró: el criterio de orden del tablero (ADR 0003). */
   haceHoras: number;
   /** Horas desde que se entregó, si ya salió del Taller. */
@@ -105,6 +144,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Marielos Quesada',
     telefono: '8888-1111',
     estado: 'esperando-repuesto',
+    responsable: 'Luis Vargas',
     haceHoras: 52,
     notas: 'Bomba de agua pedida a San José — sin fecha de llegada',
     odometro: 148320,
@@ -155,6 +195,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Taxis Los Yoses',
     telefono: '2222-3333',
     estado: 'en-proceso',
+    responsable: 'Kenneth Soto',
     haceHoras: 28,
     notas: 'Guardabarros derecho, segunda mano de color',
     odometro: 312450,
@@ -187,6 +228,10 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Rodrigo Vargas',
     telefono: '8777-4444',
     estado: 'diagnostico',
+    /* La única sin Responsable, y es la que lleva seis horas adentro: una
+       Orden que todavía no tomó nadie es un estado real del taller, no un
+       hueco de la semilla. Sin ella, la marca de "sin responsable" no se
+       vería nunca al abrir la app por primera vez. */
     haceHoras: 6,
     notas: 'Alternador no carga en frío',
     odometro: 61870,
@@ -236,6 +281,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Ana Lucía Brenes',
     telefono: '8555-5555',
     estado: 'listo',
+    responsable: 'Marta Cordero',
     haceHoras: 3,
     avisadoHaceHoras: 1,
     notas: 'Avisado por WhatsApp hace 1 h',
@@ -273,6 +319,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Gerardo Mora',
     telefono: '8712-4488',
     estado: 'listo',
+    responsable: 'Luis Vargas',
     haceHoras: 192,
     avisadoHaceHoras: 122,
     notas: 'Se le avisó dos veces y no contesta',
@@ -309,6 +356,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Constructora Peñas Blancas',
     telefono: '2100-9090',
     estado: 'entregado',
+    responsable: 'Marta Cordero',
     haceHoras: 96,
     entregadoHaceHoras: 20,
     avisadoHaceHoras: 26,
@@ -347,6 +395,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Silvia Ramírez',
     telefono: '8330-7711',
     estado: 'entregado',
+    responsable: 'Kenneth Soto',
     haceHoras: 1200,
     entregadoHaceHoras: 1100,
     proximaVisitaEnDias: -6,
@@ -390,6 +439,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     cliente: 'Finca La Chácara',
     telefono: '2447-1200',
     estado: 'entregado',
+    responsable: 'Luis Vargas',
     haceHoras: 700,
     entregadoHaceHoras: 640,
     proximaVisitaEnDias: 4,
@@ -479,6 +529,7 @@ export class BitacoraDatos {
         this.db.talleres,
         this.db.tarifas,
         this.db.puestos,
+        this.db.personas,
         this.db.clientes,
         this.db.vehiculos,
         this.db.vehiculoPlacas,
@@ -537,6 +588,19 @@ export class BitacoraDatos {
       consecutivo: 2417,
     });
 
+    /* La gente del Taller. `personas` era la última tabla del esquema que
+       nadie había llenado nunca, y sin ella el ADR 0003 prometía un
+       Responsable por Orden que ninguna Orden tenía. */
+    const porNombre = new Map<string, string>();
+    for (const p of PERSONAL) {
+      const persona = await this.repo.crear(this.db.personas, {
+        nombre: p.nombre,
+        papel: p.papel,
+        especialidades: [...(p.especialidades ?? [])],
+      });
+      porNombre.set(p.nombre, persona.id);
+    }
+
     for (const s of SEMILLA) {
       const cliente = await this.repo.crear(this.db.clientes, {
         nombre: s.cliente,
@@ -567,7 +631,9 @@ export class BitacoraDatos {
         vehiculoId: vehiculo.id,
         clienteId: cliente.id,
         quienEntrega: s.cliente,
-        responsableId: null,
+        responsableId: s.responsable
+          ? (porNombre.get(s.responsable) ?? null)
+          : null,
         estado: s.estado,
         recibidoEn: new Date(
           Date.now() - s.haceHoras * 60 * 60 * 1000,
