@@ -20,6 +20,7 @@ beforeEach(async () => {
     telefono: '',
     direccion: '',
     cedulaJuridica: '',
+    diasParaSinRecoger: 3,
     creadoEn: reloj,
     actualizadoEn: reloj,
     version: 1,

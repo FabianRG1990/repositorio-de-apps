@@ -9,6 +9,7 @@ import {
   type MedioDeAviso,
   type SenalDeFalla,
 } from './esquema';
+import { CicloDeLaOrden } from './ciclo';
 import { ConfiguracionDelTaller } from './configuracion';
 import { FotosDeLaOrden } from './fotos';
 import { RecepcionDeVehiculos } from './recepcion';
@@ -55,6 +56,10 @@ interface SemillaOrden {
   haceHoras: number;
   /** Horas desde que se entregó, si ya salió del Taller. */
   entregadoHaceHoras?: number;
+  /** Se le avisó a Quien entrega hace tantas horas (ADR 0009). */
+  avisadoHaceHoras?: number;
+  /** La fecha que el Asesor escribió al entregar (ADR 0011). */
+  proximaVisita?: string;
   notas: string;
   /** Cómo venía el carro al entrar. Es lo que respalda al Taller después. */
   odometro?: number;
@@ -210,6 +215,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     telefono: '8555-5555',
     estado: 'listo',
     haceHoras: 3,
+    avisadoHaceHoras: 1,
     notas: 'Avisado por WhatsApp hace 1 h',
     odometro: 28100,
     combustible: 4,
@@ -246,6 +252,8 @@ const SEMILLA: readonly SemillaOrden[] = [
     estado: 'entregado',
     haceHoras: 96,
     entregadoHaceHoras: 20,
+    avisadoHaceHoras: 26,
+    proximaVisita: '2026-11-20',
     notas: 'Entregado al chofer con el reporte de frenos firmado',
     odometro: 205600,
     combustible: 2,
@@ -285,6 +293,7 @@ export class BitacoraDatos {
     this.vehiculos,
   );
   readonly trabajos = new TrabajosDeLaOrden(this.db, this.repo);
+  readonly ciclo = new CicloDeLaOrden(this.db, this.repo);
   readonly fotos = new FotosDeLaOrden(this.db, this.repo);
   readonly configuracion = new ConfiguracionDelTaller(
     this.db,
@@ -338,6 +347,7 @@ export class BitacoraDatos {
         this.db.reportes,
         this.db.lineas,
         this.db.autorizaciones,
+        this.db.avisos,
         this.db.pendientes,
       ],
       async () => {
@@ -357,6 +367,10 @@ export class BitacoraDatos {
       telefono: '2222-0000',
       direccion: 'San José, Costa Rica',
       cedulaJuridica: '3-101-000000',
+      /* Tres días es un punto de partida, no una medida: el ADR 0009 dice que
+         sin talleres observados cualquier número es una suposición. Por eso el
+         Dueño lo puede cambiar. */
+      diasParaSinRecoger: 3,
       creadoEn: new Date().toISOString(),
       actualizadoEn: new Date().toISOString(),
       version: 1,
@@ -423,7 +437,7 @@ export class BitacoraDatos {
               Date.now() - s.entregadoHaceHoras * 60 * 60 * 1000,
             ).toISOString()
           : NO_BORRADO,
-        proximaVisita: null,
+        proximaVisita: s.proximaVisita ?? null,
         notas: s.notas,
         odometro: s.odometro ?? null,
         combustible: s.combustible ?? null,
@@ -446,6 +460,20 @@ export class BitacoraDatos {
           especialidadSugerida: reporte.especialidad,
           sugerenciaCorregida: false,
           posicion: posicion++,
+        });
+      }
+
+      /* El Aviso de listo es una fila aparte, no un booleano en la Orden: dice
+         a QUIÉN se avisó y POR QUÉ MEDIO, y es lo que contesta el "nadie me
+         llamó" (ADR 0009). */
+      if (s.avisadoHaceHoras !== undefined) {
+        await this.repo.crear(this.db.avisos, {
+          ordenId: orden.id,
+          avisadoA: s.cliente,
+          medio: 'whatsapp',
+          avisadoEn: new Date(
+            Date.now() - s.avisadoHaceHoras * 60 * 60 * 1000,
+          ).toISOString(),
         });
       }
 

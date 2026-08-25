@@ -67,6 +67,16 @@ export interface Taller {
   /** Va en la factura. Hacienda la exige; #75 decide el resto. */
   cedulaJuridica: string;
 
+  /**
+   * Desde cuántos días avisado se señala un Vehículo sin recoger.
+   *
+   * Es un ajuste y no una constante porque el [ADR 0009] lo dejó así: sin
+   * talleres reales observados **cualquier número es una suposición**, y una
+   * suposición enterrada en el código no se puede corregir con lo que se
+   * aprenda del uso.
+   */
+  diasParaSinRecoger: number;
+
   creadoEn: string;
   actualizadoEn: string;
   version: number;
@@ -384,6 +394,17 @@ export class BitacoraDb extends Dexie {
           taller.telefono ??= '';
           taller.direccion ??= '';
           taller.cedulaJuridica ??= '';
+        }),
+    );
+
+    /* La versión 4 añade el umbral del Vehículo sin recoger. Como la 3: sin
+       índice nuevo, solo hay que rellenar el Taller que ya exista. */
+    this.version(4).upgrade((tx) =>
+      tx
+        .table<Taller>('talleres')
+        .toCollection()
+        .modify((taller) => {
+          taller.diasParaSinRecoger ??= 3;
         }),
     );
   }

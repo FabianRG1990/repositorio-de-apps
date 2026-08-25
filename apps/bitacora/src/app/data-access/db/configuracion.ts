@@ -62,6 +62,25 @@ export class ConfiguracionDelTaller {
   }
 
   /**
+   * Desde cuántos días avisado se señala un Vehículo sin recoger.
+   *
+   * El [ADR 0009] lo dejó ajustable a propósito: sin talleres reales
+   * observados cualquier número es una suposición, y una suposición enterrada
+   * en el código no se corrige con lo que se aprenda del uso.
+   */
+  async fijarDiasParaSinRecoger(dias: number): Promise<void> {
+    const taller = await this.taller();
+    if (!taller) throw new Error('No existe el Taller');
+
+    await this.db.talleres.put({
+      ...taller,
+      diasParaSinRecoger: Math.max(1, Math.round(dias)),
+      actualizadoEn: this.ahora(),
+      version: taller.version + 1,
+    });
+  }
+
+  /**
    * Qué Especialidades ofrece.
    *
    * **Nunca se queda sin ninguna.** Un Taller que no ofrece nada no puede
