@@ -1444,13 +1444,18 @@ test.describe('las pestañas de Órdenes', () => {
   }) => {
     await abrir(page, 'Declinado');
 
-    await expect(filas(page)).toHaveCount(2);
+    // Frontier, Hilux y el Kia Rio que dejó los amortiguadores para después.
+    await expect(filas(page)).toHaveCount(3);
 
-    const primera = page.locator('li.declinada').first();
-    await expect(primera).toContainText('Cambio de faja de distribución');
-    await expect(primera).toContainText('863 549');
-    await expect(primera).toContainText('próxima visita');
-    await expect(primera.locator('.declinada__monto')).toContainText('96');
+    /* Por placa y no por posición: la lista sigue el orden del tablero, que es
+       por Tiempo parado, así que sembrar una Orden más vieja cambia quién va
+       primera. */
+    const delHilux = page
+      .locator('li.declinada')
+      .filter({ hasText: '863 549' });
+    await expect(delHilux).toContainText('Cambio de faja de distribución');
+    await expect(delHilux).toContainText('próxima visita');
+    await expect(delHilux.locator('.declinada__monto')).toContainText('96');
   });
 
   /* La Orden del Toyota tiene dos líneas aprobadas y una declinada: en la
@@ -2796,6 +2801,108 @@ test.describe('el vehículo sin recoger', () => {
 
     await expect(
       page.locator('.insignia[data-tono="sin-recoger"]'),
+    ).toHaveCount(0);
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Próximas visitas (#116, ADR 0011).
+
+   La última pantalla en blanco de #101. La fecha la escribe el Asesor al
+   entregar: acá no se calcula nada, y sin fecha escrita el Vehículo no
+   aparece nunca.
+   --------------------------------------------------------------------------- */
+test.describe('las próximas visitas', () => {
+  test('se reparten en montones y las vencidas van primero', async ({
+    page,
+  }) => {
+    await page.goto('/proximas-visitas');
+
+    await expect(page.locator('.grupo')).toHaveCount(3);
+    await expect(page.locator('.grupo').first()).toContainText(
+      'Ya pasó la fecha',
+    );
+    /* Lo primero que hay que poder contestar al abrirla es a quién llamar hoy:
+       una lista plana por fecha obliga a leerla entera para averiguarlo. */
+    await expect(page.locator('.grupo').first()).toContainText(
+      'hay que llamar hoy',
+    );
+  });
+
+  /* El ADR 0011 llama a esto los dos caminos hacia la misma conversación de
+     venta: llamar sin el trabajo declinado a mano es llamar sin saber qué
+     proponer. */
+  test('la visita enseña lo que quedó sin aprobar', async ({ page }) => {
+    await page.goto('/proximas-visitas');
+
+    const vencida = page.locator('.grupo').first().locator('.visita').first();
+    await expect(vencida).toContainText('Cambio de amortiguadores');
+    await expect(vencida.locator('.pendiente__monto')).toContainText(
+      /210\s000/u,
+    );
+  });
+
+  /* Bitácora no manda nada por su cuenta: arma el texto y una persona decide
+     y envía (ADR 0009 y 0011). */
+  test('el mensaje sale armado, con el taller y lo pendiente', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page.fill('#taller-nombre', 'Taller Los Yoses');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await expect(page.locator('.aviso--bueno')).toContainText('Guardado');
+
+    await page.goto('/proximas-visitas');
+    const enlace = await page
+      .locator('.visita__llamar')
+      .first()
+      .getAttribute('href');
+    const texto = decodeURIComponent(enlace ?? '');
+
+    expect(enlace).toContain('wa.me/506');
+    expect(texto).toContain('Taller Los Yoses');
+    expect(texto).toContain('Kia Rio 2020');
+    expect(texto).toContain('Cambio de amortiguadores');
+  });
+
+  /* La fecha se escribe al entregar y aparece acá: es el ciclo completo, de
+     la ventana de la Orden a la lista de llamadas. */
+  test('entregar con fecha mete el carro en la lista', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .locator('li.fila')
+      .filter({ hasText: 'A1-2421' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await page.fill('#proxima-visita', '2027-03-15');
+    await page.getByRole('button', { name: /^Entregar el veh/ }).click();
+    await expect(page.locator('.ciclo__entregada')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await page.goto('/proximas-visitas');
+    await expect(
+      page.locator('.visita').filter({ hasText: 'Suzuki Swift' }),
+    ).toContainText('15 de marzo de 2027');
+  });
+
+  /* El carro al que se le deshace la entrega conserva su fecha —la escribió
+     una persona pensando en el carro— pero está en el Taller: recordarle al
+     Cliente que vuelva sería ruido. */
+  test('el carro devuelto al taller sale de la lista', async ({ page }) => {
+    await page.goto('/ordenes');
+    await page.getByRole('tab', { name: /Entregado/i }).click();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: 'Kia Rio' })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await page.getByRole('button', { name: /Deshacer la entrega/ }).click();
+    await page.keyboard.press('Escape');
+
+    await page.goto('/proximas-visitas');
+    await expect(
+      page.locator('.visita').filter({ hasText: 'Kia Rio' }),
     ).toHaveCount(0);
   });
 });
