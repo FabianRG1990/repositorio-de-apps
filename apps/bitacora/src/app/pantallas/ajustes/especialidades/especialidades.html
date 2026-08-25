@@ -1,14 +1,14 @@
 <div class="especialidades">
   <p class="especialidades__nota">
-    Los oficios que el taller ofrece. Cada trabajo de una orden lleva el suyo,
-    y de acá sale la lista entre las que se elige.
+    Los oficios que el taller ofrece. Cada trabajo de una orden lleva el suyo, y
+    de acá sale la lista entre las que se elige.
   </p>
 
   @if (error()) {
   <p class="aviso aviso--malo" role="alert">{{ error() }}</p>
-  }
-
-  @if (puedeEditar()) {
+  } @if (!taller.cargado()) {
+  <p class="especialidades__cargando" role="status">Cargando…</p>
+  } @else if (puedeEditar()) {
   <app-grupo-opciones
     nombre="especialidades-del-taller"
     etiqueta="Qué ofrece este taller"

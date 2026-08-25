@@ -48,6 +48,21 @@ export class TallerStore {
   /** Con una sola Especialidad, filtrar por Especialidad no dice nada. */
   readonly hayQueFiltrar = computed(() => this.especialidades().length > 1);
 
+  /**
+   * Si la configuración ya llegó de la base.
+   *
+   * `liveQuery` tarda un instante en emitir, y hasta entonces esto devuelve la
+   * configuración vacía. Sin poder distinguir "vacía" de "todavía no llegó",
+   * un clic en el primer instante actúa sobre una lista vacía: en vez de
+   * QUITAR una Especialidad la AÑADE, y de paso borra las otras dos.
+   *
+   * Ninguna Especialidad es un estado imposible —la capa de datos no deja
+   * guardarlo— así que la lista vacía solo puede significar que no ha llegado.
+   */
+  readonly cargado = computed(
+    () => this.configuracion().especialidades.length > 0,
+  );
+
   /** `mecanica` → 14000. Lo que la Tarifa sirve para sugerir. */
   readonly porHora = computed(() => {
     const mapa = new Map<Especialidad, number>();
