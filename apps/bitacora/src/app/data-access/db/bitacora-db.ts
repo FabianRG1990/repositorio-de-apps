@@ -9,6 +9,7 @@ import {
   type MedioDeAviso,
   type SenalDeFalla,
 } from './esquema';
+import { ConfiguracionDelTaller } from './configuracion';
 import { FotosDeLaOrden } from './fotos';
 import { RecepcionDeVehiculos } from './recepcion';
 import { TrabajosDeLaOrden } from './trabajos';
@@ -285,6 +286,11 @@ export class BitacoraDatos {
   );
   readonly trabajos = new TrabajosDeLaOrden(this.db, this.repo);
   readonly fotos = new FotosDeLaOrden(this.db, this.repo);
+  readonly configuracion = new ConfiguracionDelTaller(
+    this.db,
+    this.tallerId,
+    this.repo,
+  );
 
   /** El Puesto desde el que este aparato acuña Folios. Fase 1 tiene uno solo. */
   async puestoActual(): Promise<string> {
@@ -322,6 +328,7 @@ export class BitacoraDatos {
       'rw',
       [
         this.db.talleres,
+        this.db.tarifas,
         this.db.puestos,
         this.db.clientes,
         this.db.vehiculos,
@@ -347,6 +354,9 @@ export class BitacoraDatos {
       id: this.tallerId,
       nombre: 'Taller Bitácora',
       especialidades: ['mecanica', 'electricidad', 'pintura'] as const,
+      telefono: '2222-0000',
+      direccion: 'San José, Costa Rica',
+      cedulaJuridica: '3-101-000000',
       creadoEn: new Date().toISOString(),
       actualizadoEn: new Date().toISOString(),
       version: 1,
@@ -355,6 +365,17 @@ export class BitacoraDatos {
       ...taller,
       especialidades: [...taller.especialidades],
     });
+
+    /* Las Tarifas existen en el esquema desde #74 y nadie las había creado
+       nunca. Se siembran para que la sugerencia de monto tenga de dónde salir
+       desde el primer arranque. */
+    for (const [especialidad, porHora] of [
+      ['mecanica', 14000],
+      ['electricidad', 16000],
+      ['pintura', 15000],
+    ] as const) {
+      await this.repo.crear(this.db.tarifas, { especialidad, porHora });
+    }
 
     const puesto = await this.repo.crear(this.db.puestos, {
       nombre: 'Recepción',
