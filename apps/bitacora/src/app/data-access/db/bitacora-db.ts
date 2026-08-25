@@ -12,6 +12,7 @@ import {
 import { CicloDeLaOrden } from './ciclo';
 import { ConfiguracionDelTaller } from './configuracion';
 import { FotosDeLaOrden } from './fotos';
+import { PersonalDelTaller } from './personal';
 import { RecepcionDeVehiculos } from './recepcion';
 import { TrabajosDeLaOrden } from './trabajos';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
@@ -438,6 +439,7 @@ export class BitacoraDatos {
     this.tallerId,
     this.repo,
   );
+  readonly personal = new PersonalDelTaller(this.db, this.tallerId, this.repo);
 
   /** El Puesto desde el que este aparato acuña Folios. Fase 1 tiene uno solo. */
   async puestoActual(): Promise<string> {
