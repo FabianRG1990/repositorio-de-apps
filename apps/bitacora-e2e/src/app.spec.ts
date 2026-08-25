@@ -1839,7 +1839,9 @@ test.describe('editar la Orden', () => {
       .locator('.trabajo')
       .filter({ hasText: 'Revisión de suspensión' });
     await expect(nuevo).toContainText('Sin respuesta del cliente');
-    await expect(nuevo.getByRole('button', { name: 'Autorizar' })).toBeVisible();
+    await expect(
+      nuevo.getByRole('button', { name: 'Autorizar' }),
+    ).toBeVisible();
   });
 
   test('dice qué falta mientras no se pueda anotar', async ({ page }) => {
@@ -1848,7 +1850,9 @@ test.describe('editar la Orden', () => {
 
     const guardar = page.getByRole('button', { name: 'Anotar', exact: true });
     await expect(guardar).toBeDisabled();
-    await expect(page.locator('.anotar__falta')).toContainText('qué es el trabajo');
+    await expect(page.locator('.anotar__falta')).toContainText(
+      'qué es el trabajo',
+    );
 
     await page.fill('#trabajo-desc', 'Algo');
     await expect(page.locator('.anotar__falta')).toContainText('el monto');
@@ -1986,7 +1990,9 @@ test.describe('editar la Orden', () => {
     await abrir(page, '742 118');
     await anotar(page, 'Cambio de faja', '96000');
 
-    const linea = page.locator('.trabajo').filter({ hasText: 'Cambio de faja' });
+    const linea = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Cambio de faja' });
     await linea.getByRole('button', { name: 'Autorizar' }).click();
     await page.getByRole('button', { name: /Registrar el sí/ }).click();
     await expect(linea).toContainText('Autorizado por');
