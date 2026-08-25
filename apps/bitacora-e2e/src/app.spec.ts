@@ -518,9 +518,7 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
     await primera.getByRole('button', { name: /Ver orden/ }).click();
 
     await expect(ventana).toBeVisible();
-    await expect(ventana.locator('.od__folio')).toContainText(
-      'Orden ' + folio,
-    );
+    await expect(ventana.locator('.od__folio')).toContainText('Orden ' + folio);
   });
 
   /* SC 1.4.10 pone el piso del reflujo en 320 px de ancho. A 360 la
@@ -1500,7 +1498,9 @@ test.describe('la ventana de la Orden', () => {
     await expect(ventana).toContainText(
       '«En la mañana cuesta que prenda, hace un ruido y no arranca»',
     );
-    await expect(ventana).toContainText('«Y también chilla cuando freno despacio»');
+    await expect(ventana).toContainText(
+      '«Y también chilla cuando freno despacio»',
+    );
     // Los trabajos con su monto, y el total de lo APROBADO.
     await expect(ventana).toContainText('Diagnóstico de carga');
     await expect(ventana.locator('.od__total')).toContainText(/25\s000/u);
@@ -1649,7 +1649,10 @@ test.describe('los botones', () => {
     await expect(page.locator('li.fila').first()).toBeVisible();
 
     const alto = (sel: string) =>
-      page.locator(sel).first().evaluate((e) => e.getBoundingClientRect().height);
+      page
+        .locator(sel)
+        .first()
+        .evaluate((e) => e.getBoundingClientRect().height);
 
     expect(await alto('.pantalla__accion')).toBeGreaterThan(
       await alto('.fila__accion'),
@@ -1682,8 +1685,11 @@ test.describe('los tres papeles', () => {
   const leerPapeles = (page: Page) =>
     page.evaluate(
       () =>
-        (window as unknown as { __papeles: { documento: string; texto: string }[] })
-          .__papeles,
+        (
+          window as unknown as {
+            __papeles: { documento: string; texto: string }[];
+          }
+        ).__papeles,
     );
 
   const abrirEImprimir = async (page: Page, boton: string) => {
@@ -1748,7 +1754,9 @@ test.describe('los tres papeles', () => {
     await abrirEImprimir(page, 'El taller');
 
     expect(
-      await page.evaluate(() => document.documentElement.dataset['imprimiendo']),
+      await page.evaluate(
+        () => document.documentElement.dataset['imprimiendo'],
+      ),
     ).toBeUndefined();
   });
 
