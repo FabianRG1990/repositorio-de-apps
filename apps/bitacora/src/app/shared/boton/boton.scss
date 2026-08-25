@@ -1,0 +1,190 @@
+/* ---------------------------------------------------------------------------
+   Las seis señas de la referencia.
+
+   Ninguna se inventó acá: todas se copian del item del menú lateral, que es la
+   pieza que ya la replicaba. Si alguna cambia allá, tiene que cambiar acá — y
+   por eso van con el mismo valor literal y no con uno "parecido".
+   --------------------------------------------------------------------------- */
+
+:host {
+  position: relative;
+  overflow: hidden;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+
+  min-height: var(--app-boton-alto);
+  padding: 0 1.25rem;
+
+  /* 1. Rectángulo redondeado, no píldora. El mismo 0.95rem del item de menú. */
+  border-radius: 0.95rem;
+  /* 2. Borde de un pelo, y el filete de acento a la izquierda. */
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid transparent;
+
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+
+  font: inherit;
+  /* 3. El espaciado ancho del item de menú, no el de Material. */
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.0892857143em;
+  line-height: normal;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+/* 4. La esquinita. En el menú lateral hay un comentario que dice que es "el
+      detalle que más se nota del original y no cuesta nada". Estaba en cada
+      item del menú y en ningún botón. */
+:host::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--app-esquina);
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  pointer-events: none;
+}
+
+:host(:hover) {
+  background: var(--app-capa-hover);
+  border-color: var(--app-border-strong);
+  color: var(--app-text);
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Se hunde un píxel al pulsar. Es la única respuesta táctil que queda sin el
+   ondulado de Material, y sin ella el botón se siente muerto bajo el dedo. */
+:host(:active) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+  :host(:active) {
+    transform: none;
+  }
+}
+
+/* --- sólido: la acción principal ----------------------------------------- */
+
+:host([data-tono='solido']) {
+  background: var(--app-boton-fondo);
+  color: var(--app-boton-tinta);
+  border-color: transparent;
+  border-left-color: var(--app-accent-strong);
+  font-weight: 590;
+  /* 5. El realce interior sale de la sombra del item activo. En la piel de
+        taller ese token es `none`, así que el sólido queda plano — que es lo
+        que ADR 0012 decidió: las sombras desaparecen al sol. */
+  box-shadow: var(--app-sombra-menu-activo);
+}
+
+:host([data-tono='solido'])::after {
+  /* 6. Y la esquinita se enciende, igual que en el item activo del menú. */
+  background: var(--app-esquina-activa);
+}
+
+:host([data-tono='solido']:hover) {
+  background: var(--app-boton-fondo);
+  color: var(--app-boton-tinta);
+  filter: brightness(1.07);
+}
+
+/* --- contorno: lo secundario --------------------------------------------- */
+
+:host([data-tono='contorno']) {
+  border-left-color: var(--app-accent-strong);
+  color: var(--app-text);
+}
+
+/* --- callado: acompaña sin competir --------------------------------------- */
+
+:host([data-tono='callado']) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--app-text-soft);
+}
+
+/* Sin borde no hay esquina que rematar, y el triángulo suelto se lee como un
+   defecto de render. */
+:host([data-tono='callado'])::after {
+  display: none;
+}
+
+:host([data-tono='callado']:hover) {
+  background: var(--app-capa-hover);
+  border-color: transparent;
+  color: var(--app-text);
+}
+
+/* --- peligro: lo que quita algo ------------------------------------------- */
+
+:host([data-tono='peligro']) {
+  border-left-color: var(--app-danger-borde);
+  color: var(--app-danger);
+}
+
+:host([data-tono='peligro']:hover) {
+  background: var(--app-danger-fondo);
+  border-color: var(--app-danger-borde);
+  color: var(--app-danger);
+}
+
+/* --- apagado -------------------------------------------------------------- */
+
+:host([disabled]),
+:host([data-apagado]) {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+:host([disabled]:hover),
+:host([data-apagado]:hover) {
+  background: var(--app-capa-reposo);
+  border-color: var(--app-border-lista);
+  color: var(--app-text-muted);
+  filter: none;
+}
+
+:host([data-tono='solido'][disabled]:hover) {
+  background: var(--app-boton-fondo);
+  color: var(--app-boton-tinta);
+}
+
+/* --- alturas fuera de la escalera ---------------------------------------- */
+
+/* La acción principal se sale un escalón hacia arriba; las que viven dentro de
+   una tarjeta o de un pie, uno hacia abajo. Se derivan de `--app-boton-alto`
+   para que la perilla de densidad las siga moviendo a las tres. */
+:host([data-alto='grande']) {
+  min-height: calc(var(--app-boton-alto) + 8px);
+  padding: 0 1.6rem;
+}
+
+:host([data-alto='chico']) {
+  min-height: calc(var(--app-boton-alto) - 8px);
+  padding: 0 1rem;
+}
+
+:host([data-ancho]) {
+  width: 100%;
+}
