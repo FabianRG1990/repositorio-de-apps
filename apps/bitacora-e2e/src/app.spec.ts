@@ -2747,6 +2747,31 @@ test.describe('el vehículo sin recoger', () => {
     expect(await forma('sin-recoger')).not.toBe(await forma('riesgo'));
   });
 
+  /* La fila, el resumen del panel y la cabecera de la ventana describen la
+     MISMA Orden. Cuando la marca la decidía la fila, las otras dos seguían
+     diciendo "Listo para entrega" a diez centímetros de distancia. */
+  test('la fila, el resumen y la ventana dicen lo mismo', async ({ page }) => {
+    await page.goto('/');
+    const fila = page.locator('li.fila').filter({ hasText: 'SJB 4472' });
+    await expect(fila.locator('.insignia')).toContainText('Sin recoger');
+
+    await fila.locator('.fila__cuerpo').click();
+    await expect(page.locator('.shell__panel .insignia')).toContainText(
+      'Sin recoger',
+    );
+
+    await fila.getByRole('button', { name: /Ver orden/ }).click();
+    await expect(
+      page.locator('dialog.ventana .insignia').first(),
+    ).toContainText('Sin recoger');
+
+    /* Y el estado sigue siendo `listo`: dónde va el carro y qué problema hay
+       con él son dos cosas distintas. */
+    await expect(page.locator('app-ciclo-orden')).toContainText(
+      'Listo para entrega',
+    );
+  });
+
   /* Lo que se configura tiene que verse (ADR 0023): un umbral que no mueve el
      tablero es un formulario que guarda en el vacío. */
   test('el umbral de Ajustes mueve la marca del tablero', async ({ page }) => {
