@@ -3,15 +3,21 @@
 <div class="panel">
   <div class="panel__encabezado">
     <fa-icon [icon]="['fas', 'circle-info']" />
-    <span>{{ orden ? 'Orden ' + orden.folio : 'Detalle' }}</span>
+    <span>{{ orden ? 'Orden ' + orden.folio : 'Resumen' }}</span>
   </div>
 
   @if (!orden) {
   <section class="panel__vacio" role="status">
     <fa-icon [icon]="['fas', 'hand-pointer']" class="fa-xl" />
-    <p>Elegí una Orden para ver su detalle acá.</p>
+    <p>Elegí una Orden para ver su resumen acá.</p>
   </section>
   } @else {
+  <!--
+    RESUMEN, no la Orden. En 310 px de ancho las Líneas con sus montos, las
+    quejas y el estado de entrada se convertían en una columna larguísima de
+    texto envuelto. Acá va lo del vistazo; la Orden entera se abre en su
+    ventana con el botón del pie.
+  -->
   <section class="panel__cuerpo">
     <div class="panel__dato">
       <span class="panel__etiqueta">Tiempo parado</span>
@@ -34,42 +40,62 @@
       <app-insignia-estado [texto]="orden.estado" [tono]="orden.tono" />
     </div>
 
+    <!-- Las Especialidades que toca, sin repetir: dice de un vistazo a cuántas
+         colas del taller pertenece esta Orden. -->
+    @if (orden.especialidades.length) {
     <div class="panel__dato">
-      <span class="panel__etiqueta">Kilometraje al entrar</span>
-      <span
-        >{{ orden.entrada.odometro !== null ? kilometros(orden.entrada.odometro)
-        : 'Sin anotar' }} · {{ tanque(orden.entrada.combustible) }} de
-        tanque</span
-      >
+      <span class="panel__etiqueta">A quién le toca</span>
+      <span class="panel__especialidades">
+        @for (e of orden.especialidades; track e) {
+        <app-etiqueta-especialidad [especialidad]="e" />
+        }
+      </span>
     </div>
-
-    <!--
-      La MISMA ficha que se enseñó al confirmar en el mostrador. Reusar el
-      componente no es ahorro de código: es lo que garantiza que lo que se
-      confirmó y lo que se lee tres días después sean literalmente lo mismo.
-    -->
-    @if (ficha(); as f) {
-    <app-ficha-recepcion [datos]="f" [conCabecera]="false" />
     }
 
     <div class="panel__dato">
-      <span class="panel__etiqueta"
-        >Líneas de servicio ({{ orden.lineas.length }})</span
-      >
-      <ul class="panel__lineas">
-        @for (linea of orden.lineas; track linea.descripcion) {
-        <li class="panel__linea">
-          <span>{{ linea.descripcion }}</span>
-          <span class="panel__linea-meta">
-            <app-etiqueta-especialidad [especialidad]="linea.especialidad" />
-            · {{ linea.horas }} h
-          </span>
-        </li>
-        }
-      </ul>
+      <span class="panel__etiqueta">Trabajos</span>
+      <span>
+        {{ aprobadas().length }} aprobado{{ aprobadas().length === 1 ? '' : 's'
+        }} ·
+        <strong class="panel__identificador">
+          {{ colones(totalAprobado()) }}
+        </strong>
+      </span>
+      @if (declinadas().length) {
+      <span class="panel__declinado">
+        {{ colones(totalDeclinado()) }} declinados
+      </span>
+      }
     </div>
 
-    <p class="panel__nota">{{ orden.detalle }}</p>
+    <!-- Lo que el Cliente dijo, en una línea. El texto completo vive en la
+         ventana: acá solo tiene que decir por qué entró el carro. -->
+    @if (orden.reportes.length) {
+    <div class="panel__dato">
+      <span class="panel__etiqueta">Por qué entró</span>
+      <span>{{ orden.reportes[0].titulo }}</span>
+      @if (orden.reportes.length > 1) {
+      <span class="panel__mas">
+        y {{ orden.reportes.length - 1 }} cosa{{ orden.reportes.length > 2 ? 's'
+        : '' }} más
+      </span>
+      }
+    </div>
+    }
   </section>
+
+  <div class="panel__pie">
+    <button
+      app-boton
+      tono="solido"
+      type="button"
+      [ancho]="true"
+      (click)="verLaOrden()"
+    >
+      <fa-icon [icon]="['fas', 'clipboard-list']" />
+      Ver la orden
+    </button>
+  </div>
   }
 </div>

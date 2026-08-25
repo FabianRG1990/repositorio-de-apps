@@ -1,0 +1,337 @@
+/* La ventana la pinta el navegador en la capa superior, fuera del árbol del
+   componente. Por eso las medidas van acá y no dependen de dónde esté puesto
+   `<app-dialogo-orden>`. */
+.ventana {
+  padding: 0;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 1.25rem;
+  background: var(--app-surface);
+  color: var(--app-text);
+  width: min(48rem, calc(100vw - 2rem));
+  max-height: min(86vh, 54rem);
+  overflow: hidden;
+  box-shadow: var(--app-shadow);
+  /* El vidrio es un token porque la piel de taller lo apaga (ADR 0012). */
+  backdrop-filter: var(--app-vidrio);
+}
+
+.ventana::backdrop {
+  background: color-mix(in oklab, var(--app-canvas-bottom) 68%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.od {
+  display: flex;
+  flex-direction: column;
+  max-height: min(86vh, 54rem);
+}
+
+/* --- cabecera ------------------------------------------------------------ */
+
+/* Sin envolver. Con `wrap`, flexbox decide el corte por el tamaño BASE de
+   cada item y no por el encogido: la identidad medía su ancho de contenido
+   —que es grande porque el folio lleva `flex-basis: 100%` dentro— y empujaba
+   la insignia y la equis a una segunda fila, dejando un hueco bajo la placa.
+   Sin envolver, la identidad encoge y lo que se parte es su contenido. */
+.od__cabecera {
+  flex: none;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--app-border-lista);
+  background: var(--app-velo-cabecera);
+}
+
+/* Crece para quedarse con el hueco sobrante. Sin esto, el `flex-basis: 100%`
+   del folio hacía que la identidad ocupara la fila entera y empujaba la
+   insignia y la equis a una segunda línea, dejando un hueco bajo la placa. */
+.od__identidad {
+  /* Base cero para no forzar nunca el corte de la fila. */
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.od__folio {
+  flex-basis: 100%;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+/* La placa es lo que identifica al carro para el Taller: cifras tabulares y
+   cero cortado, para que 0 no se lea como O. Y NUNCA se parte: "742 118" en
+   dos líneas deja de ser una placa. */
+.od__placa {
+  white-space: nowrap;
+  font-size: 1.6rem;
+  font-weight: 680;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings:
+    'cv08' 1,
+    'cv05' 1,
+    'case' 1;
+}
+
+.od__carro {
+  color: var(--app-text-soft);
+  font-size: 0.9375rem;
+}
+
+.od__cabecera-fin {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.od__cerrar {
+  min-width: 2.75rem;
+}
+
+/* Estrecho: acá SÍ se apila, porque la identidad reducida a 200 px partía la
+   placa en dos líneas y el nombre del cliente en cuatro. La equis y el estado
+   suben con `order`, que es donde se los busca en un teléfono. */
+@media (max-width: 30rem) {
+  .od__cabecera {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .od__identidad {
+    flex-basis: 100%;
+  }
+
+  .od__cabecera-fin {
+    order: -1;
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
+
+/* --- cuerpo -------------------------------------------------------------- */
+
+.od__cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  scroll-padding-top: 1rem;
+}
+
+.od__titulo {
+  margin: 0 0 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+.od__vacio {
+  margin: 0;
+  color: var(--app-text-soft);
+  font-style: italic;
+}
+
+/* --- las quejas ---------------------------------------------------------- */
+
+.od__quejas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Misma seña que el botón y que el item de menú: rectángulo redondeado con el
+   filete de acento a la izquierda. */
+.queja {
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid var(--app-accent-strong);
+  background: var(--app-capa-plana);
+}
+
+.queja__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.25rem;
+  font-weight: 590;
+}
+
+/* Entrecomillado y en cursiva porque son palabras del Cliente, no una etiqueta
+   del sistema. */
+.queja__dijo {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.queja__meta {
+  margin: 0.3rem 0 0;
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}
+
+/* --- los trabajos -------------------------------------------------------- */
+
+.od__tabla-caja {
+  overflow-x: auto;
+}
+
+.od__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.od__tabla th {
+  padding: 0 0.7rem 0.5rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--app-border-lista);
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+  white-space: nowrap;
+}
+
+.od__tabla td {
+  padding: 0.65rem 0.7rem 0.65rem 0;
+  border-bottom: 1px solid var(--app-border-lista);
+  vertical-align: top;
+}
+
+.od__tabla .num {
+  text-align: right;
+  padding-right: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Lo declinado se tacha con el color de peligro y NO se atenúa a secas: el
+   tachado es la forma, el color es el refuerzo (§7.2.5.3). */
+.od__tabla tr.declinada td {
+  color: var(--app-text-soft);
+}
+
+.od__tabla tr.declinada td:first-child {
+  text-decoration: line-through;
+  text-decoration-color: var(--app-danger-borde);
+}
+
+.od__total td {
+  font-weight: 680;
+  border-bottom: 0;
+  padding-top: 0.9rem;
+}
+
+.od__declinado {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--app-warning-borde);
+  border-radius: 0.7rem;
+  background: var(--app-warning-fondo);
+}
+
+.od__declinado-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--app-warning);
+  font-weight: 590;
+}
+
+.od__declinado-motivo {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: var(--app-text-muted);
+  font-style: italic;
+}
+
+/* --- cómo entró ---------------------------------------------------------- */
+
+.od__rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  gap: 0.85rem 1.25rem;
+  margin: 0;
+}
+
+.od__dato--ancho {
+  grid-column: 1 / -1;
+}
+
+.od__dato dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+.od__dato dd {
+  margin: 0.2rem 0 0;
+}
+
+/* --- pie ----------------------------------------------------------------- */
+
+.od__pie {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.35rem;
+  border-top: 1px solid var(--app-border-lista);
+  background: var(--app-capa-plana);
+}
+
+.od__pie-rotulo {
+  font-size: 0.75rem;
+  font-weight: 590;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
+}
+
+.od__pie-fin {
+  margin-left: auto;
+}
+
+/* Estrecho: el rótulo sobra y los tres botones se reparten la fila. */
+@media (max-width: 34rem) {
+  .od__pie-rotulo {
+    display: none;
+  }
+
+  .od__pie > [app-boton] {
+    flex: 1 1 auto;
+  }
+
+  .od__pie-fin {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
