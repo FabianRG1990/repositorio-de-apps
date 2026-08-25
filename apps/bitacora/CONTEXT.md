@@ -145,7 +145,7 @@ La constancia de que el Taller le comunicó a Quien entrega que puede venir a re
 _Evitar_: notificación, alerta, recordatorio
 
 **Vehículo sin recoger**:
-Un Vehículo cuyo trabajo terminó y del que ya se dio Aviso de listo, pero que sigue en el Taller. Ocupa espacio y por eso el tablero lo señala.
+Un Vehículo cuyo trabajo terminó y del que ya se dio Aviso de listo, pero que sigue en el Taller. Ocupa espacio y por eso el tablero lo señala, aparte del que espera repuesto: uno es problema del Cliente y el otro del Taller. Desde cuántos días de avisado cuenta como tal lo ajusta el Dueño.
 _Evitar_: abandonado, olvidado, en espera
 
 **Horas facturadas** / **Horas reales**:
