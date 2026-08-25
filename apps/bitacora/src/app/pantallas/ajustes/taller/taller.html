@@ -225,6 +225,189 @@
     } }
   </section>
 
+  <!-- --------------------------------------------- personal -------------- -->
+  <section class="bloque">
+    <h3 class="bloque__titulo">Personal</h3>
+    <p class="bloque__nota">
+      La gente del taller. Cada orden queda a nombre de una de estas personas,
+      que responde por el trabajo aunque por dentro la toquen varios.
+    </p>
+
+    <ul class="personas">
+      @for (persona of taller.personal(); track persona.id) {
+      <li class="persona">
+        @if (editandoPersona() === persona.id) {
+        <ng-container
+          *ngTemplateOutlet="formularioPersona; context: { $implicit: 'Guardar' }"
+        />
+        } @else {
+        <span class="persona__nombre">{{ persona.nombre }}</span>
+        <span class="persona__papel">{{ nombrePapel[persona.papel] }}</span>
+        <span class="persona__especialidades">
+          @for (esp of persona.especialidades; track esp) {
+          <span class="persona__especialidad"
+            >{{ nombreEspecialidad[esp] }}</span
+          >
+          } @empty {
+          <!-- Solo el Técnico ejecuta, así que solo él las lleva. Un guion
+               dice "acá no va nada" mejor que un hueco. -->
+          <span class="persona__especialidad persona__especialidad--ninguna"
+            >—</span
+          >
+          }
+        </span>
+
+        @if (puedeEditar()) {
+        <div class="persona__acciones">
+          <button
+            app-boton
+            tono="contorno"
+            alto="chico"
+            type="button"
+            (click)="abrirPersona(persona)"
+          >
+            Cambiar
+          </button>
+          <button
+            app-boton
+            tono="peligro"
+            alto="chico"
+            type="button"
+            (click)="pedirBaja(persona)"
+          >
+            Dar de baja
+          </button>
+        </div>
+        } }
+
+        <!-- El aviso va pegado a la fila y no en un diálogo del navegador:
+             hace falta decir cuántas órdenes abiertas deja, y `confirm` no
+             sabe decirlo. -->
+        @if (bajaPendiente()?.id === persona.id) {
+        <p class="persona__baja" role="alert">
+          @if (bajaPendiente()!.abiertas === 1) { Responde por 1 orden que sigue
+          en el taller. } @else if (bajaPendiente()!.abiertas > 1) { Responde
+          por {{ bajaPendiente()!.abiertas }} órdenes que siguen en el taller. }
+          @else { No responde por ninguna orden abierta. } Sale de la lista,
+          pero las órdenes que ya respondió siguen a su nombre.
+          <span class="persona__acciones">
+            <button
+              app-boton
+              tono="peligro"
+              alto="chico"
+              type="button"
+              (click)="confirmarBaja()"
+            >
+              Dar de baja
+            </button>
+            <button
+              app-boton
+              tono="callado"
+              alto="chico"
+              type="button"
+              (click)="cancelarBaja()"
+            >
+              Cancelar
+            </button>
+          </span>
+        </p>
+        }
+      </li>
+      } @empty {
+      <li class="persona persona--ninguna">
+        Todavía no hay nadie. Las órdenes van a quedar sin responsable hasta que
+        se agregue a alguien.
+      </li>
+      }
+    </ul>
+
+    @if (puedeEditar()) { @if (editandoPersona() === 'nuevo') {
+    <div class="persona persona--nueva">
+      <ng-container
+        *ngTemplateOutlet="formularioPersona; context: { $implicit: 'Agregar' }"
+      />
+    </div>
+    } @else {
+    <button
+      app-boton
+      tono="contorno"
+      type="button"
+      class="bloque__anadir"
+      (click)="abrirPersonaNueva()"
+    >
+      <fa-icon [icon]="['fas', 'plus']" />
+      Agregar a alguien
+    </button>
+    } }
+  </section>
+
+  <!-- El mismo formulario para el alta y para el cambio: son los mismos tres
+       campos, y dos copias divergen al primer campo que se añada. -->
+  <ng-template #formularioPersona let-accion>
+    <div class="persona__editar">
+      <div class="campo">
+        <label for="persona-nombre">Nombre</label>
+        <input
+          id="persona-nombre"
+          placeholder="Luis Vargas"
+          [value]="personaNombre()"
+          (input)="personaNombre.set($any($event.target).value)"
+        />
+      </div>
+
+      <div class="campo">
+        <label for="persona-papel">Papel</label>
+        <select
+          id="persona-papel"
+          [value]="personaPapel()"
+          (change)="personaPapel.set($any($event.target).value)"
+        >
+          @for (papel of papeles; track papel) {
+          <option [value]="papel">{{ nombrePapel[papel] }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Solo al Técnico: la especialidad es de quien ejecuta el trabajo. -->
+      @if (personaPapel() === 'tecnico') {
+      <fieldset class="campo campo--especialidades">
+        <legend>Especialidades</legend>
+        @for (esp of taller.especialidades(); track esp) {
+        <label class="opcion">
+          <input
+            type="checkbox"
+            [checked]="tiene(esp)"
+            (change)="alternarEspecialidad(esp)"
+          />
+          {{ nombreEspecialidad[esp] }}
+        </label>
+        }
+      </fieldset>
+      }
+
+      <div class="persona__acciones">
+        <button
+          app-boton
+          tono="solido"
+          alto="chico"
+          type="button"
+          (click)="guardarPersona()"
+        >
+          {{ accion }}
+        </button>
+        <button
+          app-boton
+          tono="callado"
+          alto="chico"
+          type="button"
+          (click)="cancelarPersona()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
   <!-- --------------------------------------------- sin recoger ----------- -->
   <section class="bloque">
     <h3 class="bloque__titulo">Vehículos sin recoger</h3>
