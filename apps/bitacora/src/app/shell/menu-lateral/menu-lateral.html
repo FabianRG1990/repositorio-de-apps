@@ -41,14 +41,24 @@
     type="button"
     class="menu__perfil"
     [matMenuTriggerFor]="menuPerfiles"
-    [attr.title]="estaColapsado() ? nombreDelPerfil() : null"
-    [attr.aria-label]="'Perfil: ' + nombreDelPerfil() + '. Cambiar de Perfil'"
+    [attr.title]="estaColapsado() ? rotuloDelPie() : null"
+    [attr.aria-label]="
+      'Perfil: ' +
+      nombreDelPerfil() +
+      (personaActual() ? ', ' + personaActual()!.nombre : '') +
+      '. Cambiar de Perfil'
+    "
   >
     <fa-icon class="menu__perfil-icono" [icon]="iconoDelPerfil()" />
     @if (!estaColapsado()) {
     <span class="menu__perfil-texto">
-      <span class="menu__perfil-nombre">{{ nombreDelPerfil() }}</span>
-      <span class="menu__perfil-pie">Cambiar de Perfil</span>
+      <span class="menu__perfil-nombre">{{ rotuloDelPie() }}</span>
+      <!-- Con nombre, el Papel pasa al pie: es lo que explica por qué el menú
+           está en ese orden, así que no puede desaparecer. Sin nombre, el pie
+           sigue diciendo qué hace el botón. -->
+      <span class="menu__perfil-pie">
+        {{ personaActual() ? nombreDelPerfil() : 'Cambiar de Perfil' }}
+      </span>
     </span>
     <fa-icon class="menu__perfil-flecha" [icon]="['fas', 'right-left']" />
     }
@@ -77,4 +87,32 @@
     }
   </button>
   }
+
+  <!--
+    Y quién de ese Papel. Va en el MISMO desplegable y no en otro sitio porque
+    es la misma pregunta partida en dos —quién tiene el aparato— y separarla
+    obligaría a buscar la segunda mitad. Solo aparece si hay a quién preguntar:
+    con nadie configurado no hay nada que ofrecer.
+  -->
+  @if (candidatas().length) {
+  <hr class="panel-perfiles__raya" />
+  @for (persona of candidatas(); track persona.id) {
+  <button
+    mat-menu-item
+    type="button"
+    [attr.aria-current]="persona.id === personaActual()?.id ? 'true' : null"
+    (click)="cambiarPersona(persona.id)"
+  >
+    <fa-icon [icon]="['fas', 'user']" />
+    <span>{{ persona.nombre }}</span>
+    @if (persona.id === personaActual()?.id) {
+    <fa-icon class="panel-perfiles__marca" [icon]="['fas', 'check']" />
+    }
+  </button>
+  } @if (personaActual()) {
+  <button mat-menu-item type="button" (click)="cambiarPersona(null)">
+    <fa-icon [icon]="['fas', 'user-slash']" />
+    <span>Sin decir quién</span>
+  </button>
+  } }
 </mat-menu>

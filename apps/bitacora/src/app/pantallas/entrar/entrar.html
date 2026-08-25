@@ -1,6 +1,39 @@
 <main class="entrada">
   <div class="entrada__cuadro">
     <p class="entrada__marca">Bitácora</p>
+
+    @if (preguntando(); as perfil) {
+    <h1 class="entrada__titulo">¿Quién sos?</h1>
+    <p class="entrada__ayuda">
+      Sirve para que las órdenes que abrás queden a tu nombre. Podés entrar sin
+      decirlo y ponerlo después.
+    </p>
+
+    <ul class="entrada__lista">
+      @for (persona of quienUsa.candidatas(); track persona.id) {
+      <li>
+        <!-- Icono de persona y no el del Papel: el Papel ya lo dice el
+             subtítulo, y repetirlo tres veces dejaba los dos pasos con la
+             misma pinta. Acá se elige entre gente, no entre oficios. -->
+        <button type="button" class="perfil" (click)="soy(persona.id)">
+          <fa-icon class="perfil__icono" [icon]="['fas', 'user']" />
+          <span class="perfil__nombre">{{ persona.nombre }}</span>
+          <span class="perfil__oficio">{{ etiqueta[perfil] }}</span>
+        </button>
+      </li>
+      }
+    </ul>
+
+    <div class="entrada__salidas">
+      <button type="button" class="entrada__salida" (click)="sinDecir()">
+        Entrar sin decir quién
+      </button>
+      <button type="button" class="entrada__salida" (click)="volver()">
+        <fa-icon [icon]="['fas', 'arrow-left']" />
+        Cambiar de perfil
+      </button>
+    </div>
+    } @else {
     <h1 class="entrada__titulo">¿Quién está usando Bitácora?</h1>
     <p class="entrada__ayuda">
       Cambia lo que la app te pone delante, no lo que podés hacer. Se cambia
@@ -18,5 +51,6 @@
       </li>
       }
     </ul>
+    }
   </div>
 </main>

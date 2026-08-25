@@ -457,6 +457,15 @@ html[data-densidad='guantes'] {
   color: var(--app-accent);
 }
 
+/* Separa los tres Papeles de la gente que los ejerce. Es una raya y no un
+   encabezado porque el desplegable es un conmutador rápido: un título por
+   grupo lo convertiría en una pantalla de configuración. */
+.panel-perfiles .panel-perfiles__raya {
+  border: 0;
+  border-top: 1px solid var(--app-border-lista);
+  margin: 0.35rem 0;
+}
+
 .solo-lectores {
   position: absolute;
   width: 1px;
