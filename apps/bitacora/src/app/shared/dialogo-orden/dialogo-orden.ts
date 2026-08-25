@@ -23,6 +23,7 @@ import {
   tiempoParadoLegible,
 } from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
+import { CicloOrden } from '../ciclo-orden/ciclo-orden';
 import { BitacoraDatos } from '../../data-access/db/bitacora-db';
 import { EspacioStore } from '../../data-access/espacio.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
@@ -58,6 +59,7 @@ import { TrabajosOrden } from '../trabajos-orden/trabajos-orden';
     InsigniaEstado,
     TrabajosOrden,
     GaleriaFotos,
+    CicloOrden,
   ],
 })
 export class DialogoOrden {

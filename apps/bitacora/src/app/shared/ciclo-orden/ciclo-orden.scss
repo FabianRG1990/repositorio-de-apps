@@ -1,0 +1,155 @@
+.ciclo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ciclo__error {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--app-danger-borde);
+  border-radius: 0.6rem;
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}
+
+/* --- entregada ------------------------------------------------------------ */
+
+.ciclo__entregada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--app-success-borde);
+  border-radius: 0.95rem;
+  background: var(--app-success-fondo);
+}
+
+.ciclo__entregada-texto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  margin-right: auto;
+  color: var(--app-success);
+  font-weight: 510;
+}
+
+/* --- el aviso de listo ---------------------------------------------------- */
+
+/* Misma seña que el resto de la casa: rectángulo redondeado con filete a la
+   izquierda. Va en tono de aviso porque un carro listo sin avisar es trabajo
+   hecho que el Cliente no sabe que puede venir a recoger. */
+.aviso-listo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--app-warning-borde);
+  border-left: 3px solid var(--app-warning-borde);
+  border-radius: 0.95rem;
+  background: var(--app-warning-fondo);
+}
+
+.aviso-listo__hecho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--app-success);
+  font-weight: 510;
+}
+
+.aviso-listo__dias {
+  color: var(--app-text-muted);
+  font-weight: 400;
+}
+
+.aviso-listo__pendiente {
+  margin: 0;
+  color: var(--app-warning);
+  font-weight: 510;
+}
+
+.aviso-listo__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* --- formularios ---------------------------------------------------------- */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--app-border-strong);
+}
+
+.formulario__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  max-width: 22rem;
+}
+
+.formulario__campo label {
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-muted);
+}
+
+.formulario__campo input {
+  /* Piso táctil: se toca de pie y a veces con guante. */
+  min-height: var(--app-boton-alto);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.6rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+  font: inherit;
+}
+
+.formulario__campo input:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  border-color: var(--app-accent-strong);
+}
+
+.formulario__ayuda {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--app-text-soft);
+}
+
+.formulario__eco {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 590;
+  color: var(--app-accent-strong);
+}
+
+.formulario__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ciclo__entregar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Se encoge a su texto salvo cuando pesa: en columna, sin esto, un botón
+   secundario se estira a todo lo ancho y grita lo mismo que el principal. */
+.ciclo__entregar-boton {
+  align-self: flex-start;
+}

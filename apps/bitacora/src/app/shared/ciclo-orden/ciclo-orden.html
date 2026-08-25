@@ -1,0 +1,201 @@
+@let o = orden();
+
+<section class="ciclo">
+  @if (error()) {
+  <p class="ciclo__error" role="alert">{{ error() }}</p>
+  }
+
+  <!--
+    Entregada: el carro ya no está. Lo único que queda es poder deshacerlo,
+    porque entregar es un clic que cambia el mundo y un dedo torpe sobre una
+    tableta no puede costar eso.
+  -->
+  @if (entregada()) {
+  <div class="ciclo__entregada">
+    <p class="ciclo__entregada-texto">
+      <fa-icon [icon]="['fas', 'circle-check']" />
+      Entregado.
+      @if (o.proximaVisita) {
+      <span>Próxima visita: {{ fechaLarga(o.proximaVisita) }}.</span>
+      }
+    </p>
+    <button
+      app-boton
+      tono="callado"
+      alto="chico"
+      type="button"
+      (click)="deshacerEntrega()"
+    >
+      Deshacer la entrega
+    </button>
+  </div>
+  } @else {
+
+  <!-- Sin orden forzado: un carro vuelve de "listo" a "en proceso" cuando algo
+       sale mal, y de "esperando repuesto" cuando llega la pieza. -->
+  <app-grupo-opciones
+    nombre="estado-orden"
+    etiqueta="¿Dónde va el carro?"
+    [opciones]="estados"
+    [seleccionadas]="[o.estadoClave]"
+    [multiple]="false"
+    (elegida)="moverA($event)"
+  />
+
+  <!-- El Aviso de listo (ADR 0009). Aparece cuando el trabajo terminó, que es
+       cuando hay algo que avisar. -->
+  @if (listo()) {
+  <div class="aviso-listo">
+    @if (o.aviso; as a) {
+    <p class="aviso-listo__hecho">
+      <fa-icon [icon]="['fas', 'circle-check']" />
+      Avisado a {{ a.avisadoA }} {{ etiquetaMedio[a.medio] }}
+      @if (o.diasAvisado) {
+      <span class="aviso-listo__dias">
+        · hace {{ o.diasAvisado }} {{ o.diasAvisado === 1 ? 'día' : 'días' }}
+      </span>
+      }
+    </p>
+    } @else {
+    <p class="aviso-listo__pendiente">
+      El trabajo terminó y todavía no se le ha avisado a nadie.
+    </p>
+    }
+
+    <div class="aviso-listo__acciones">
+      <!-- El mensaje lo arma Bitácora y lo manda WhatsApp (ADR 0007 y 0009). -->
+      <a
+        app-boton
+        tono="contorno"
+        alto="chico"
+        [href]="enlaceWhatsApp()"
+        target="_blank"
+        rel="noopener"
+      >
+        <fa-icon [icon]="['fas', 'comment-dots']" />
+        Mandar el mensaje
+      </a>
+      <button
+        app-boton
+        [tono]="o.aviso ? 'callado' : 'solido'"
+        alto="chico"
+        type="button"
+        (click)="abrirAviso()"
+      >
+        {{ o.aviso ? 'Volver a avisar' : 'Registrar que avisé' }}
+      </button>
+    </div>
+
+    @if (avisando()) {
+    <div class="formulario">
+      <div class="formulario__campo">
+        <label for="aviso-a">¿A quién se le avisó?</label>
+        <input
+          id="aviso-a"
+          [value]="aQuien()"
+          (input)="aQuien.set($any($event.target).value)"
+        />
+      </div>
+      <app-grupo-opciones
+        nombre="aviso-medio"
+        etiqueta="¿Por dónde?"
+        [opciones]="medios"
+        [seleccionadas]="[medio()]"
+        [multiple]="false"
+        (elegida)="elegirMedio($event)"
+      />
+      <div class="formulario__pie">
+        <button
+          app-boton
+          tono="solido"
+          alto="chico"
+          type="button"
+          [disabled]="!aQuien().trim() || ocupado()"
+          (click)="avisar()"
+        >
+          Guardar la constancia
+        </button>
+        <button
+          app-boton
+          tono="callado"
+          alto="chico"
+          type="button"
+          (click)="cancelar()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <div class="ciclo__entregar">
+    @if (entregando()) {
+    <div class="formulario">
+      <div class="formulario__campo">
+        <label for="proxima-visita">¿Cuándo debería volver?</label>
+        <input
+          id="proxima-visita"
+          type="date"
+          [value]="proximaVisita()"
+          (input)="proximaVisita.set($any($event.target).value)"
+        />
+        <!-- Se ofrece, no se exige: obligar produce fechas inventadas, y una
+             lista llena de fechas puestas por salir del paso vale menos que
+             una lista corta (ADR 0011). -->
+        @if (proximaVisita()) {
+        <!-- El aparato enseña la fecha en SU formato —una tableta en inglés
+             pone mm/dd— y en Costa Rica se lee dd/mm. Repetirla con el mes en
+             letras deja una sola lectura posible. -->
+        <p class="formulario__eco">{{ fechaLarga(proximaVisita()) }}</p>
+        } @else {
+        <p class="formulario__ayuda">
+          Opcional. Si se escribe, el carro aparece en Próximas visitas.
+        </p>
+        }
+      </div>
+      <div class="formulario__pie">
+        <button
+          app-boton
+          tono="solido"
+          alto="chico"
+          type="button"
+          [disabled]="ocupado()"
+          (click)="entregar()"
+        >
+          Entregar el vehículo
+        </button>
+        <button
+          app-boton
+          tono="callado"
+          alto="chico"
+          type="button"
+          (click)="cancelar()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+    } @else {
+    <!--
+      Entregar pesa lo que toca según dónde va el carro. Con el trabajo
+      terminado es LA acción de la ventana y ocupa todo el ancho; antes de eso
+      sigue estando —a veces el Cliente se lleva el carro a medias— pero no
+      puede ser lo más ruidoso de una Orden que todavía está en proceso.
+    -->
+    <button
+      app-boton
+      class="ciclo__entregar-boton"
+      [tono]="listo() ? 'solido' : 'contorno'"
+      [ancho]="listo()"
+      type="button"
+      (click)="abrirEntrega()"
+    >
+      <fa-icon [icon]="['fas', 'key']" />
+      Entregar el vehículo
+    </button>
+    }
+  </div>
+  }
+</section>

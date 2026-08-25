@@ -79,6 +79,13 @@
         </ul>
       </section>
 
+      <!-- El ciclo: dónde va el carro y cuándo sale. Va ARRIBA de los
+           trabajos porque es lo primero que alguien viene a cambiar cuando
+           abre una Orden que ya conoce. -->
+      <section class="od__bloque">
+        <app-ciclo-orden [orden]="o" />
+      </section>
+
       <!--
         Los trabajos son lo ÚNICO editable de la Orden, y por eso viven en su
         propio componente: tres verbos —anotar, autorizar, declinar— con sus

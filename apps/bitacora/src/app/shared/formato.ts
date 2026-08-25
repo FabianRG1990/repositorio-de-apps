@@ -14,3 +14,26 @@ export function colones(monto: number): string {
 export function kilometros(km: number): string {
   return `${km.toLocaleString('es-CR')} km`;
 }
+
+/**
+ * `2026-12-01` → `1 de diciembre de 2026`.
+ *
+ * La Próxima visita se escribe en un `<input type="date">`, que se guarda
+ * siempre en ISO pero se **enseña** en el formato del aparato: en una tableta
+ * puesta en inglés dice `mm/dd/yyyy`, y en Costa Rica se lee dd/mm. Un
+ * 01/12 que uno entiende como diciembre y otro como enero es un carro que
+ * vuelve once meses tarde. Escrito con el mes en letras no hay dos lecturas.
+ *
+ * Se parte la cadena a mano en vez de `new Date(iso)`: eso la interpreta como
+ * medianoche UTC y en Costa Rica (UTC-6) devuelve el día anterior.
+ */
+export function fechaLarga(iso: string): string {
+  const [anno, mes, dia] = iso.split('-').map(Number);
+  if (!anno || !mes || !dia) return iso;
+
+  return new Date(anno, mes - 1, dia).toLocaleDateString('es-CR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
