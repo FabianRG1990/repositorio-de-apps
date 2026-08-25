@@ -240,3 +240,18 @@
   color: var(--app-text-soft);
   font-style: italic;
 }
+
+/* --- el umbral del Vehículo sin recoger ----------------------------------- */
+
+.umbral {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+/* El número no dice qué va a pasar con él: al lado va escrito en palabras. */
+.umbral__eco {
+  padding-bottom: 0.75rem;
+  color: var(--app-text-muted);
+}

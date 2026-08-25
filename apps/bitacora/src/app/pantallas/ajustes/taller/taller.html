@@ -225,6 +225,34 @@
     } }
   </section>
 
+  <!-- --------------------------------------------- sin recoger ----------- -->
+  <section class="bloque">
+    <h3 class="bloque__titulo">Vehículos sin recoger</h3>
+    <p class="bloque__nota">
+      A los cuántos días de haberle avisado al cliente, el tablero marca el
+      carro como <strong>sin recoger</strong>. Cada taller aguanta distinto:
+      acá se ajusta al suyo.
+    </p>
+
+    @if (puedeEditar()) {
+    <div class="umbral">
+      <div class="campo campo--corto">
+        <label for="umbral-sin-recoger">Días avisado</label>
+        <input
+          id="umbral-sin-recoger"
+          inputmode="numeric"
+          [value]="dias()"
+          (input)="escribirDias($any($event.target).value)"
+          (blur)="guardarDias()"
+        />
+      </div>
+      <span class="umbral__eco">{{ ecoDelUmbral() }}</span>
+    </div>
+    } @else {
+    <p class="umbral__eco">{{ ecoDelUmbral() }}</p>
+    }
+  </section>
+
   <!-- ------------------------------------------------- tarifas ------------ -->
   <section class="bloque">
     <h3 class="bloque__titulo">Tarifas</h3>

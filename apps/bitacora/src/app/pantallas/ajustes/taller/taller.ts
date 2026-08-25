@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
@@ -61,6 +62,18 @@ export class AjustesTaller {
 
   protected readonly tarifas = signal<Record<string, string>>({});
 
+  /** El umbral del Vehículo sin recoger, mientras se teclea. */
+  protected readonly dias = signal('');
+
+  /* Lo que se va a ver en el tablero, dicho con palabras. Un "3" suelto en
+     una casilla no dice qué va a pasar con él. */
+  protected readonly ecoDelUmbral = computed(() => {
+    const n = Number.parseInt(this.dias(), 10) || this.taller.diasParaSinRecoger();
+    return n === 1
+      ? 'Se marca al día siguiente de avisarle al cliente.'
+      : `Se marca a los ${n} días de avisarle al cliente.`;
+  });
+
   constructor() {
     /* Los campos se llenan desde la base la primera vez que llega, y NO en
        cada emisión: `liveQuery` re-emite en cada escritura, y volver a
@@ -78,6 +91,7 @@ export class AjustesTaller {
             config.tarifas.map((t) => [t.especialidad, String(t.porHora)]),
           ),
         );
+        this.dias.set(String(config.diasParaSinRecoger));
       });
     });
   }
@@ -109,6 +123,27 @@ export class AjustesTaller {
     if (!Number.isFinite(valor)) return;
     await this.#operar(() =>
       this.#datos.configuracion.fijarTarifa(especialidad, valor),
+    );
+  }
+
+  /* --- Vehículos sin recoger ---------------------------------------------- */
+
+  protected escribirDias(valor: string) {
+    // Solo dígitos: son días enteros, no hay medio día de espera.
+    this.dias.set(valor.replace(/\D/gu, ''));
+  }
+
+  protected async guardarDias() {
+    const valor = Number.parseInt(this.dias(), 10);
+    if (!Number.isFinite(valor) || valor < 1) {
+      /* Una casilla vacía no puede guardar un umbral de cero días: eso
+         marcaría el carro en el mismo instante en que se avisa. Se devuelve
+         lo que había. */
+      this.dias.set(String(this.taller.diasParaSinRecoger()));
+      return;
+    }
+    await this.#operar(() =>
+      this.#datos.configuracion.fijarDiasParaSinRecoger(valor),
     );
   }
 
