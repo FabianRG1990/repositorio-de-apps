@@ -58,8 +58,21 @@
   box-shadow: var(--app-sombra-pestana-activa);
 }
 
+/* En pantalla estrecha se queda el icono, pero el rótulo NO se quita del
+   documento: con `display: none` el navegador lo saca también del árbol de
+   accesibilidad, y la pestaña se queda sin nombre — un lector de pantalla
+   anuncia "pestaña" cuatro veces seguidas (WCAG 2.2 SC 4.1.2). Se esconde a
+   la vista y se conserva para quien no la ve. */
 @media (max-width: 640px) {
   .pestana span {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 }
