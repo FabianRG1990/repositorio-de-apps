@@ -58,8 +58,14 @@ interface SemillaOrden {
   entregadoHaceHoras?: number;
   /** Se le avisó a Quien entrega hace tantas horas (ADR 0009). */
   avisadoHaceHoras?: number;
-  /** La fecha que el Asesor escribió al entregar (ADR 0011). */
-  proximaVisita?: string;
+  /**
+   * Dentro de cuántos días le toca volver (ADR 0011). Negativo si ya pasó.
+   *
+   * Va en días y no en fecha fija porque la semilla se instala el día que
+   * alguien abre la app: una fecha escrita a mano queda vencida sola, y la
+   * pantalla de Próximas visitas acabaría enseñando siempre lo mismo.
+   */
+  proximaVisitaEnDias?: number;
   notas: string;
   /** Cómo venía el carro al entrar. Es lo que respalda al Taller después. */
   odometro?: number;
@@ -69,6 +75,21 @@ interface SemillaOrden {
   /** Lo que el Cliente dijo, en sus palabras. */
   reportes?: readonly SemillaReporte[];
   lineas: readonly SemillaLinea[];
+}
+
+/**
+ * `-6` → la fecha ISO de hace seis días, en hora local.
+ *
+ * Local y no UTC: la Próxima visita es un día de calendario, no un instante,
+ * y `toISOString()` en Costa Rica (UTC-6) devolvería el día siguiente para
+ * cualquier cosa después de las seis de la tarde.
+ */
+function enDias(dias: number): string {
+  const cita = new Date();
+  cita.setDate(cita.getDate() + dias);
+  const mes = String(cita.getMonth() + 1).padStart(2, '0');
+  const dia = String(cita.getDate()).padStart(2, '0');
+  return `${cita.getFullYear()}-${mes}-${dia}`;
 }
 
 /* Los mismos datos que la app venía mostrando desde memoria. Las placas van
@@ -290,7 +311,7 @@ const SEMILLA: readonly SemillaOrden[] = [
     haceHoras: 96,
     entregadoHaceHoras: 20,
     avisadoHaceHoras: 26,
-    proximaVisita: '2026-11-20',
+    proximaVisitaEnDias: 87,
     notas: 'Entregado al chofer con el reporte de frenos firmado',
     odometro: 205600,
     combustible: 2,
@@ -312,6 +333,86 @@ const SEMILLA: readonly SemillaOrden[] = [
         horas: 2,
         monto: 54000,
         autorizada: { por: 'Constructora Peñas Blancas', medio: 'whatsapp' },
+      },
+    ],
+  },
+  /* Se le pasó la fecha y quedó trabajo sin aprobar: es la llamada que el
+     ADR 0011 quiere que el Taller pueda hacer, con qué proponer a mano. */
+  {
+    placa: 'BLT 992',
+    marca: 'Kia',
+    modelo: 'Rio',
+    anio: 2020,
+    cliente: 'Silvia Ramírez',
+    telefono: '8330-7711',
+    estado: 'entregado',
+    haceHoras: 1200,
+    entregadoHaceHoras: 1100,
+    proximaVisitaEnDias: -6,
+    notas: 'Quedó de pensar lo de los amortiguadores',
+    odometro: 92400,
+    combustible: 3,
+    danosPrevios: '',
+    objetosDentro: '',
+    reportes: [
+      {
+        textual: 'Salta mucho en los huecos y suena por delante',
+        cuando: ['siempre'],
+        desdeCuando: 'varios meses',
+        senales: ['ruido'],
+        especialidad: 'mecanica',
+      },
+    ],
+    lineas: [
+      {
+        descripcion: 'Cambio de aceite y filtro',
+        especialidad: 'mecanica',
+        horas: 1,
+        monto: 32000,
+        autorizada: { por: 'Silvia Ramírez', medio: 'presencial' },
+      },
+      {
+        descripcion: 'Cambio de amortiguadores delanteros',
+        especialidad: 'mecanica',
+        horas: 3,
+        monto: 210000,
+        declinada: { motivo: 'Lo deja para la próxima, no le alcanza ahora' },
+      },
+    ],
+  },
+  /* Esta semana. Sin nada declinado: la llamada es solo el recordatorio. */
+  {
+    placa: 'C 158 902',
+    marca: 'Mitsubishi',
+    modelo: 'L200',
+    anio: 2015,
+    cliente: 'Finca La Chácara',
+    telefono: '2447-1200',
+    estado: 'entregado',
+    haceHoras: 700,
+    entregadoHaceHoras: 640,
+    proximaVisitaEnDias: 4,
+    notas: 'Servicio cada 5000 km, lo trae el mismo peón',
+    odometro: 318900,
+    combustible: 4,
+    danosPrevios: 'Balde con golpes de trabajo',
+    objetosDentro: '',
+    reportes: [
+      {
+        textual: 'Viene por el servicio, no trae ninguna queja',
+        cuando: [],
+        desdeCuando: '',
+        senales: [],
+        especialidad: 'mecanica',
+      },
+    ],
+    lineas: [
+      {
+        descripcion: 'Servicio completo de 5000 km',
+        especialidad: 'mecanica',
+        horas: 2,
+        monto: 68000,
+        autorizada: { por: 'Finca La Chácara', medio: 'llamada' },
       },
     ],
   },
@@ -474,7 +575,10 @@ export class BitacoraDatos {
               Date.now() - s.entregadoHaceHoras * 60 * 60 * 1000,
             ).toISOString()
           : NO_BORRADO,
-        proximaVisita: s.proximaVisita ?? null,
+        proximaVisita:
+          s.proximaVisitaEnDias === undefined
+            ? null
+            : enDias(s.proximaVisitaEnDias),
         notas: s.notas,
         odometro: s.odometro ?? null,
         combustible: s.combustible ?? null,
