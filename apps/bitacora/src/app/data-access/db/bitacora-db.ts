@@ -6,9 +6,11 @@ import {
   type CuartosDeTanque,
   type Especialidad,
   type EstadoOrden,
+  type MedioDeAviso,
   type SenalDeFalla,
 } from './esquema';
 import { RecepcionDeVehiculos } from './recepcion';
+import { TrabajosDeLaOrden } from './trabajos';
 import { acunarFolio, Repositorio, RepositorioVehiculos } from './repositorio';
 
 /**
@@ -26,6 +28,8 @@ interface SemillaLinea {
   monto: number;
   /** El Cliente no la aprobó. Conserva su motivo y reaparece al volver. */
   declinada?: { motivo: string };
+  /** El Cliente dijo que sí, y por dónde lo dijo (ADR 0007). */
+  autorizada?: { por: string; medio: MedioDeAviso };
 }
 
 /** Una queja del Cliente sembrada, con lo que el intérprete habría propuesto. */
@@ -93,12 +97,14 @@ const SEMILLA: readonly SemillaOrden[] = [
         especialidad: 'mecanica',
         horas: 4,
         monto: 145000,
+        autorizada: { por: 'Marielos Quesada', medio: 'whatsapp' },
       },
       {
         descripcion: 'Purga del sistema',
         especialidad: 'mecanica',
         horas: 1,
         monto: 18000,
+        autorizada: { por: 'Marielos Quesada', medio: 'whatsapp' },
       },
       /* Declinada: el Taller lo recomendó y el Cliente dijo que no. Se guarda
          con su motivo y su monto porque vuelve a proponerse cuando el carro
@@ -140,6 +146,7 @@ const SEMILLA: readonly SemillaOrden[] = [
         especialidad: 'pintura',
         horas: 6,
         monto: 210000,
+        autorizada: { por: 'Don Beto, el chofer', medio: 'presencial' },
       },
     ],
   },
@@ -221,6 +228,7 @@ const SEMILLA: readonly SemillaOrden[] = [
         especialidad: 'mecanica',
         horas: 1.5,
         monto: 62000,
+        autorizada: { por: 'Ana Lucía Brenes', medio: 'llamada' },
       },
     ],
   },
@@ -256,6 +264,7 @@ const SEMILLA: readonly SemillaOrden[] = [
         especialidad: 'mecanica',
         horas: 2,
         monto: 54000,
+        autorizada: { por: 'Constructora Peñas Blancas', medio: 'whatsapp' },
       },
     ],
   },
@@ -273,6 +282,7 @@ export class BitacoraDatos {
     this.repo,
     this.vehiculos,
   );
+  readonly trabajos = new TrabajosDeLaOrden(this.db, this.repo);
 
   /** El Puesto desde el que este aparato acuña Folios. Fase 1 tiene uno solo. */
   async puestoActual(): Promise<string> {
@@ -318,6 +328,7 @@ export class BitacoraDatos {
         this.db.ordenes,
         this.db.reportes,
         this.db.lineas,
+        this.db.autorizaciones,
         this.db.pendientes,
       ],
       async () => {
@@ -416,7 +427,7 @@ export class BitacoraDatos {
       }
 
       for (const linea of s.lineas) {
-        await this.repo.crear(this.db.lineas, {
+        const creada = await this.repo.crear(this.db.lineas, {
           ordenId: orden.id,
           descripcion: linea.descripcion,
           especialidad: linea.especialidad,
@@ -429,6 +440,20 @@ export class BitacoraDatos {
             : NO_BORRADO,
           motivoDeclinacion: linea.declinada?.motivo ?? null,
         });
+
+        /* La constancia es una fila aparte, no un booleano en la Línea: dice
+           QUIÉN autorizó y POR QUÉ MEDIO, que es lo que sostiene al Taller en
+           una disputa (ADR 0007). */
+        if (linea.autorizada) {
+          await this.repo.crear(this.db.autorizaciones, {
+            lineaId: creada.id,
+            autorizadaPor: linea.autorizada.por,
+            medio: linea.autorizada.medio,
+            autorizadaEn: new Date(
+              Date.now() - s.haceHoras * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
       }
     }
   }
