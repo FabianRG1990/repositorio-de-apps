@@ -115,6 +115,16 @@ export interface Orden {
   /** Listo, avisado y ahí sigue: el carro que nadie vino a buscar. */
   readonly sinRecoger: boolean;
   readonly proximaVisita: string | null;
+  /**
+   * A nombre de quién queda la Orden ([ADR 0003]), o `null` si no la ha
+   * tomado nadie.
+   *
+   * Va compuesto acá y no resuelto en cada pantalla por lo mismo que el
+   * umbral del sin recoger: la fila del tablero, el resumen y la cabecera de
+   * la ventana lo dicen los tres, y resolver el nombre tres veces es cómo
+   * empiezan a decir cosas distintas.
+   */
+  readonly responsable: { readonly id: string; readonly nombre: string } | null;
   readonly entrada: EstadoDeEntrada;
   readonly lineas: readonly LineaServicio[];
   /* Las Especialidades que toca la Orden, sin repetir y en orden fijo. Se
@@ -263,13 +273,20 @@ export class OrdenesStore {
   async #componer(): Promise<readonly Orden[]> {
     const { db, tallerId } = this.#datos;
 
-    const [ordenes, taller] = await Promise.all([
+    const [ordenes, taller, personal] = await Promise.all([
       db.ordenes
         .where('[tallerId+borradoEn]')
         .equals([tallerId, NO_BORRADO])
         .toArray(),
       db.talleres.get(tallerId),
+      /* TODAS las Personas, incluidas las dadas de baja: una Orden vieja
+         sigue apuntando a quien ya no está, y su nombre tiene que seguir
+         saliendo. Filtrar por vivas dejaría al historial diciendo que esas
+         Órdenes no fueron de nadie. */
+      db.personas.where('tallerId').equals(tallerId).toArray(),
     ]);
+
+    const nombreDe = new Map(personal.map((p) => [p.id, p.nombre]));
 
     /* El umbral se lee acá y no en cada pantalla. Al vivir en la Orden
        compuesta, la fila del tablero, el panel de resumen y la cabecera de la
@@ -398,6 +415,13 @@ export class OrdenesStore {
           diasAvisado,
           sinRecoger,
           proximaVisita: orden.proximaVisita,
+          responsable:
+            orden.responsableId && nombreDe.has(orden.responsableId)
+              ? {
+                  id: orden.responsableId,
+                  nombre: nombreDe.get(orden.responsableId) as string,
+                }
+              : null,
           entrada: {
             odometro: orden.odometro ?? null,
             combustible: orden.combustible ?? null,
