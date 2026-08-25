@@ -56,6 +56,17 @@ export interface Taller {
   nombre: string;
   /** Las que ofrece; con una sola, el filtro del tablero no aparece. */
   especialidades: readonly Especialidad[];
+
+  /* --- Lo que va impreso ---------------------------------------------------
+     El ADR 0008 los llama "los datos del Taller que van impresos en la factura
+     y en la Orden". Sin ellos, los tres papeles salen sin membrete: un
+     comprobante sin nombre ni teléfono no sirve para volver a llamar. */
+
+  telefono: string;
+  direccion: string;
+  /** Va en la factura. Hacienda la exige; #75 decide el resto. */
+  cedulaJuridica: string;
+
   creadoEn: string;
   actualizadoEn: string;
   version: number;
@@ -360,5 +371,20 @@ export class BitacoraDb extends Dexie {
             orden.objetosDentro ??= '';
           }),
       );
+
+    /* La versión 3 añade los datos impresos del Taller. Ningún índice nuevo
+       —no se consulta un Taller por su teléfono—, así que solo hace falta
+       rellenar el que ya exista: `undefined` viajaría tal cual a la cola de
+       sincronización el día que haya servidor. */
+    this.version(3).upgrade((tx) =>
+      tx
+        .table<Taller>('talleres')
+        .toCollection()
+        .modify((taller) => {
+          taller.telefono ??= '';
+          taller.direccion ??= '';
+          taller.cedulaJuridica ??= '';
+        }),
+    );
   }
 }
