@@ -42,3 +42,9 @@
      cálculo (#72 §5.2). */
   gap: 0.5rem;
 }
+
+/* El filtro va ENTRE la cabecera y la lista, no dentro de la cabecera: ahí
+   competiría con la acción principal, y lo que hace es acotar lo de abajo. */
+.pantalla__filtro {
+  margin-bottom: 0.85rem;
+}

@@ -1,12 +1,13 @@
 <div class="pantalla">
-  @let enTaller = store.enElTaller();
+  @let enTaller = visibles();
 
   <div class="pantalla__cabecera">
     <!-- Lo entregado ya no está en el taller, y esta pantalla se llama "En el
          taller": mostrarlo acá contradecía su propio título. -->
     <p class="pantalla__conteo">
       {{ enTaller.length }} {{ enTaller.length === 1 ? 'vehículo' : 'vehículos'
-      }} · ordenados por tiempo parado
+      }}
+      @if (filtro()) { de esa especialidad } · ordenados por tiempo parado
     </p>
 
     <!-- Lleva a Recepción, que es donde se recibe un Vehículo. Antes no hacía
@@ -26,6 +27,23 @@
       Recibir vehículo
     </a>
   </div>
+
+  <!--
+    El filtro por Especialidad. Solo aparece con más de una configurada: con
+    una sola no hay nada que separar, y la pantalla queda exactamente igual
+    que la de un taller de un solo oficio (ADR 0003 y 0008).
+  -->
+  @if (hayFiltro()) {
+  <div class="pantalla__filtro">
+    <app-grupo-opciones
+      nombre="filtro-especialidad"
+      etiqueta="Ver solo"
+      [opciones]="opciones()"
+      [seleccionadas]="filtro() ? [filtro()!] : []"
+      (elegida)="alternarFiltro($event)"
+    />
+  </div>
+  }
 
   <ul class="lista">
     @for (orden of enTaller; track orden.folio) {
