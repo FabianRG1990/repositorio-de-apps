@@ -18,7 +18,7 @@ import {
   ETIQUETA_ESPECIALIDAD,
   OrdenesStore,
 } from '../../data-access/ordenes.store';
-import { colones, kilometros } from '../formato';
+import { colones, fechaLarga, kilometros } from '../formato';
 
 /**
  * El papel.
@@ -63,6 +63,7 @@ export class HojaImpresion {
   );
 
   protected readonly colones = colones;
+  protected readonly fechaLarga = fechaLarga;
   protected readonly kilometros = kilometros;
   protected readonly tanque = tanqueLegible;
   protected readonly nombreEspecialidad = ETIQUETA_ESPECIALIDAD;

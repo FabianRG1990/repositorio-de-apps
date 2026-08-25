@@ -230,6 +230,13 @@
   border: 1pt solid #000;
 }
 
+/* Recuadro como el de "Quedó pendiente": en un papel sin color, el borde es
+   lo que separa lo que hay que hacer de lo que ya se hizo. */
+.hoja__visita {
+  padding: 7pt 9pt;
+  border: 1pt solid #000;
+}
+
 .hoja__nota {
   margin-top: 3pt;
   font-size: 9pt;

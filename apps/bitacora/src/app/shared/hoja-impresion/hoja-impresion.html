@@ -149,6 +149,16 @@
   </section>
   }
 
+  <!-- La fecha que el Asesor acaba de escribir al entregar (ADR 0011). El
+       papel del Cliente ya decía "se lo recordamos en la próxima visita";
+       ahora esa visita tiene día, y se va con él en la mano. -->
+  @if (o.proximaVisita) {
+  <section class="hoja__bloque hoja__visita">
+    <h2>Le esperamos de vuelta</h2>
+    <p><strong>{{ fechaLarga(o.proximaVisita) }}</strong></p>
+  </section>
+  }
+
   <footer class="hoja__pie">
     <span>Recibido conforme ______________________________</span>
     <span>Fecha ______________</span>
@@ -172,6 +182,9 @@
       <strong>Lleva adentro:</strong>
       {{ o.entrada.objetosDentro || 'nada anotado' }}
     </p>
+    @if (o.proximaVisita) {
+    <p><strong>Próxima visita:</strong> {{ fechaLarga(o.proximaVisita) }}</p>
+    }
   </section>
 
   <section class="hoja__bloque">
