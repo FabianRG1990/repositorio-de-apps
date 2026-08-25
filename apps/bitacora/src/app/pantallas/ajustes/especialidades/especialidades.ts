@@ -50,7 +50,21 @@ export class AjustesEspecialidades {
      que no es lo mismo que prohibírselo (ADR 0005 y 0013). */
   protected readonly puedeEditar = this.#perfiles.configuraElTaller;
 
-  protected readonly elegidas = computed(() => this.taller.especialidades());
+  /**
+   * Lo que se acaba de marcar, mientras la base contesta.
+   *
+   * Sin esto, dos clics seguidos pierden el primero: cada uno parte de lo que
+   * dice `liveQuery`, y `liveQuery` todavía no ha devuelto el cambio anterior.
+   * Se veía en Firefox —quitar tres especialidades seguidas dejaba una— y en
+   * Chromium se escondía porque contestaba más rápido que el dedo.
+   *
+   * Se limpia al fallar, para volver a lo que la base dice de verdad.
+   */
+  readonly #intencion = signal<readonly Especialidad[] | null>(null);
+
+  protected readonly elegidas = computed(
+    () => this.#intencion() ?? this.taller.especialidades(),
+  );
 
   /** Lo que va a pasar con lo que hay marcado ahora mismo. */
   protected readonly consecuencia = computed(() =>
@@ -60,6 +74,11 @@ export class AjustesEspecialidades {
   );
 
   protected async alternar(id: string) {
+    /* Antes de que la configuración llegue, `elegidas()` está vacía: un clic
+       ahí AÑADE en vez de quitar, y borra las otras. No es teórico — así
+       fallaba en Firefox, que tarda un poco más en contestar. */
+    if (!this.taller.cargado()) return;
+
     const especialidad = id as Especialidad;
     const actuales = this.elegidas();
     const siguientes = actuales.includes(especialidad)
@@ -67,10 +86,13 @@ export class AjustesEspecialidades {
       : [...actuales, especialidad];
 
     this.error.set(null);
+    this.#intencion.set(siguientes);
+
     try {
       await this.#datos.lista;
       await this.#datos.configuracion.guardarEspecialidades(siguientes);
     } catch (falla) {
+      this.#intencion.set(null);
       /* El mensaje viene escrito desde la capa de datos: quitar la última
          Especialidad deja al Taller sin poder recibir un carro, y eso hay que
          decirlo con esas palabras y no con un "no se pudo guardar". */

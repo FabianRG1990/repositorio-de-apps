@@ -43,3 +43,11 @@
   background: var(--app-danger-fondo);
   color: var(--app-danger);
 }
+
+/* Mientras la configuración no llegue no se enseñan los chips: pulsarlos antes
+   actuaría sobre una lista vacía y borraría lo que hay. */
+.especialidades__cargando {
+  margin: 0;
+  color: var(--app-text-soft);
+  font-style: italic;
+}
