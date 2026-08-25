@@ -15,6 +15,10 @@ import {
   tanqueLegible,
 } from '../../data-access/etiquetas-reporte';
 import {
+  ImpresionStore,
+  type DocumentoImpreso,
+} from '../../data-access/impresion.store';
+import {
   OrdenesStore,
   tiempoParadoLegible,
 } from '../../data-access/ordenes.store';
@@ -48,6 +52,7 @@ import { InsigniaEstado } from '../insignia-estado/insignia-estado';
 export class DialogoOrden {
   readonly store = inject(OrdenesStore);
   readonly #documento = inject(DOCUMENT);
+  readonly #impresion = inject(ImpresionStore);
 
   /* No puede ser `#privado`: Angular no admite un campo privado de JavaScript
      como destino de `viewChild` (NG1053). */
@@ -115,6 +120,17 @@ export class DialogoOrden {
       evento.clientY >= caja.top &&
       evento.clientY <= caja.bottom;
     if (!dentro) ventana.close();
+  }
+
+  /**
+   * Sacar el papel.
+   *
+   * La ventana NO se cierra: el papel se imprime con ella abierta y quien
+   * imprime casi siempre saca dos —la del taller y la del cliente— una detrás
+   * de otra. Cerrarla obligaría a volver a abrirla para el segundo.
+   */
+  protected imprimir(documento: DocumentoImpreso) {
+    this.#impresion.imprimir(documento);
   }
 
   protected metaDe(reporte: {

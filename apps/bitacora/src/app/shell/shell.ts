@@ -18,6 +18,7 @@ import { DetalleStore } from '../data-access/detalle.store';
 import { PerfilStore } from '../data-access/perfil.store';
 import { MenuLateral } from './menu-lateral/menu-lateral';
 import { DialogoOrden } from '../shared/dialogo-orden/dialogo-orden';
+import { HojaImpresion } from '../shared/hoja-impresion/hoja-impresion';
 import { PanelDetalle } from './panel-detalle/panel-detalle';
 
 /**
@@ -43,6 +44,7 @@ const APAISADO_BAJO = '(max-height: 520px) and (orientation: landscape)';
     MenuLateral,
     PanelDetalle,
     DialogoOrden,
+    HojaImpresion,
   ],
 })
 export class Shell {

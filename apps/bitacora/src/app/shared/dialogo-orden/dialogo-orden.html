@@ -179,15 +179,33 @@
 
     <footer class="od__pie">
       <span class="od__pie-rotulo">Imprimir para</span>
-      <button app-boton tono="contorno" alto="chico" type="button">
+      <button
+        app-boton
+        tono="contorno"
+        alto="chico"
+        type="button"
+        (click)="imprimir('taller')"
+      >
         <fa-icon [icon]="['fas', 'screwdriver-wrench']" />
         El taller
       </button>
-      <button app-boton tono="contorno" alto="chico" type="button">
+      <button
+        app-boton
+        tono="contorno"
+        alto="chico"
+        type="button"
+        (click)="imprimir('cliente')"
+      >
         <fa-icon [icon]="['fas', 'user']" />
         El cliente
       </button>
-      <button app-boton tono="contorno" alto="chico" type="button">
+      <button
+        app-boton
+        tono="contorno"
+        alto="chico"
+        type="button"
+        (click)="imprimir('archivo')"
+      >
         <fa-icon [icon]="['fas', 'folder']" />
         Archivo
       </button>
