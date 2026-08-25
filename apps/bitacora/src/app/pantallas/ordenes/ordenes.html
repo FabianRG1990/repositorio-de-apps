@@ -66,6 +66,38 @@
         }
       </ul>
     </section>
+    } @case ('entregado') {
+    <section
+      role="tabpanel"
+      id="panel-entregado"
+      aria-labelledby="pestana-entregado"
+      class="panel"
+    >
+      @let salidos = store.entregadas();
+      <!--
+        Es la única puerta de vuelta a una Orden entregada. Sin ella, deshacer
+        una entrega solo se podía mientras la ventana siguiera abierta — y el
+        arrepentimiento casi nunca llega antes de cerrarla.
+      -->
+      <p class="panel__conteo">
+        {{ salidos.length }} {{ salidos.length === 1 ? 'vehículo entregado' :
+        'vehículos entregados' }}
+      </p>
+
+      <ul class="lista">
+        @for (orden of salidos; track orden.folio) {
+        <li
+          app-fila-orden
+          [orden]="orden"
+          [seleccionada]="store.folioSeleccionado() === orden.folio"
+          (elegida)="store.seleccionar(orden.folio)"
+          (detallePedido)="verOrden(orden.folio)"
+        ></li>
+        } @empty {
+        <li class="panel__vacio">Todavía no se ha entregado ningún vehículo.</li>
+        }
+      </ul>
+    </section>
     } @case ('declinado') {
     <section
       role="tabpanel"

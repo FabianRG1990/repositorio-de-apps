@@ -18,6 +18,7 @@ import { Boton } from '../../shared/boton/boton';
 const PESTANAS: readonly Pestana[] = [
   { id: 'en-taller', label: 'En el taller', icon: ['fas', 'warehouse'] },
   { id: 'por-entregar', label: 'Por entregar', icon: ['fas', 'key'] },
+  { id: 'entregado', label: 'Entregado', icon: ['fas', 'circle-check'] },
   { id: 'declinado', label: 'Declinado', icon: ['fas', 'circle-minus'] },
 ];
 

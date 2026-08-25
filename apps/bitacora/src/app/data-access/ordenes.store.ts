@@ -191,6 +191,18 @@ export class OrdenesStore {
   );
 
   /**
+   * Lo que ya salió del Taller.
+   *
+   * Sin esta vista una Orden entregada desaparecía de TODAS las pantallas, y
+   * con ella el único camino para deshacer una entrega: entregar es un clic
+   * que cambia el mundo, y el arrepentimiento casi nunca llega antes de
+   * cerrar la ventana.
+   */
+  readonly entregadas = computed(() =>
+    this.ordenes().filter((o) => o.estadoClave === 'entregado'),
+  );
+
+  /**
    * Lo que el Taller recomendó y el Cliente no aprobó.
    *
    * Se lista por LÍNEA y no por Orden: el trabajo declinado es de la Línea
