@@ -1501,14 +1501,19 @@ test.describe('la ventana de la Orden', () => {
     await expect(ventana).toContainText(
       '«Y también chilla cuando freno despacio»',
     );
-    // Los trabajos con su monto, y el total de lo APROBADO.
+    /* Los trabajos con su monto, y el total de lo APROBADO. Desde #110 son
+       tarjetas editables y no una tabla de solo lectura. */
     await expect(ventana).toContainText('Diagnóstico de carga');
-    await expect(ventana.locator('.od__total')).toContainText(/25\s000/u);
-    // Lo declinado, aparte y con su motivo.
-    await expect(ventana.locator('.od__declinado')).toContainText(/178\s000/u);
-    await expect(ventana.locator('.od__declinado')).toContainText(
-      'Va a cotizar el repuesto',
+    await expect(ventana.locator('.trabajos__totales')).toContainText(
+      /Aprobado · ₡25\s000/u,
     );
+    // Lo declinado, con su motivo y fuera del total aprobado.
+    await expect(ventana.locator('.trabajos__totales')).toContainText(
+      /Declinado · ₡178\s000/u,
+    );
+    await expect(
+      ventana.locator('.trabajo').filter({ hasText: 'Cambio de alternador' }),
+    ).toContainText('Va a cotizar el repuesto');
     // Y el estado de entrada.
     await expect(ventana).toContainText(/61\s870 km/u);
   });
@@ -1518,7 +1523,11 @@ test.describe('la ventana de la Orden', () => {
   test('el total no incluye lo declinado', async ({ page }) => {
     const ventana = await abrirLaOrden(page, '742 118');
 
-    const total = await ventana.locator('.od__total .num').innerText();
+    const total = await ventana
+      .locator('.trabajos__totales')
+      .locator('span')
+      .first()
+      .innerText();
     /* El separador de miles de `es-CR` es un espacio FINO INSEPARABLE, no uno
        normal: comparar contra "25 000" tecleado a mano falla aunque el número
        esté bien. `\s` sí lo cubre. */
@@ -1773,5 +1782,233 @@ test.describe('los tres papeles', () => {
     await expect(page.locator('li.fila').first()).toBeVisible();
 
     await expect(page.locator('app-hoja-impresion')).toBeHidden();
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   Editar la Orden (#110).
+
+   Tres verbos: anotar, autorizar y declinar. Es lo que el taller hace entre
+   recibir el carro y entregarlo, y era el hueco que quedaba después de #108:
+   la Orden se leía y se imprimía, pero no se editaba.
+   --------------------------------------------------------------------------- */
+test.describe('editar la Orden', () => {
+  const abrir = async (page: Page, placa: string) => {
+    await page.goto('/');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page
+      .locator('li.fila')
+      .filter({ hasText: placa })
+      .getByRole('button', { name: /Ver orden/ })
+      .click();
+    await expect(page.locator('dialog.ventana')).toBeVisible();
+  };
+
+  const anotar = async (page: Page, descripcion: string, monto: string) => {
+    await page.getByRole('button', { name: /Anotar trabajo/ }).click();
+    await page.fill('#trabajo-desc', descripcion);
+    await page.fill('#trabajo-monto', monto);
+    await page.getByRole('button', { name: 'Anotar', exact: true }).click();
+  };
+
+  test('un trabajo anotado aparece en la Orden y suma al total', async ({
+    page,
+  }) => {
+    await abrir(page, '742 118');
+    // La semilla trae uno aprobado de ₡25 000 y uno declinado.
+    await expect(page.locator('.trabajos__totales')).toContainText(/25\s000/u);
+
+    await anotar(page, 'Cambio de pastillas delanteras', '62000');
+
+    const nuevo = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Cambio de pastillas delanteras' });
+    await expect(nuevo).toBeVisible();
+    await expect(nuevo).toContainText(/62\s000/u);
+    // 25 000 + 62 000. Lo declinado no entra en el aprobado.
+    await expect(page.locator('.trabajos__totales')).toContainText(/87\s000/u);
+  });
+
+  /* Nace sin autorizar: nadie ha dicho que sí todavía, y decirlo con palabras
+     es lo que evita que se ejecute un trabajo que el Cliente no aprobó. */
+  test('un trabajo nuevo nace sin respuesta del cliente', async ({ page }) => {
+    await abrir(page, '742 118');
+    await anotar(page, 'Revisión de suspensión', '40000');
+
+    const nuevo = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Revisión de suspensión' });
+    await expect(nuevo).toContainText('Sin respuesta del cliente');
+    await expect(nuevo.getByRole('button', { name: 'Autorizar' })).toBeVisible();
+  });
+
+  test('dice qué falta mientras no se pueda anotar', async ({ page }) => {
+    await abrir(page, '742 118');
+    await page.getByRole('button', { name: /Anotar trabajo/ }).click();
+
+    const guardar = page.getByRole('button', { name: 'Anotar', exact: true });
+    await expect(guardar).toBeDisabled();
+    await expect(page.locator('.anotar__falta')).toContainText('qué es el trabajo');
+
+    await page.fill('#trabajo-desc', 'Algo');
+    await expect(page.locator('.anotar__falta')).toContainText('el monto');
+
+    await page.fill('#trabajo-monto', '1000');
+    await expect(guardar).toBeEnabled();
+  });
+
+  /* La constancia dice QUIÉN y POR QUÉ MEDIO: es lo único que sostiene al
+     taller en una disputa (#15, ADR 0007). */
+  test('autorizar deja constancia de persona y medio', async ({ page }) => {
+    await abrir(page, '742 118');
+
+    const sinRespuesta = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Diagnóstico de carga' });
+    await sinRespuesta.getByRole('button', { name: 'Autorizar' }).click();
+
+    /* El campo se busca DENTRO de la fila, no por su id: el id lleva el
+       identificador de la Línea, que es un UUID que la prueba no conoce. */
+    await sinRespuesta.locator('.formulario__campo input').fill('Doña Marta');
+    await sinRespuesta
+      .locator('.formulario .opcion')
+      .filter({ hasText: 'Llamada' })
+      .click();
+    await page.getByRole('button', { name: /Registrar el sí/ }).click();
+
+    await expect(sinRespuesta).toContainText(
+      'Autorizado por Doña Marta por llamada',
+    );
+  });
+
+  test('declinar pide motivo y lo conserva', async ({ page }) => {
+    await abrir(page, '742 118');
+
+    const linea = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Diagnóstico de carga' });
+    await linea.getByRole('button', { name: 'Declinar' }).click();
+    await linea.locator('.formulario__campo input').fill('Lo va a pensar');
+    await linea
+      .locator('.formulario')
+      .getByRole('button', { name: 'Declinar', exact: true })
+      .click();
+
+    await expect(linea).toContainText('Declinado');
+    await expect(linea).toContainText('«Lo va a pensar»');
+    // Y sale del total aprobado, que se queda en cero.
+    await expect(page.locator('.trabajos__totales')).toContainText(
+      'Aprobado · ₡0',
+    );
+  });
+
+  /* Un dedo torpe en una tableta no puede costar una venta. */
+  test('declinar se puede deshacer', async ({ page }) => {
+    await abrir(page, '742 118');
+
+    const linea = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Cambio de alternador' });
+    await expect(linea).toContainText('Declinado');
+
+    await linea.getByRole('button', { name: 'Deshacer' }).click();
+
+    await expect(linea).toContainText('Sin respuesta del cliente');
+    await expect(linea).not.toContainText('Declinado');
+  });
+
+  /* Autorizada Y declinada a la vez no es un estado más rico: es una
+     constancia que se contradice. */
+  test('una línea no puede quedar autorizada y declinada a la vez', async ({
+    page,
+  }) => {
+    await abrir(page, '905 733');
+
+    const linea = page
+      .locator('.trabajo')
+      .filter({ hasText: 'Cambio de pastillas' });
+    // La semilla la trae autorizada por llamada.
+    await expect(linea).toContainText('Autorizado por Ana Lucía Brenes');
+
+    await linea.getByRole('button', { name: 'Declinar' }).click();
+    await linea.locator('.formulario__campo input').fill('Se arrepintió');
+    await linea
+      .locator('.formulario')
+      .getByRole('button', { name: 'Declinar', exact: true })
+      .click();
+
+    await expect(linea).toContainText('Declinado');
+    await expect(linea).not.toContainText('Autorizado por');
+  });
+
+  /* El mensaje lo arma Bitácora y lo manda WhatsApp (ADR 0007): acá solo se
+     comprueba que el enlace lleve lo que tiene que llevar. */
+  test('el enlace de WhatsApp lleva los trabajos sin respuesta', async ({
+    page,
+  }) => {
+    await abrir(page, '742 118');
+
+    const enlace = page.getByRole('link', { name: /Pedir autorización/ });
+    const href = await enlace.getAttribute('href');
+
+    expect(href).toContain('https://wa.me/50687774444');
+    const texto = decodeURIComponent(href?.split('text=')[1] ?? '');
+    expect(texto).toContain('A1-2420');
+    expect(texto).toContain('Diagnóstico de carga');
+    // Lo declinado NO entra: ya tiene respuesta.
+    expect(texto).not.toContain('Cambio de alternador');
+  });
+
+  /* Sin nada pendiente no hay a qué invitar, y un botón que abre un mensaje
+     vacío se lee como un fallo. */
+  test('sin trabajos sin respuesta, no hay botón de pedir autorización', async ({
+    page,
+  }) => {
+    await abrir(page, '905 733');
+
+    await expect(
+      page.getByRole('link', { name: /Pedir autorización/ }),
+    ).toHaveCount(0);
+  });
+
+  /* Lo anotado tiene que llegar hasta el papel, o la edición sería una
+     pantalla bonita que no deja nada. */
+  test('lo anotado sale en el papel del cliente', async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __papeles: unknown[] }).__papeles = [];
+      window.print = () => {
+        (window as unknown as { __papeles: unknown[] }).__papeles.push(
+          document.querySelector('app-hoja-impresion')?.textContent ?? '',
+        );
+      };
+    });
+
+    await abrir(page, '742 118');
+    await anotar(page, 'Cambio de faja', '96000');
+
+    const linea = page.locator('.trabajo').filter({ hasText: 'Cambio de faja' });
+    await linea.getByRole('button', { name: 'Autorizar' }).click();
+    await page.getByRole('button', { name: /Registrar el sí/ }).click();
+    await expect(linea).toContainText('Autorizado por');
+
+    await page.getByRole('button', { name: 'El cliente', exact: true }).click();
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          () => (window as unknown as { __papeles: string[] }).__papeles[0],
+        ),
+      )
+      .toContain('Cambio de faja');
+  });
+
+  /* El panel de al lado resume, y ese resumen tiene que seguir a la Orden. */
+  test('el resumen del panel sigue lo que se anota', async ({ page }) => {
+    await abrir(page, '742 118');
+    const panel = page.locator('mat-sidenav.shell__panel');
+    await expect(panel).toContainText('1 aprobado');
+
+    await anotar(page, 'Otro trabajo', '10000');
+
+    await expect(panel).toContainText('2 aprobados');
   });
 });
