@@ -4,6 +4,8 @@ import {
   type Pestana,
 } from '../../shared/lista-pestanas/lista-pestanas';
 import { Apariencia } from './apariencia/apariencia';
+import { AjustesEspecialidades } from './especialidades/especialidades';
+import { AjustesTaller } from './taller/taller';
 
 const PESTANAS: readonly Pestana[] = [
   { id: 'taller', label: 'Taller', icon: ['fas', 'shop'] },
@@ -24,13 +26,14 @@ const PESTANAS: readonly Pestana[] = [
   templateUrl: './ajustes.html',
   styleUrl: './ajustes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListaPestanas, Apariencia],
+  imports: [ListaPestanas, Apariencia, AjustesTaller, AjustesEspecialidades],
 })
 export class Ajustes {
   readonly pestanas = PESTANAS;
 
   /* Abre en Apariencia y no en Taller: Taller y Especialidades todavía son un
      párrafo cada una, así que abrir por la primera dejaba la pantalla en
-     blanco. Cuando tengan contenido, esto vuelve a 'taller'. */
-  readonly activa = signal<string>('apariencia');
+     blanco. Desde #114 las tres tienen contenido, así que vuelve a abrir en
+     'taller', que es lo que el Dueño viene a hacer. */
+  readonly activa = signal<string>('taller');
 }

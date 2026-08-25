@@ -1,0 +1,268 @@
+@let config = taller.configuracion(); @let c = campos();
+
+<div class="ajustes-taller">
+  @if (error()) {
+  <p class="aviso aviso--malo" role="alert">{{ error() }}</p>
+  }
+
+  <!-- ------------------------------------------------- datos -------------- -->
+  <section class="bloque">
+    <h3 class="bloque__titulo">Datos del taller</h3>
+    <p class="bloque__nota">
+      Son los que salen impresos en la orden y en el comprobante del cliente.
+    </p>
+
+    @if (puedeEditar()) {
+    <div class="rejilla">
+      <div class="campo campo--ancho">
+        <label for="taller-nombre">Nombre</label>
+        <input
+          id="taller-nombre"
+          [value]="c.nombre"
+          (input)="escribir('nombre', $any($event.target).value)"
+        />
+      </div>
+      <div class="campo">
+        <label for="taller-telefono">Teléfono</label>
+        <input
+          id="taller-telefono"
+          inputmode="tel"
+          [value]="c.telefono"
+          (input)="escribir('telefono', $any($event.target).value)"
+        />
+      </div>
+      <div class="campo">
+        <label for="taller-cedula">Cédula jurídica</label>
+        <input
+          id="taller-cedula"
+          [value]="c.cedulaJuridica"
+          (input)="escribir('cedulaJuridica', $any($event.target).value)"
+        />
+      </div>
+      <div class="campo campo--ancho">
+        <label for="taller-direccion">Dirección</label>
+        <input
+          id="taller-direccion"
+          [value]="c.direccion"
+          (input)="escribir('direccion', $any($event.target).value)"
+        />
+      </div>
+
+      <div class="bloque__pie">
+        <button app-boton tono="solido" type="button" (click)="guardarDatos()">
+          Guardar
+        </button>
+        @if (guardado()) {
+        <span class="aviso aviso--bueno" role="status">
+          <fa-icon [icon]="['fas', 'circle-check']" />
+          Guardado. Ya sale en los papeles.
+        </span>
+        }
+      </div>
+    </div>
+    } @else {
+    <!-- Sin el Perfil Dueño no se OFRECE editar, que no es lo mismo que
+         prohibirlo (ADR 0005 y 0013). -->
+    <dl class="solo-lectura">
+      <div>
+        <dt>Nombre</dt>
+        <dd>{{ config.datos.nombre }}</dd>
+      </div>
+      <div>
+        <dt>Teléfono</dt>
+        <dd>{{ config.datos.telefono || '—' }}</dd>
+      </div>
+      <div>
+        <dt>Cédula jurídica</dt>
+        <dd>{{ config.datos.cedulaJuridica || '—' }}</dd>
+      </div>
+      <div>
+        <dt>Dirección</dt>
+        <dd>{{ config.datos.direccion || '—' }}</dd>
+      </div>
+    </dl>
+    }
+  </section>
+
+  <!-- ------------------------------------------------- puestos ------------ -->
+  <section class="bloque">
+    <h3 class="bloque__titulo">Puestos</h3>
+    <p class="bloque__nota">
+      Cada sitio desde donde se reciben carros. Su letra encabeza el folio, y
+      cada puesto lleva su propia numeración: así dos puestos sin conexión nunca
+      acuñan el mismo folio.
+    </p>
+
+    <ul class="puestos">
+      @for (p of config.puestos; track p.id) {
+      <li class="puesto">
+        @if (editandoPuesto() === p.id) {
+        <div class="puesto__editar">
+          <div class="campo campo--corto">
+            <label [attr.for]="'letra-' + p.id">Letra</label>
+            <input
+              [id]="'letra-' + p.id"
+              class="campo__letra"
+              [value]="puestoLetra()"
+              (input)="puestoLetra.set($any($event.target).value)"
+            />
+          </div>
+          <div class="campo">
+            <label [attr.for]="'nombre-' + p.id">Nombre</label>
+            <input
+              [id]="'nombre-' + p.id"
+              [value]="puestoNombre()"
+              (input)="puestoNombre.set($any($event.target).value)"
+            />
+          </div>
+          <div class="puesto__acciones">
+            <button
+              app-boton
+              tono="solido"
+              alto="chico"
+              type="button"
+              (click)="guardarPuesto()"
+            >
+              Guardar
+            </button>
+            <button
+              app-boton
+              tono="callado"
+              alto="chico"
+              type="button"
+              (click)="cancelarPuesto()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+        } @else {
+        <span class="puesto__letra identificador">{{ p.letra }}</span>
+        <span class="puesto__nombre">{{ p.nombre }}</span>
+        <span class="puesto__folios">{{ p.consecutivo }} folios acuñados</span>
+
+        @if (puedeEditar()) {
+        <div class="puesto__acciones">
+          <button
+            app-boton
+            tono="contorno"
+            alto="chico"
+            type="button"
+            (click)="abrirPuesto(p.id, p.nombre, p.letra)"
+          >
+            Cambiar
+          </button>
+          <button
+            app-boton
+            tono="peligro"
+            alto="chico"
+            type="button"
+            (click)="quitarPuesto(p.id)"
+          >
+            Quitar
+          </button>
+        </div>
+        } }
+      </li>
+      }
+    </ul>
+
+    @if (puedeEditar()) { @if (editandoPuesto() === 'nuevo') {
+    <div class="puesto puesto--nuevo">
+      <div class="puesto__editar">
+        <div class="campo campo--corto">
+          <label for="letra-nueva">Letra</label>
+          <input
+            id="letra-nueva"
+            class="campo__letra"
+            placeholder="B"
+            [value]="puestoLetra()"
+            (input)="puestoLetra.set($any($event.target).value)"
+          />
+        </div>
+        <div class="campo">
+          <label for="nombre-nuevo">Nombre</label>
+          <input
+            id="nombre-nuevo"
+            placeholder="Tablet del patio"
+            [value]="puestoNombre()"
+            (input)="puestoNombre.set($any($event.target).value)"
+          />
+        </div>
+        <div class="puesto__acciones">
+          <button
+            app-boton
+            tono="solido"
+            alto="chico"
+            type="button"
+            (click)="guardarPuesto()"
+          >
+            Crear
+          </button>
+          <button
+            app-boton
+            tono="callado"
+            alto="chico"
+            type="button"
+            (click)="cancelarPuesto()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <button
+      app-boton
+      tono="contorno"
+      type="button"
+      class="bloque__anadir"
+      (click)="abrirPuestoNuevo()"
+    >
+      <fa-icon [icon]="['fas', 'plus']" />
+      Agregar un puesto
+    </button>
+    } }
+  </section>
+
+  <!-- ------------------------------------------------- tarifas ------------ -->
+  <section class="bloque">
+    <h3 class="bloque__titulo">Tarifas</h3>
+    <p class="bloque__nota">
+      Lo que cobra la hora de cada oficio. Al anotar un trabajo, la tarifa
+      <strong>sugiere</strong> el monto — el monto sigue escribiéndose a mano,
+      porque incluye repuestos y la tarifa solo cubre la mano de obra.
+    </p>
+
+    <ul class="tarifas">
+      @for (esp of config.especialidades; track esp) {
+      <li class="tarifa">
+        <span class="tarifa__oficio">{{ nombreEspecialidad[esp] }}</span>
+        @if (puedeEditar()) {
+        <div class="campo campo--corto">
+          <label [attr.for]="'tarifa-' + esp" class="solo-lectores">
+            Tarifa por hora de {{ nombreEspecialidad[esp] }}
+          </label>
+          <input
+            [id]="'tarifa-' + esp"
+            inputmode="numeric"
+            [value]="tarifas()[esp] ?? ''"
+            (input)="escribirTarifa(esp, $any($event.target).value)"
+            (blur)="guardarTarifa(esp)"
+          />
+        </div>
+        <span class="tarifa__unidad">por hora</span>
+        } @else {
+        <span class="tarifa__monto identificador">
+          {{ colones(+(tarifas()[esp] ?? 0)) }} por hora
+        </span>
+        }
+      </li>
+      } @empty {
+      <li class="tarifa tarifa--vacia">
+        Sin especialidades configuradas todavía.
+      </li>
+      }
+    </ul>
+  </section>
+</div>
