@@ -1,0 +1,38 @@
+<div class="especialidades">
+  <p class="especialidades__nota">
+    Los oficios que el taller ofrece. Cada trabajo de una orden lleva el suyo,
+    y de acá sale la lista entre las que se elige.
+  </p>
+
+  @if (error()) {
+  <p class="aviso aviso--malo" role="alert">{{ error() }}</p>
+  }
+
+  @if (puedeEditar()) {
+  <app-grupo-opciones
+    nombre="especialidades-del-taller"
+    etiqueta="Qué ofrece este taller"
+    [opciones]="todas"
+    [seleccionadas]="elegidas()"
+    (elegida)="alternar($event)"
+  />
+  } @else {
+  <!-- Sin el Perfil Dueño no se OFRECE editar, que no es lo mismo que
+       prohibirlo (ADR 0005 y 0013). -->
+  <div class="especialidades__lista">
+    @for (esp of elegidas(); track esp) {
+    <app-etiqueta-especialidad [especialidad]="esp" />
+    }
+  </div>
+  }
+
+  <!--
+    La consecuencia se dice ANTES de tocar nada. Es la única configuración que
+    cambia lo que se ve (ADR 0003 y 0008), y una configuración cuyo efecto no
+    se anuncia se prueba a ciegas.
+  -->
+  <p class="especialidades__consecuencia" role="status">
+    <fa-icon [icon]="['fas', 'circle-info']" />
+    {{ consecuencia() }}
+  </p>
+</div>

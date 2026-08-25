@@ -1,0 +1,45 @@
+.especialidades {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  width: min(42rem, 100%);
+}
+
+.especialidades__nota {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--app-text-soft);
+}
+
+.especialidades__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* La consecuencia va en recuadro y no como una nota más: es lo que separa a
+   esta pantalla de las otras dos, donde configurar solo guarda datos. */
+.especialidades__consecuencia {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 0.7rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.aviso--malo {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--app-danger-borde);
+  border-radius: 0.6rem;
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}
