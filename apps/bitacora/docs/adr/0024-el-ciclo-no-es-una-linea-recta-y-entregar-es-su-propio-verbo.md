@@ -32,6 +32,8 @@ El ADR 0009 pedía marcarlo y dio la razón: el tablero ordena por Tiempo parado
 
 La insignia **comparte el color con `riesgo` y no la forma**: rombo para el repuesto que no llega, cuadrado para el carro que nadie recoge. El color no puede ser lo único que los separe (ANSI/HFES 100-2007 §7.2.5.3), y bajo el sol del patio la figura aguanta más que el tono.
 
+La decisión vive en **la Orden compuesta**, no en la fila del tablero. Ahí se decidía al principio, y la fila no es la única que describe la Orden: el resumen del panel derecho y la cabecera de la ventana seguían anunciando "Listo para entrega" a diez centímetros de una fila que decía "Sin recoger · 5 d".
+
 Se exige que la Orden esté `listo`, y no solo que exista Aviso: un carro avisado que volvió a proceso conserva su Aviso, y sin esa condición el tablero lo daría por abandonado mientras el Taller le está metiendo mano.
 
 **El umbral se configura**, como el ADR 0009 dejó dicho: sin talleres reales observados cualquier número es una suposición, y una suposición enterrada en el código no se corrige con lo que enseñe el uso. Al lado del número va escrito lo que va a pasar con él; un "3" suelto en una casilla no dice qué hace.
