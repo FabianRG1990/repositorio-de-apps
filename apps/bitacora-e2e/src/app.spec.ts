@@ -2812,6 +2812,30 @@ test.describe('el vehículo sin recoger', () => {
    entregar: acá no se calcula nada, y sin fecha escrita el Vehículo no
    aparece nunca.
    --------------------------------------------------------------------------- */
+/* En pantalla estrecha la tira de pestañas se queda en iconos. El rótulo se
+   escondía con `display: none`, que lo saca TAMBIÉN del árbol de
+   accesibilidad: cuatro pestañas seguidas sin nombre (WCAG 2.2 SC 4.1.2). */
+test.describe('las pestañas en pantalla estrecha', () => {
+  test('el rótulo se esconde a la vista y se queda para el lector', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto('/ordenes');
+
+    const entregado = page.getByRole('tab', { name: 'Entregado' });
+    // Alcanzable por su nombre: es lo que anuncia el lector de pantalla.
+    await entregado.click();
+    await expect(page.locator('[role="tabpanel"]')).toHaveAttribute(
+      'id',
+      'panel-entregado',
+    );
+
+    // Y sigue sin verse: el icono es lo único que ocupa sitio.
+    const rotulo = entregado.locator('span');
+    await expect(rotulo).toHaveCSS('clip-path', 'inset(50%)');
+  });
+});
+
 test.describe('las próximas visitas', () => {
   test('se reparten en montones y las vencidas van primero', async ({
     page,
