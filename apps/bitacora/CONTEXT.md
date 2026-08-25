@@ -121,8 +121,12 @@ Una Línea de servicio que el taller recomendó y el Cliente no aprobó. Conserv
 _Evitar_: rechazado, cancelado, pendiente
 
 **Autorización**:
-El consentimiento del Cliente a una Línea de servicio concreta, con constancia de quién autorizó y por qué medio. Se autoriza trabajo por trabajo, no la Orden completa.
+El consentimiento del Cliente a una Línea de servicio concreta, con constancia de quién autorizó y por qué medio. Se autoriza trabajo por trabajo, no la Orden completa. Una Línea **nunca está autorizada y declinada a la vez**: la constancia existe para poder apoyarse en ella meses después, y una que se contradice no sirve para eso.
 _Evitar_: aprobación, OK del cliente
+
+**Sin respuesta**:
+Una Línea de servicio que el Taller propuso y sobre la que el Cliente todavía no ha dicho nada. No es lo mismo que declinada: es lo que falta por preguntar, y es lo único que entra en el mensaje que se le manda al Cliente.
+_Evitar_: pendiente, en espera, borrador
 
 **Próxima visita**:
 La fecha en que el Asesor cree que el Vehículo debería volver, escrita a mano al cerrar la Orden. No se calcula: no hay intervalos ni kilometraje, solo el criterio de quien atendió el carro.
