@@ -240,6 +240,43 @@ const SEMILLA: readonly SemillaOrden[] = [
       },
     ],
   },
+  /* Listo, avisado hace cinco días y ahí sigue. Es el caso que el ADR 0009
+     manda señalar en el tablero, y sin una Orden así la marca de "sin
+     recoger" no se vería nunca al abrir la app por primera vez. */
+  {
+    placa: 'SJB 4472',
+    marca: 'Daihatsu',
+    modelo: 'Terios',
+    anio: 2016,
+    cliente: 'Gerardo Mora',
+    telefono: '8712-4488',
+    estado: 'listo',
+    haceHoras: 192,
+    avisadoHaceHoras: 122,
+    notas: 'Se le avisó dos veces y no contesta',
+    odometro: 176400,
+    combustible: 1,
+    danosPrevios: 'Espejo derecho quebrado',
+    objetosDentro: 'Silla de bebé',
+    reportes: [
+      {
+        textual: 'No prende de una, hay que darle vuelta varias veces',
+        cuando: ['en-frio', 'al-arrancar'],
+        desdeCuando: 'como un mes',
+        senales: ['no-enciende'],
+        especialidad: 'electricidad',
+      },
+    ],
+    lineas: [
+      {
+        descripcion: 'Cambio de batería',
+        especialidad: 'electricidad',
+        horas: 0.5,
+        monto: 78000,
+        autorizada: { por: 'Gerardo Mora', medio: 'whatsapp' },
+      },
+    ],
+  },
   /* Ya entregada: sirve para que "En el taller" filtre de verdad. Sin una sola
      Orden fuera, el filtro pasaría igual sin estar haciendo nada. */
   {
