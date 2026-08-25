@@ -27,6 +27,7 @@ import {
   PerfilStore,
   type Perfil,
 } from '../../data-access/perfil.store';
+import { QuienUsaStore } from '../../data-access/quien-usa.store';
 import type { ItemMenu } from '../tipos';
 
 const ICONO_PERFIL: Record<Perfil, IconProp> = {
@@ -103,6 +104,7 @@ const COINCIDENCIA_POR_PREFIJO: IsActiveMatchOptions = {
 export class MenuLateral {
   readonly #destroyRef = inject(DestroyRef);
   readonly #perfiles = inject(PerfilStore);
+  readonly #quienUsa = inject(QuienUsaStore);
   readonly #router = inject(Router);
   #temporizador: ReturnType<typeof setTimeout> | null = null;
 
@@ -161,6 +163,20 @@ export class MenuLateral {
     const p = this.#perfiles.perfil();
     return p ? ETIQUETA_PERFIL[p] : 'Sin elegir';
   });
+
+  /**
+   * El nombre de quien está usando el aparato, si lo dijo, y quiénes más
+   * podrían serlo.
+   *
+   * El pie enseña el nombre y deja el Papel de subtítulo: quien mira su propia
+   * tableta reconoce su nombre más rápido que su oficio, y el oficio no
+   * desaparece porque es lo que explica por qué el menú está en ese orden.
+   */
+  readonly personaActual = this.#quienUsa.persona;
+  readonly candidatas = this.#quienUsa.candidatas;
+  readonly rotuloDelPie = computed(
+    () => this.#quienUsa.comoSeLlama() ?? this.nombreDelPerfil(),
+  );
   readonly iconoDelPerfil = computed<IconProp>(() => {
     const p = this.#perfiles.perfil();
     return p ? ICONO_PERFIL[p] : ['fas', 'headset'];
@@ -197,6 +213,11 @@ export class MenuLateral {
    */
   cambiarPerfil(perfil: Perfil) {
     this.#perfiles.elegir(perfil);
+  }
+
+  /** Decir quién es sin salir de la pantalla, por lo mismo que el Perfil. */
+  cambiarPersona(personaId: string | null) {
+    this.#perfiles.elegirPersona(personaId);
   }
 
   #limpiar() {

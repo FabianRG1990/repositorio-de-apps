@@ -172,7 +172,8 @@
   color: var(--app-text-muted);
 }
 
-.campo input {
+.campo input,
+.campo select {
   /* Piso táctil de #18 §5.2: se llena de pie, con prisa y a veces con guante. */
   min-height: var(--app-boton-alto);
   padding: 0.5rem 0.75rem;
@@ -183,7 +184,8 @@
   font: inherit;
 }
 
-.campo input:focus-visible {
+.campo input:focus-visible,
+.campo select:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
   border-color: var(--app-accent-strong);

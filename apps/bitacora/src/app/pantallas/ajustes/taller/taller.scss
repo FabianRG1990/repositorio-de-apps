@@ -97,7 +97,8 @@
   color: var(--app-text-muted);
 }
 
-.campo input {
+.campo input,
+.campo select {
   /* Piso táctil de #18 §5.2: Ajustes también se toca desde una tableta. */
   min-height: var(--app-boton-alto);
   padding: 0.5rem 0.75rem;
@@ -108,7 +109,8 @@
   font: inherit;
 }
 
-.campo input:focus-visible {
+.campo input:focus-visible,
+.campo select:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
   border-color: var(--app-accent-strong);
@@ -201,6 +203,135 @@
   align-items: flex-end;
   gap: 0.85rem;
   width: 100%;
+}
+
+/* --- personal ------------------------------------------------------------- */
+
+.personas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* La misma seña que el Puesto: es otra lista de lo mismo —cosas que el Dueño
+   configura— y darle otra forma diría que es de otra naturaleza. */
+.persona {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--app-border-lista);
+  border-left: 3px solid var(--app-accent-strong);
+  border-radius: 0.95rem;
+  background: var(--app-capa-plana);
+}
+
+.persona--nueva {
+  border-style: dashed;
+  margin-top: 0.6rem;
+}
+
+.persona--ninguna {
+  border-left-color: var(--app-border-lista);
+  color: var(--app-text-soft);
+  font-size: 0.9375rem;
+}
+
+.persona__nombre {
+  font-weight: 510;
+  min-width: 9rem;
+}
+
+/* Ancho fijo para que las Especialidades caigan a plomo. "Asesor", "Técnico"
+   y "Dueño" miden distinto, y sin esto la tercera columna baila unos píxeles
+   por fila — poco para verlo, suficiente para que la lista se sienta torcida. */
+.persona__papel {
+  min-width: 4.5rem;
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}
+
+.persona__especialidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--app-text-soft);
+}
+
+.persona__especialidad--ninguna {
+  /* El guion no compite con el nombre: dice "acá no va nada", no un dato. */
+  opacity: 0.6;
+}
+
+.persona__acciones {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.persona__editar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+/* Ocupa la fila entera: es una pregunta, y una pregunta al margen se
+   responde sin leerla. */
+.persona__baja {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.2rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--app-text-soft);
+}
+
+/* Bloque, no flex: un `fieldset` en flex mete a la leyenda como un hijo más
+   de la rejilla y el grupo entero se desarma —la leyenda por un lado y cada
+   casilla por el otro, repartidas en vertical—. Los checkboxes van en su
+   propia caja flex por dentro, que es donde sí hace falta. */
+.campo--especialidades {
+  /* En su propia línea, debajo del nombre y el papel. En la misma fila nunca
+     iban a cuadrar: los otros dos son etiqueta sobre control y este es
+     etiqueta sobre casillas, más bajas, así que alinearlos por la base dejaba
+     los tres rótulos a tres alturas distintas. Y el orden que resulta se lee
+     solo: primero quién es, después qué sabe hacer. */
+  flex-basis: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: block;
+
+  legend {
+    padding: 0;
+    font-size: 0.8125rem;
+    color: var(--app-text-soft);
+  }
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9375rem;
 }
 
 /* --- tarifas -------------------------------------------------------------- */

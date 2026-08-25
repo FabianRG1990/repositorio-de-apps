@@ -121,6 +121,12 @@ app-insignia-estado {
   color: var(--app-warning);
 }
 
+/* El mismo tono de aviso que en la fila del tablero: la Orden que no tomó
+   nadie tiene que decir lo mismo en los dos sitios. */
+.panel__falta {
+  color: var(--app-warning);
+}
+
 .panel__mas {
   font-size: 0.8125rem;
   color: var(--app-text-soft);

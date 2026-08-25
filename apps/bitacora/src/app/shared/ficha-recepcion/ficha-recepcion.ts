@@ -19,6 +19,8 @@ export interface DatosDeFicha {
   readonly cliente: string;
   readonly telefono: string;
   readonly quienEntrega: string;
+  /** El nombre de quien responde por la Orden, o vacío si no lo tomó nadie. */
+  readonly responsable: string;
   readonly odometro: number | null;
   readonly combustible: string;
   readonly danosPrevios: string;

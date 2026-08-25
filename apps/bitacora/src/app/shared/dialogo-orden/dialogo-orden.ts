@@ -24,6 +24,7 @@ import {
 } from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
 import { CicloOrden } from '../ciclo-orden/ciclo-orden';
+import { ResponsableOrden } from '../responsable-orden/responsable-orden';
 import { BitacoraDatos } from '../../data-access/db/bitacora-db';
 import { EspacioStore } from '../../data-access/espacio.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
@@ -60,6 +61,7 @@ import { TrabajosOrden } from '../trabajos-orden/trabajos-orden';
     TrabajosOrden,
     GaleriaFotos,
     CicloOrden,
+    ResponsableOrden,
   ],
 })
 export class DialogoOrden {

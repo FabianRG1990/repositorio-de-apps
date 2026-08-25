@@ -52,8 +52,12 @@ _Evitar_: recepcionista, vendedor
 La persona que responde por el taller: define qué Especialidades ofrece y qué tarifas cobra, y mira cómo va el negocio.
 _Evitar_: administrador, gerente, jefe
 
+**Papel**:
+El oficio con el que alguien trabaja en el taller — Asesor, Técnico o Dueño. Es un dato de la Persona y vive en la base, a diferencia del Perfil, que es del aparato.
+_Evitar_: cargo, puesto (eso es el sitio desde donde se acuña el Folio), rol
+
 **Perfil**:
-Con cuál de los tres papeles — Asesor, Técnico o Dueño — se está usando la app. Determina qué pantalla se abre y qué se ofrece hacer, **no qué está permitido**: todos ven todas las Órdenes.
+Con cuál de los tres Papeles se está usando la app. Determina qué pantalla se abre y qué se ofrece hacer, **no qué está permitido**: todos ven todas las Órdenes. Puede llevar además el nombre de una Persona concreta, pero decirlo es opcional y no es un inicio de sesión.
 _Evitar_: rol, permiso, usuario, sesión
 
 **Aseguradora**:

@@ -4,7 +4,13 @@ import { liveQuery } from 'dexie';
 import { from } from 'rxjs';
 import { BitacoraDatos } from './db/bitacora-db';
 import type { DatosDelTaller } from './db/configuracion';
-import type { Especialidad, Puesto, Tarifa } from './db/esquema';
+import type {
+  Especialidad,
+  Papel,
+  Persona,
+  Puesto,
+  Tarifa,
+} from './db/esquema';
 
 /** Lo que hay configurado, compuesto para las pantallas. */
 export interface ConfiguracionVista {
@@ -14,6 +20,7 @@ export interface ConfiguracionVista {
   readonly especialidades: readonly Especialidad[];
   readonly tarifas: readonly Tarifa[];
   readonly puestos: readonly Puesto[];
+  readonly personal: readonly Persona[];
 }
 
 const VACIA: ConfiguracionVista = {
@@ -22,6 +29,7 @@ const VACIA: ConfiguracionVista = {
   especialidades: [],
   tarifas: [],
   puestos: [],
+  personal: [],
 };
 
 /**
@@ -71,6 +79,32 @@ export class TallerStore {
     () => this.configuracion().diasParaSinRecoger,
   );
 
+  /** La gente del Taller, viva y ordenada por nombre. */
+  readonly personal = computed(() => this.configuracion().personal);
+
+  /**
+   * `papel` → quiénes lo ejercen. De acá salen las listas para elegir.
+   *
+   * Se agrupa acá y no en cada pantalla porque lo piden tres: la entrada, el
+   * conmutador del menú y el selector de Responsable de la Orden.
+   */
+  readonly personalPorPapel = computed(() => {
+    const mapa = new Map<Papel, readonly Persona[]>([
+      ['asesor', []],
+      ['tecnico', []],
+      ['dueno', []],
+    ]);
+    for (const persona of this.personal()) {
+      mapa.set(persona.papel, [...(mapa.get(persona.papel) ?? []), persona]);
+    }
+    return mapa;
+  });
+
+  /** `id` → nombre, para poner en pantalla a quien responde por una Orden. */
+  readonly nombrePorId = computed(
+    () => new Map(this.personal().map((p) => [p.id, p.nombre])),
+  );
+
   /** `mecanica` → 14000. Lo que la Tarifa sirve para sugerir. */
   readonly porHora = computed(() => {
     const mapa = new Map<Especialidad, number>();
@@ -82,10 +116,11 @@ export class TallerStore {
 
   async #componer(): Promise<ConfiguracionVista> {
     const config = this.#datos.configuracion;
-    const [taller, tarifas, puestos] = await Promise.all([
+    const [taller, tarifas, puestos, personal] = await Promise.all([
       config.taller(),
       config.tarifas(),
       config.puestos(),
+      this.#datos.personal.personas(),
     ]);
 
     if (!taller) return VACIA;
@@ -101,6 +136,7 @@ export class TallerStore {
       especialidades: taller.especialidades,
       tarifas,
       puestos,
+      personal,
     };
   }
 }

@@ -123,3 +123,42 @@
   color: var(--app-text-soft);
   text-wrap: balance;
 }
+
+/* --- el segundo paso ------------------------------------------------------ */
+
+/* Las dos salidas del paso "¿quién sos?": entrar sin decirlo y devolverse.
+   Van juntas, calladas y debajo de la lista, porque ninguna de las dos es lo
+   que se espera que se haga — pero las dos tienen que estar a la vista, o el
+   paso se convierte en un requisito que el ADR 0005 no pide. */
+.entrada__salidas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.entrada__salida {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: none;
+  padding: 0.35rem 0.25rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--app-text-soft);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.entrada__salida:hover {
+  color: var(--app-text);
+}
+
+.entrada__salida:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}

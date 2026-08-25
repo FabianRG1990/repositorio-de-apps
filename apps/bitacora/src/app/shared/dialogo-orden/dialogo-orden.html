@@ -82,6 +82,14 @@
       <!-- El ciclo: dónde va el carro y cuándo sale. Va ARRIBA de los
            trabajos porque es lo primero que alguien viene a cambiar cuando
            abre una Orden que ya conoce. -->
+      <!-- Quién responde va con el ciclo y no con lo que solo se lee: es de
+           las pocas cosas editables de la Orden, y va ANTES de dónde está el
+           carro porque lo primero que se decide de una Orden es quién la
+           toma. -->
+      <section class="od__bloque">
+        <app-responsable-orden [orden]="o" />
+      </section>
+
       <section class="od__bloque">
         <app-ciclo-orden [orden]="o" />
       </section>

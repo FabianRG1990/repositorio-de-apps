@@ -61,6 +61,7 @@ export const OFRECIDO: Record<Perfil, LoQueSeOfrece> = {
 };
 
 const CLAVE = 'bitacora.perfil';
+const CLAVE_PERSONA = 'bitacora.persona';
 
 /**
  * Quién está usando la app.
@@ -78,6 +79,16 @@ const CLAVE = 'bitacora.perfil';
 export class PerfilStore {
   readonly #documento = inject(DOCUMENT);
   readonly #perfil = signal<Perfil | null>(this.#leerGuardado());
+  readonly #personaId = signal<string | null>(this.#leerPersonaGuardada());
+
+  /**
+   * El id de la Persona que dijo ser quien usa el aparato, si lo dijo.
+   *
+   * Es del APARATO igual que el Perfil, no del Taller: dice quién tiene la
+   * tableta en la mano ahora mismo. Quién responde por una Orden es otra cosa
+   * y vive en la Orden.
+   */
+  readonly personaId = this.#personaId.asReadonly();
 
   /**
    * `null` mientras nadie haya elegido. No arranca en Dueño: si arrancara con
@@ -104,6 +115,11 @@ export class PerfilStore {
    * mitad de la frase: "el Perfil determina qué pantalla se abre".
    */
   elegir(perfil: Perfil) {
+    /* Cambiar de Perfil suelta a la Persona: el Papel es de ella, así que un
+       Técnico que sigue elegido mientras la app dice "Asesor" es una
+       contradicción. La entrada vuelve a preguntar quién es. */
+    if (this.#perfil() !== perfil) this.elegirPersona(null);
+
     this.#perfil.set(perfil);
     try {
       this.#documento.defaultView?.localStorage.setItem(CLAVE, perfil);
@@ -112,13 +128,44 @@ export class PerfilStore {
     }
   }
 
+  /**
+   * Quién de la gente del Taller tiene el aparato en la mano.
+   *
+   * `null` es un valor legítimo y no un estado a medio llenar: un taller
+   * recién instalado no tiene a nadie configurado, y exigir una Persona para
+   * entrar dejaría al Dueño sin forma de entrar a crear la primera. Se guarda
+   * el id y no la Persona porque el nombre se edita en Ajustes y una copia en
+   * el almacenamiento local se quedaría con el viejo.
+   */
+  elegirPersona(personaId: string | null) {
+    this.#personaId.set(personaId);
+    try {
+      const almacen = this.#documento.defaultView?.localStorage;
+      if (personaId) almacen?.setItem(CLAVE_PERSONA, personaId);
+      else almacen?.removeItem(CLAVE_PERSONA);
+    } catch {
+      /* Igual que el Perfil: no recordar no es motivo para romperse. */
+    }
+  }
+
   /** Vuelve al estado de recién instalado. Existe para poder probarlo. */
   olvidar() {
     this.#perfil.set(null);
+    this.elegirPersona(null);
     try {
       this.#documento.defaultView?.localStorage.removeItem(CLAVE);
     } catch {
       /* Igual que arriba: no recordar no es motivo para romperse. */
+    }
+  }
+
+  #leerPersonaGuardada(): string | null {
+    try {
+      return (
+        this.#documento.defaultView?.localStorage.getItem(CLAVE_PERSONA) ?? null
+      );
+    } catch {
+      return null;
     }
   }
 

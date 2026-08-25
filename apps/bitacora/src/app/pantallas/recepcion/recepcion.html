@@ -378,6 +378,33 @@
           vez.
         </p>
       </div>
+
+      <!-- Quién responde por la Orden (ADR 0003). Va en el último paso antes
+           de confirmar y no en el primero: al recibir el carro se habla del
+           carro, y a quién le toca se decide después de saber qué tiene. -->
+      <div class="campo campo--ancho">
+        <label for="responsable">Responsable</label>
+        <select
+          id="responsable"
+          name="responsable"
+          (change)="responsableTocado.set($any($event.target).value)"
+        >
+          <option value="" [selected]="!responsable()">Sin responsable</option>
+          @for (persona of tecnicos(); track persona.id) {
+          <option
+            [value]="persona.id"
+            [selected]="persona.id === responsable()"
+          >
+            {{ persona.nombre }}
+          </option>
+          }
+        </select>
+        <p class="campo__ayuda">
+          @if (tecnicos().length) { Se puede dejar en blanco y ponerlo después
+          desde la orden. } @else { Todavía no hay técnicos. Se agregan en
+          Ajustes › Taller. }
+        </p>
+      </div>
     </section>
     }
 

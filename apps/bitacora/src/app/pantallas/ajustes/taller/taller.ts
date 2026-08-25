@@ -7,17 +7,25 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BitacoraDatos } from '../../../data-access/db/bitacora-db';
-import type { Especialidad } from '../../../data-access/db/esquema';
+import type {
+  Especialidad,
+  Papel,
+  Persona,
+} from '../../../data-access/db/esquema';
 import { ETIQUETA_ESPECIALIDAD_REPORTE } from '../../../data-access/etiquetas-reporte';
-import { PerfilStore } from '../../../data-access/perfil.store';
+import {
+  ETIQUETA_PERFIL,
+  PerfilStore,
+} from '../../../data-access/perfil.store';
 import { TallerStore } from '../../../data-access/taller.store';
 import { Boton } from '../../../shared/boton/boton';
 import { colones } from '../../../shared/formato';
 
 /**
- * Los datos del Taller, sus Puestos y sus Tarifas.
+ * Los datos del Taller, sus Puestos, su gente y sus Tarifas.
  *
  * El [ADR 0008] le dio al Perfil Dueño exactamente estas atribuciones y
  * llevaban sin construir desde entonces: hasta hoy el Dueño entraba a la app y
@@ -32,7 +40,7 @@ import { colones } from '../../../shared/formato';
   templateUrl: './taller.html',
   styleUrl: './taller.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FontAwesomeModule, Boton],
+  imports: [FontAwesomeModule, NgTemplateOutlet, Boton],
 })
 export class AjustesTaller {
   readonly #datos = inject(BitacoraDatos);
@@ -61,6 +69,37 @@ export class AjustesTaller {
   protected readonly puestoLetra = signal('');
 
   protected readonly tarifas = signal<Record<string, string>>({});
+
+  /* --- Personal ------------------------------------------------------------
+     La Persona que se está editando, o `nuevo` mientras se crea una. Mismo
+     patrón que los Puestos: una sola fila abierta a la vez, porque dos
+     formularios abiertos dejan al botón de guardar sin dueño. */
+  protected readonly editandoPersona = signal<string | null>(null);
+  protected readonly personaNombre = signal('');
+  protected readonly personaPapel = signal<Papel>('tecnico');
+  protected readonly personaEspecialidades = signal<readonly Especialidad[]>(
+    [],
+  );
+
+  /**
+   * La baja que espera confirmación, con lo que hay que saber antes.
+   *
+   * Se pregunta en la propia pantalla y no con un `confirm` del navegador:
+   * el diálogo nativo no puede decir CUÁNTAS Órdenes abiertas responde esa
+   * persona, que es justamente el dato que hace falta para decidir.
+   */
+  protected readonly bajaPendiente = signal<{
+    id: string;
+    nombre: string;
+    abiertas: number;
+  } | null>(null);
+
+  protected readonly papeles: readonly Papel[] = ['asesor', 'tecnico', 'dueno'];
+  /* Las mismas palabras que la pantalla de entrada, y a propósito: el Papel de
+     una Persona y el Perfil con el que se usa la app son cosas distintas, pero
+     se llaman igual en español. Dos tablas de etiquetas acabarían diciendo
+     "Dueño" en un sitio y "Propietario" en el otro. */
+  protected readonly nombrePapel: Record<Papel, string> = ETIQUETA_PERFIL;
 
   /** El umbral del Vehículo sin recoger, mientras se teclea. */
   protected readonly dias = signal('');
@@ -192,6 +231,95 @@ export class AjustesTaller {
 
   protected async quitarPuesto(id: string) {
     await this.#operar(() => this.#datos.configuracion.quitarPuesto(id));
+  }
+
+  /* --- Personal ----------------------------------------------------------- */
+
+  protected abrirPersonaNueva() {
+    this.personaNombre.set('');
+    this.personaPapel.set('tecnico');
+    this.personaEspecialidades.set([]);
+    this.error.set(null);
+    this.bajaPendiente.set(null);
+    this.editandoPersona.set('nuevo');
+  }
+
+  protected abrirPersona(persona: Persona) {
+    this.personaNombre.set(persona.nombre);
+    this.personaPapel.set(persona.papel);
+    this.personaEspecialidades.set([...persona.especialidades]);
+    this.error.set(null);
+    this.bajaPendiente.set(null);
+    this.editandoPersona.set(persona.id);
+  }
+
+  protected cancelarPersona() {
+    this.editandoPersona.set(null);
+    this.error.set(null);
+  }
+
+  protected alternarEspecialidad(especialidad: Especialidad) {
+    this.personaEspecialidades.update((actuales) =>
+      actuales.includes(especialidad)
+        ? actuales.filter((e) => e !== especialidad)
+        : [...actuales, especialidad],
+    );
+  }
+
+  protected tiene(especialidad: Especialidad) {
+    return this.personaEspecialidades().includes(especialidad);
+  }
+
+  protected async guardarPersona() {
+    const id = this.editandoPersona();
+    if (!id) return;
+
+    const datos = {
+      nombre: this.personaNombre(),
+      papel: this.personaPapel(),
+      especialidades: this.personaEspecialidades(),
+    };
+
+    await this.#operar(async () => {
+      if (id === 'nuevo') {
+        await this.#datos.personal.crear(datos);
+      } else {
+        await this.#datos.personal.editar(id, datos);
+      }
+      this.editandoPersona.set(null);
+    });
+  }
+
+  /**
+   * Preguntar antes de dar de baja, diciendo qué deja atrás.
+   *
+   * El aviso no bloquea: el [ADR 0005] no pone permisos, y esto tampoco es
+   * uno. Es que quitar a alguien que responde por tres carros que están en el
+   * taller ahora mismo es una decisión distinta a quitar a quien no responde
+   * por ninguno, y sin el número las dos se ven igual.
+   */
+  protected async pedirBaja(persona: Persona) {
+    await this.#operar(async () => {
+      this.bajaPendiente.set({
+        id: persona.id,
+        nombre: persona.nombre,
+        abiertas: await this.#datos.personal.ordenesAbiertasDe(persona.id),
+      });
+    });
+  }
+
+  protected cancelarBaja() {
+    this.bajaPendiente.set(null);
+  }
+
+  protected async confirmarBaja() {
+    const baja = this.bajaPendiente();
+    if (!baja) return;
+
+    await this.#operar(async () => {
+      await this.#datos.personal.quitar(baja.id);
+      this.bajaPendiente.set(null);
+    });
   }
 
   /**

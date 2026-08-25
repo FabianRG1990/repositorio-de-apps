@@ -35,6 +35,17 @@
       <span>{{ orden.cliente }}</span>
     </div>
 
+    <!-- El del taller justo debajo del de afuera: son los dos nombres de la
+         Orden, y leerlos juntos es lo que dice quién le responde a quién. -->
+    <div class="panel__dato">
+      <span class="panel__etiqueta">Responsable</span>
+      @if (orden.responsable) {
+      <span>{{ orden.responsable.nombre }}</span>
+      } @else {
+      <span class="panel__falta">Sin responsable</span>
+      }
+    </div>
+
     <div class="panel__dato">
       <span class="panel__etiqueta">Estado</span>
       <app-insignia-estado [texto]="orden.estado" [tono]="orden.tono" />

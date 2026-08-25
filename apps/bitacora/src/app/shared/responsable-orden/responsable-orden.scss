@@ -1,0 +1,55 @@
+.responsable {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+}
+
+.responsable__rotulo {
+  font-size: 0.875rem;
+  font-weight: 590;
+  letter-spacing: 0.0114em;
+  color: var(--app-text-muted);
+}
+
+.responsable__select {
+  /* Piso táctil de #18 §5.2: la Orden se abre desde una tableta en el patio. */
+  min-height: var(--app-boton-alto);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.6rem;
+  background: var(--app-capa-reposo);
+  color: var(--app-text);
+  font: inherit;
+}
+
+/* Sin nadie a cargo, el borde avisa. Es el mismo tono que la fila del tablero
+   y el panel de resumen le dan a esa Orden: los tres tienen que decir lo
+   mismo o el que mire dos de ellos verá una contradicción. */
+.responsable__select--falta {
+  border-color: var(--app-warning-borde);
+  color: var(--app-warning);
+}
+
+.responsable__select:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  border-color: var(--app-accent-strong);
+}
+
+.responsable__nota {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--app-text-soft);
+}
+
+.responsable__error {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--app-danger-borde);
+  border-radius: 0.6rem;
+  background: var(--app-danger-fondo);
+  color: var(--app-danger);
+}

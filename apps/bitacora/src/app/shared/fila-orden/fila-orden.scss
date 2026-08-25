@@ -155,6 +155,25 @@
   white-space: nowrap;
 }
 
+/* Quien responde por la Orden. Va un punto más apagado que el Cliente, que es
+   lo que dice cuál de los dos nombres es el de afuera.
+
+   El margen es lo que separa del punto medio: el rótulo para lectores de
+   pantalla va entre los dos y está fuera del flujo, así que se lleva por
+   delante el espacio en blanco de la plantilla y los dos quedaban pegados. */
+.fila__responsable {
+  margin-left: 0.3em;
+  color: var(--app-text-muted);
+}
+
+/* La Orden que no tomó nadie. Es lo único de esta línea que hay que ver de
+   lejos, así que sube el peso en vez de bajar el tono: bajarlo la escondería
+   justo por ser la que falta. */
+.fila__responsable--falta {
+  color: var(--app-warning);
+  font-weight: 590;
+}
+
 .fila__especialidades {
   grid-area: especialidades;
   display: flex;

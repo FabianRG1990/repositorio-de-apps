@@ -618,7 +618,21 @@ test.describe('el Perfil', () => {
       if (sessionStorage.getItem('e2e.perfil-borrado')) return;
       sessionStorage.setItem('e2e.perfil-borrado', '1');
       localStorage.removeItem('bitacora.perfil');
+      localStorage.removeItem('bitacora.persona');
     });
+  };
+
+  /**
+   * Elegir el Papel y saltarse el segundo paso.
+   *
+   * Desde el ticket del personal, entrar pregunta dos cosas: con qué Papel y
+   * cuál de las Personas de ese Papel. Este bloque mide lo PRIMERO —a dónde
+   * lleva cada Papel y qué le ofrece el menú—, así que se salta lo segundo por
+   * la salida que la propia pantalla ofrece. Quién es uno tiene su bloque.
+   */
+  const entrarComo = async (page: Page, papel: string) => {
+    await page.getByRole('button', { name: new RegExp(papel) }).click();
+    await page.getByRole('button', { name: /Entrar sin decir quién/ }).click();
   };
 
   test('sin Perfil elegido, la app manda a elegirlo', async ({ page }) => {
@@ -661,7 +675,7 @@ test.describe('el Perfil', () => {
       await sinElegir(page);
       await page.goto('/');
 
-      await page.getByRole('button', { name: new RegExp(nombre) }).click();
+      await entrarComo(page, nombre);
 
       /* Se compara el `pathname` en vez de montar una expresión regular con la
          URL dentro: la versión con `RegExp` necesitaba escapar las barras y un
@@ -680,7 +694,7 @@ test.describe('el Perfil', () => {
   }) => {
     await sinElegir(page);
     await page.goto('/');
-    await page.getByRole('button', { name: /Técnico/ }).click();
+    await entrarComo(page, 'Técnico');
     await expect(page).toHaveURL(/\/ordenes$/);
 
     await page.reload();
@@ -725,7 +739,7 @@ test.describe('el Perfil', () => {
   test('ninguna ruta está bloqueada para ningún Perfil', async ({ page }) => {
     await sinElegir(page);
     await page.goto('/');
-    await page.getByRole('button', { name: /Técnico/ }).click();
+    await entrarComo(page, 'Técnico');
     await expect(page).toHaveURL(/\/ordenes$/);
 
     await page.goto('/ajustes');
@@ -3005,5 +3019,273 @@ test.describe('las próximas visitas', () => {
     await expect(
       page.locator('.visita').filter({ hasText: 'Kia Rio' }),
     ).toHaveCount(0);
+  });
+});
+
+/* -----------------------------------------------------------------------------
+   El personal del Taller y el Responsable de la Orden.
+
+   `personas` era la última tabla del esquema que nadie llenaba, y el ADR 0003
+   prometía un Responsable por Orden que ninguna Orden tenía.
+   -------------------------------------------------------------------------- */
+test.describe('el personal del Taller', () => {
+  test('el Dueño da de alta a alguien y aparece en la lista', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('button', { name: /Agregar a alguien/ }).click();
+
+    await page.fill('#persona-nombre', 'Rafa Chaves');
+    await page.selectOption('#persona-papel', 'tecnico');
+    await page.getByRole('checkbox', { name: 'Pintura' }).check();
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+
+    const fila = page.locator('.persona').filter({ hasText: 'Rafa Chaves' });
+    await expect(fila).toContainText('Técnico');
+    await expect(fila).toContainText('Pintura');
+  });
+
+  /* El nombre es lo ÚNICO que identifica a una Persona en pantalla: no hay
+     cédula ni carné. Dos iguales dejan a quien elige el Responsable
+     adivinando cuál es cuál. */
+  test('no deja repetir un nombre, ni con otras mayúsculas', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page.getByRole('button', { name: /Agregar a alguien/ }).click();
+    await page.fill('#persona-nombre', 'luis vargas');
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+
+    await expect(page.locator('.aviso--malo')).toContainText('Ya hay alguien');
+  });
+
+  /* El desplegable del papel se quedaba enseñando la primera opción mientras
+     el valor era otro: `[value]` en un `select` se aplica antes de que existan
+     las opciones. */
+  test('el desplegable del papel enseña el valor de verdad', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    await page
+      .locator('.persona')
+      .filter({ hasText: 'Kenneth Soto' })
+      .getByRole('button', { name: 'Cambiar' })
+      .click();
+
+    await expect(page.locator('#persona-papel')).toHaveValue('tecnico');
+  });
+
+  /* Quitar a quien responde por carros que están en el taller ahora mismo no
+     se parece a quitar a quien no responde por ninguno, y sin el número las
+     dos se ven igual. */
+  test('la baja dice cuántas órdenes abiertas deja atrás', async ({ page }) => {
+    await page.goto('/ajustes');
+    const fila = page.locator('.persona').filter({ hasText: 'Luis Vargas' });
+    await fila.getByRole('button', { name: 'Dar de baja' }).click();
+
+    /* Las dos formas: en singular es "1 orden" y en plural "2 órdenes", con
+       tilde. Un patrón que solo cubra una de las dos se pone rojo el día que
+       la semilla cambie de reparto. */
+    await expect(fila.locator('.persona__baja')).toContainText(
+      /Responde por \d+ (orden|órdenes)/,
+    );
+    await expect(fila.locator('.persona__baja')).toContainText(
+      'siguen a su nombre',
+    );
+  });
+
+  /* Borrado lógico: quién respondió por un trabajo no deja de ser cierto
+     porque la persona se haya ido del taller. */
+  test('la baja saca de la lista pero la Orden conserva el nombre', async ({
+    page,
+  }) => {
+    await page.goto('/ajustes');
+    const fila = page.locator('.persona').filter({ hasText: 'Kenneth Soto' });
+    await fila.getByRole('button', { name: 'Dar de baja' }).click();
+    await fila
+      .locator('.persona__baja')
+      .getByRole('button', { name: 'Dar de baja' })
+      .click();
+
+    await expect(
+      page.locator('.persona').filter({ hasText: 'Kenneth Soto' }),
+    ).toHaveCount(0);
+
+    await page.goto('/ordenes');
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'Hyundai Elantra' }),
+    ).toContainText('Kenneth Soto');
+  });
+});
+
+test.describe('el Responsable de la Orden', () => {
+  test('el tablero enseña quién responde y señala a la que no tomó nadie', async ({
+    page,
+  }) => {
+    await page.goto('/ordenes');
+
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'Toyota Hilux' }),
+    ).toContainText('Luis Vargas');
+
+    /* La Orden que lleva seis horas adentro y todavía no tomó nadie. Es un
+       estado real del taller, no un hueco de la semilla. */
+    await expect(
+      page.locator('li.fila').filter({ hasText: 'Nissan Frontier' }),
+    ).toContainText('Sin responsable');
+  });
+
+  test('cambiarlo en la Orden mueve la fila y el resumen a la vez', async ({
+    page,
+  }) => {
+    await page.goto('/ordenes');
+    const fila = page.locator('li.fila').filter({ hasText: 'Nissan Frontier' });
+    await fila.getByRole('button', { name: /Ver orden/ }).click();
+
+    await expect(page.locator('#responsable-orden')).toHaveValue('');
+    await page.selectOption('#responsable-orden', { label: 'Marta Cordero' });
+    await page.keyboard.press('Escape');
+
+    /* Vive en la Orden compuesta, así que la fila, el resumen y la ventana
+       cuentan la misma historia sin que nadie los sincronice. */
+    await expect(fila).toContainText('Marta Cordero');
+    await expect(page.locator('app-panel-detalle')).toContainText(
+      'Marta Cordero',
+    );
+  });
+
+  /* Leídos de corrido, cliente y responsable son dos nombres seguidos sin nada
+     que los separe. */
+  test('la fila dice cuál de los dos nombres es el del taller', async ({
+    page,
+  }) => {
+    await page.goto('/ordenes');
+    const sub = page
+      .locator('li.fila')
+      .filter({ hasText: 'Toyota Hilux' })
+      .locator('.fila__sub');
+
+    await expect(sub.locator('.solo-lectores')).toHaveText('Responsable:');
+  });
+});
+
+test.describe('el Responsable al recibir', () => {
+  /* Se SUGIERE, no se impone. Y solo al Técnico: el Asesor es quien recibe el
+     carro, no quien responde por el trabajo. */
+  test('al Técnico se le sugiere su propio nombre', async ({ page }) => {
+    /* Se entra por la pantalla de verdad y no sembrando el id a mano: el id es
+       un UUIDv7 que acuña la semilla al arrancar, y la primera versión de esto
+       lo leía de IndexedDB con un `evaluate` que el recolector se llevaba a
+       media navegación. Además, así se ejerce el camino que hace un Técnico. */
+    await page.addInitScript(() => {
+      localStorage.setItem('e2e.sin-perfil', '1');
+      if (sessionStorage.getItem('e2e.perfil-borrado')) return;
+      sessionStorage.setItem('e2e.perfil-borrado', '1');
+      localStorage.removeItem('bitacora.perfil');
+      localStorage.removeItem('bitacora.persona');
+    });
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+    await page.getByRole('button', { name: 'Luis Vargas' }).click();
+
+    await page.goto('/recepcion');
+    await page.fill('#placa', 'TEST 999');
+    await page.fill('#marca', 'Toyota');
+    await page.fill('#modelo', 'Yaris');
+    await page.fill('#cliente', 'Prueba Recepción');
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+    await page.locator('textarea').first().fill('Suena al frenar');
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+
+    await expect(page.locator('#responsable option:checked')).toHaveText(
+      'Luis Vargas',
+    );
+  });
+
+  /* Al Asesor no: ponerle su propio nombre sería llenar el campo con el dato
+     equivocado por tener uno a mano. */
+  test('al Asesor no se le sugiere nadie', async ({ page }) => {
+    await page.addInitScript(() =>
+      localStorage.setItem('bitacora.perfil', 'asesor'),
+    );
+    await page.goto('/recepcion');
+    await page.fill('#placa', 'TEST 998');
+    await page.fill('#marca', 'Kia');
+    await page.fill('#modelo', 'Rio');
+    await page.fill('#cliente', 'Otra Prueba');
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+    await page.locator('textarea').first().fill('No prende');
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+
+    await expect(page.locator('#responsable')).toHaveValue('');
+  });
+});
+
+test.describe('quién tiene el aparato en la mano', () => {
+  /* Lo mismo que el bloque del Perfil, y por lo mismo: acá hace falta un
+     aparato donde nadie ha elegido todavía.
+
+     Va dentro de cada prueba y no en un `beforeEach`, porque el `beforeEach`
+     global de arriba registra su script ANTES y todos corren en orden: el
+     suyo leería la bandera antes de que esta la escriba, y sembraría el
+     Perfil igual. Y el borrado solo puede pasar en la primera carga, o cada
+     navegación posterior devolvería a la pantalla de entrada. */
+  const sinElegir = async (page: Page) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('e2e.sin-perfil', '1');
+      if (sessionStorage.getItem('e2e.perfil-borrado')) return;
+      sessionStorage.setItem('e2e.perfil-borrado', '1');
+      localStorage.removeItem('bitacora.perfil');
+      localStorage.removeItem('bitacora.persona');
+    });
+  };
+
+  test('se entra en dos pasos y el segundo se puede saltar', async ({
+    page,
+  }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+
+    // Sigue sin ser un inicio de sesión: no se pide nada que haya que saberse.
+    await expect(page.getByRole('heading')).toContainText('¿Quién sos?');
+    await expect(
+      page.getByRole('button', { name: 'Luis Vargas' }),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: /Entrar sin decir quién/ }).click();
+    await expect(page.locator('app-menu-lateral')).toContainText('Técnico');
+  });
+
+  test('elegir a alguien lo deja en el pie del menú', async ({ page }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+    await page.getByRole('button', { name: 'Marta Cordero' }).click();
+
+    /* El nombre arriba y el Papel de subtítulo: quien mira su propia tableta
+       reconoce su nombre más rápido que su oficio, y el oficio no desaparece
+       porque es lo que explica el orden del menú. */
+    await expect(page.locator('.menu__perfil-nombre')).toHaveText(
+      'Marta Cordero',
+    );
+    await expect(page.locator('.menu__perfil-pie')).toHaveText('Técnico');
+  });
+
+  /* El Papel es de la Persona: un Técnico que sigue elegido mientras la app
+     dice "Asesor" es una contradicción. */
+  test('cambiar de Perfil suelta a la Persona', async ({ page }) => {
+    await sinElegir(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: /Técnico/ }).click();
+    await page.getByRole('button', { name: 'Marta Cordero' }).click();
+    await expect(page.locator('.menu__perfil-nombre')).toHaveText(
+      'Marta Cordero',
+    );
+
+    await page.locator('.menu__perfil').click();
+    await page.getByRole('menuitem', { name: 'Dueño' }).click();
+
+    await expect(page.locator('.menu__perfil-nombre')).toHaveText('Dueño');
   });
 });

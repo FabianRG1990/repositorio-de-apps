@@ -17,6 +17,8 @@ import type {
 } from '../../data-access/db/esquema';
 import type { VehiculoConocido } from '../../data-access/db/recepcion';
 import { OrdenesStore } from '../../data-access/ordenes.store';
+import { QuienUsaStore } from '../../data-access/quien-usa.store';
+import { TallerStore } from '../../data-access/taller.store';
 import {
   ETIQUETA_CUANDO,
   ETIQUETA_ESPECIALIDAD_REPORTE,
@@ -178,6 +180,8 @@ export class Recepcion {
   readonly #datos = inject(BitacoraDatos);
   readonly #ordenes = inject(OrdenesStore);
   readonly #router = inject(Router);
+  readonly #quienUsa = inject(QuienUsaStore);
+  protected readonly taller = inject(TallerStore);
 
   protected readonly pasos = PASOS;
   protected readonly cuandos = CUANDOS;
@@ -201,6 +205,37 @@ export class Recepcion {
     telefono: '',
     quienEntrega: '',
   });
+
+  /**
+   * A nombre de quién queda la Orden nueva ([ADR 0003]).
+   *
+   * `null` significa "nadie lo ha tocado todavía" y no "sin responsable": es
+   * lo que deja que la sugerencia valga hasta que alguien decida otra cosa.
+   * Sin esa distinción, elegir explícitamente "Sin responsable" se vería igual
+   * que no haber elegido, y la sugerencia volvería a colarse.
+   */
+  protected readonly responsableTocado = signal<string | null>(null);
+
+  /**
+   * Lo que el desplegable enseña: lo elegido, o quien tiene el aparato si es
+   * Técnico.
+   *
+   * Se SUGIERE, no se impone. Y solo al Técnico: el Asesor es quien recibe el
+   * carro, no quien responde por el trabajo (glosario), así que ponerle su
+   * propio nombre sería llenar el campo con el dato equivocado por tener uno a
+   * mano.
+   */
+  protected readonly responsable = computed(() => {
+    const tocado = this.responsableTocado();
+    if (tocado !== null) return tocado;
+    const quien = this.#quienUsa.persona();
+    return quien?.papel === 'tecnico' ? quien.id : '';
+  });
+
+  /** Los Técnicos, que es de donde sale el Responsable según el glosario. */
+  protected readonly tecnicos = computed(
+    () => this.taller.personalPorPapel().get('tecnico') ?? [],
+  );
 
   protected readonly quejas = signal<readonly Queja[]>([quejaVacia()]);
 
@@ -257,6 +292,8 @@ export class Recepcion {
       cliente: c.cliente,
       telefono: c.telefono,
       quienEntrega: c.quienEntrega,
+      responsable:
+        this.tecnicos().find((t) => t.id === this.responsable())?.nombre ?? '',
       odometro: Number.isFinite(km) ? km : null,
       combustible: this.etiquetaTanque(e.combustible),
       danosPrevios: e.danosPrevios,
@@ -512,6 +549,7 @@ export class Recepcion {
           cliente: c.cliente,
           telefono: c.telefono,
           quienEntrega: c.quienEntrega,
+          responsableId: this.responsable() || null,
           odometro: Number.isFinite(odometro) ? odometro : null,
           combustible: e.combustible,
           danosPrevios: e.danosPrevios,

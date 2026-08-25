@@ -16,6 +16,14 @@
       <dt>Quién entrega</dt>
       <dd>{{ d.quienEntrega || d.cliente }}</dd>
     </div>
+    <!-- El nombre del taller junto a los de afuera: la ficha es lo que se
+         confirma antes de recibir, y quién responde es parte de lo que se
+         está confirmando. Vacío también se dice, o "así queda" estaría
+         escondiendo la mitad. -->
+    <div class="ficha__dato">
+      <dt>Responsable</dt>
+      <dd>{{ d.responsable || 'Sin responsable' }}</dd>
+    </div>
     <div class="ficha__dato">
       <dt>Kilometraje</dt>
       <dd>{{ d.odometro !== null ? kilometros(d.odometro) : 'Sin anotar' }}</dd>

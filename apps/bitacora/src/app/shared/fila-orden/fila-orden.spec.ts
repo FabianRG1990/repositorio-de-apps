@@ -24,6 +24,7 @@ const ORDEN: Orden = {
   diasAvisado: null,
   sinRecoger: false,
   proximaVisita: null,
+  responsable: { id: 'persona-1', nombre: 'Luis Vargas' },
   entrada: {
     odometro: null,
     combustible: null,

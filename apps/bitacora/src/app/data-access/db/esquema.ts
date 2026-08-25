@@ -22,6 +22,17 @@ export const NO_BORRADO = 0;
 export type Marca = string;
 export type Especialidad = 'mecanica' | 'electricidad' | 'pintura';
 export type Pagador = 'cliente' | 'aseguradora';
+
+/**
+ * El oficio de una Persona del Taller.
+ *
+ * Son los mismos tres del Perfil ([ADR 0005]) y no es casualidad: el Perfil es
+ * *"con cuál de los tres papeles se está usando la app"*. Pero son cosas
+ * distintas y por eso el tipo se declara acá y no se importa de la UI — el
+ * Papel es un dato del Taller que sobrevive al aparato, y el Perfil es del
+ * aparato y se guarda en su almacenamiento local.
+ */
+export type Papel = 'asesor' | 'tecnico' | 'dueno';
 export type MedioDeAviso = 'whatsapp' | 'llamada' | 'presencial';
 
 /**
@@ -98,7 +109,8 @@ export interface Puesto extends Registro {
 
 export interface Persona extends Registro {
   nombre: string;
-  papel: 'asesor' | 'tecnico' | 'dueno';
+  papel: Papel;
+  /** Solo el Técnico las lleva: es quien ejecuta el trabajo (glosario). */
   especialidades: readonly Especialidad[];
 }
 
