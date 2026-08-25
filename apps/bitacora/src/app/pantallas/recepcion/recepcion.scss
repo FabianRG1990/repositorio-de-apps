@@ -321,7 +321,6 @@
 }
 
 .queja__quitar {
-  --mat-button-text-label-text-color: var(--app-text-soft);
   flex: none;
 }
 
@@ -382,14 +381,9 @@
   gap: 0.4rem;
 }
 
-.queja__atajo {
-  --mat-button-outlined-container-height: 2.25rem;
-}
 
 .queja__agregar {
   align-self: flex-start;
-  --mat-button-outlined-container-height: var(--app-boton-alto);
-  --mat-button-outlined-label-text-weight: 590;
 }
 
 /* La sugerencia y su porqué van juntas y con el mismo fondo: separadas, el
@@ -466,16 +460,7 @@
   text-align: right;
 }
 
-.pie__seguir {
-  --mat-button-filled-container-height: calc(var(--app-boton-alto) + 8px);
-  --mat-button-filled-label-text-weight: 590;
-  --mat-button-filled-container-color: var(--app-boton-fondo);
-  --mat-button-filled-label-text-color: var(--app-boton-tinta);
-}
 
-.pie__atras {
-  --mat-button-outlined-container-height: calc(var(--app-boton-alto) + 8px);
-}
 
 /* Los dos botones no parten su etiqueta: "Siguiente →" caía en dos líneas a
    320 px y la flecha quedaba sola debajo de la palabra. */
