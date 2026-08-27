@@ -444,7 +444,7 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
        #114 el filtro por Especialidad se mete en medio del orden de
        tabulación, y lo que este test mide es el anillo de la FILA. Tabular a
        ciegas medía lo que hubiera delante. */
-    await page.locator('.fila__cuerpo').first().focus();
+    await page.locator('.fila__seleccionar').first().focus();
 
     const anillo = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
@@ -459,7 +459,7 @@ test.describe('la lista de órdenes, medida sobre el render', () => {
     });
 
     expect(anillo).toMatchObject({
-      clase: 'fila__cuerpo',
+      clase: 'fila__seleccionar',
       trazo: '2px',
       hueco: '2px',
       estilo: 'solid',

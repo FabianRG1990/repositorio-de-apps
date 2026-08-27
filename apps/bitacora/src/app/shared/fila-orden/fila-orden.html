@@ -1,11 +1,31 @@
 @let o = orden();
 
-<button
-  type="button"
-  class="fila__cuerpo"
-  [attr.aria-current]="seleccionada()"
-  (click)="elegida.emit()"
->
+<!--
+  El cuerpo es un contenedor y el botón que selecciona va SUPERPUESTO encima,
+  no envolviéndolo.
+
+  Antes el cuerpo era el propio `<button>`, y eso cerraba la puerta a que
+  cualquier cosa de dentro fuera pulsable: un `<button>` dentro de otro es HTML
+  inválido, y es la razón por la que **Ver orden** ya vivía fuera como hermano.
+  Con el botón superpuesto, la insignia de estado puede ser un control de
+  verdad sin salirse de la rejilla —que está medida al píxel en #77 y tiene
+  cinco configuraciones entre densidades y reflujo—.
+
+  El área pulsable no cambia: el botón cubre el cuerpo entero por `inset: 0`.
+-->
+<div class="fila__cuerpo">
+  <button
+    type="button"
+    class="fila__seleccionar"
+    [attr.aria-current]="seleccionada()"
+    (click)="elegida.emit()"
+  >
+    <!-- El botón se queda sin texto visible al vaciarse, así que lleva el
+         suyo propio: sin esto un lector de pantalla anuncia "botón" a secas. -->
+    <span class="solo-lectores">
+      Orden {{ o.folio }}, {{ o.vehiculo }}, {{ o.cliente }}
+    </span>
+  </button>
   <!-- El tiempo parado y el folio se apilan en su propia columna. En la fila
        cómoda no pueden ir con `display: contents`: sin área asignada el folio
        se auto-colocaba en una fila implícita y la fila medía 88 px en vez de
@@ -68,7 +88,7 @@
   />
 
   <span class="fila__detalle">{{ o.detalle }}</span>
-</button>
+</div>
 
 <button
   app-boton
