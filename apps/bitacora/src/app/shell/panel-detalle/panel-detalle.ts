@@ -13,7 +13,7 @@ import {
 import { Boton } from '../../shared/boton/boton';
 import { EtiquetaEspecialidad } from '../../shared/etiqueta-especialidad/etiqueta-especialidad';
 import { colones } from '../../shared/formato';
-import { InsigniaEstado } from '../../shared/insignia-estado/insignia-estado';
+import { MenuEstado } from '../../shared/menu-estado/menu-estado';
 
 /**
  * El panel derecho del estándar: contextual al contenido central. En el diseño
@@ -35,7 +35,7 @@ import { InsigniaEstado } from '../../shared/insignia-estado/insignia-estado';
   templateUrl: './panel-detalle.html',
   styleUrl: './panel-detalle.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FontAwesomeModule, InsigniaEstado, EtiquetaEspecialidad, Boton],
+  imports: [FontAwesomeModule, MenuEstado, EtiquetaEspecialidad, Boton],
 })
 export class PanelDetalle {
   readonly store = inject(OrdenesStore);

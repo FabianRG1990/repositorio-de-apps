@@ -466,6 +466,28 @@ html[data-densidad='guantes'] {
   margin: 0.35rem 0;
 }
 
+/* El menú de estados de la fila. Va acá y no en su componente por lo mismo
+   que el de Perfiles: `MatMenu` monta el panel en un overlay al final del
+   `<body>`, fuera del árbol del componente, donde el CSS encapsulado no
+   llega. */
+.panel-estados.mat-mdc-menu-panel {
+  min-width: 14rem;
+}
+
+.panel-estados .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Al extremo, igual que en el panel de Perfiles: leerla ahí es lo que
+   distingue "en cuál estoy" de "cuáles hay" sin comparar palabra por
+   palabra. */
+.panel-estados .panel-estados__marca {
+  margin-left: auto;
+  color: var(--app-accent);
+}
+
 .solo-lectores {
   position: absolute;
   width: 1px;

@@ -46,9 +46,11 @@
       }
     </div>
 
+    <!-- También acá se cambia (#120): el panel ya enseña el estado y estaba a
+         un clic de poder moverlo, con su único botón llevando a la ventana. -->
     <div class="panel__dato">
       <span class="panel__etiqueta">Estado</span>
-      <app-insignia-estado [texto]="orden.estado" [tono]="orden.tono" />
+      <app-menu-estado [orden]="orden" />
     </div>
 
     <!-- Las Especialidades que toca, sin repetir: dice de un vistazo a cuántas

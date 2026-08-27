@@ -81,11 +81,9 @@
     }
   </span>
 
-  <app-insignia-estado
-    class="fila__estado"
-    [texto]="o.estado"
-    [tono]="o.tono"
-  />
+  <!-- El estado se cambia desde donde se lee (#120). Ocupa la MISMA celda que
+       la insignia sola, así que la rejilla de #77 no se entera. -->
+  <app-menu-estado class="fila__estado" [orden]="o" />
 
   <span class="fila__detalle">{{ o.detalle }}</span>
 </div>
