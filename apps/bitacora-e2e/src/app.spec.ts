@@ -3289,3 +3289,138 @@ test.describe('quién tiene el aparato en la mano', () => {
     await expect(page.locator('.menu__perfil-nombre')).toHaveText('Dueño');
   });
 });
+
+/* -----------------------------------------------------------------------------
+   Mover el estado sin abrir la Orden (#120).
+
+   El ciclo existía desde #116 pero vivía solo dentro de la ventana: cuatro
+   pasos para el verbo más frecuente del taller.
+   -------------------------------------------------------------------------- */
+test.describe('mover el estado desde el tablero', () => {
+  const filaDe = (page: Page, texto: string) =>
+    page.locator('li.fila').filter({ hasText: texto });
+
+  test('la insignia abre los cinco estados y el actual va marcado', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await filaDe(page, 'Toyota Hilux')
+      .locator('.menu-estado__disparador')
+      .click();
+
+    const menu = page.locator('.panel-estados');
+    await expect(menu.getByRole('menuitem')).toHaveText([
+      'Recibido',
+      'En diagnóstico',
+      'En proceso',
+      'Esperando repuesto',
+      'Listo para entrega',
+    ]);
+
+    /* Sin orden forzado (ADR 0024): se ofrecen los cinco, no "el siguiente".
+       `entregado` no está — tiene su propio verbo. */
+    await expect(
+      menu.getByRole('menuitem', { name: 'Esperando repuesto' }),
+    ).toHaveAttribute('aria-current', 'true');
+  });
+
+  test('cambiarlo desde la fila lo escribe de verdad', async ({ page }) => {
+    await page.goto('/');
+    const fila = filaDe(page, 'Hyundai Elantra');
+    await fila.locator('.menu-estado__disparador').click();
+    await page
+      .locator('.panel-estados')
+      .getByRole('menuitem', { name: 'Listo para entrega' })
+      .click();
+
+    await expect(fila.locator('.insignia')).toContainText('Listo para entrega');
+
+    /* La prueba de que se guardó y no solo se pintó: "Por entregar" filtra
+       por estado, así que la Orden tiene que aparecer ahí. */
+    await page.goto('/ordenes');
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page.getByRole('tab', { name: /Por entregar/i }).click();
+    await expect(filaDe(page, 'Hyundai Elantra')).toBeVisible();
+  });
+
+  /* El botón que selecciona la fila está superpuesto por `inset: 0`. Si el
+     menú no quedara por encima, pulsarlo seleccionaría la Orden en vez de
+     abrirlo. */
+  test('pulsar la insignia no selecciona la fila', async ({ page }) => {
+    await page.goto('/');
+    await filaDe(page, 'Toyota Hilux')
+      .locator('.menu-estado__disparador')
+      .click();
+
+    await expect(page.locator('.panel-estados')).toBeVisible();
+    await expect(page.locator('mat-sidenav.shell__panel')).toContainText(
+      'Elegí una Orden',
+    );
+  });
+
+  /* Devolver un carro entregado al Taller es deshacer la entrega —que limpia
+     la fecha— y eso vive en la ventana con su propio botón. */
+  test('la Orden entregada se lee y no se toca', async ({ page }) => {
+    await page.goto('/ordenes');
+    /* La semilla tarda un instante en llegar; sin esperarla, el clic en la
+       pestaña cae sobre una lista que todavía no existe. */
+    await expect(page.locator('li.fila').first()).toBeVisible();
+    await page.getByRole('tab', { name: /Entregado/i }).click();
+
+    const fila = page.locator('li.fila').first();
+    await expect(fila.locator('.insignia')).toContainText('Entregado');
+    await expect(fila.locator('.menu-estado__disparador')).toHaveCount(0);
+  });
+
+  test('el panel de resumen también lo cambia', async ({ page }) => {
+    await page.goto('/');
+    await filaDe(page, 'Nissan Frontier').locator('.fila__seleccionar').click();
+
+    const panel = page.locator('mat-sidenav.shell__panel');
+    await panel.locator('.menu-estado__disparador').click();
+    await page
+      .locator('.panel-estados')
+      .getByRole('menuitem', { name: 'En proceso' })
+      .click();
+
+    await expect(panel.locator('.insignia')).toContainText('En proceso');
+    await expect(
+      filaDe(page, 'Nissan Frontier').locator('.insignia'),
+    ).toContainText('En proceso');
+  });
+
+  /* Una lista de diez carros son diez disparadores: sin el folio se anuncian
+     todos igual y no hay forma de saber cuál se abrió. */
+  test('el nombre accesible dice qué Orden se está cambiando', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(
+      filaDe(page, 'Toyota Hilux').locator('.menu-estado__disparador'),
+    ).toHaveAttribute(
+      'aria-label',
+      'Estado de la orden A1-2418: Esperando repuesto. Cambiar',
+    );
+  });
+
+  test('se abre y se cierra con el teclado, y el foco vuelve', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const disparador = filaDe(page, 'Toyota Hilux').locator(
+      '.menu-estado__disparador',
+    );
+    await disparador.focus();
+    await expect(disparador).toHaveAttribute('aria-expanded', 'false');
+
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.panel-estados')).toBeVisible();
+    await expect(disparador).toHaveAttribute('aria-expanded', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.panel-estados')).toHaveCount(0);
+    /* Volver al disparador es lo que permite seguir tabulando desde donde se
+       estaba en vez de reaparecer al principio de la página. */
+    await expect(disparador).toBeFocused();
+  });
+});
