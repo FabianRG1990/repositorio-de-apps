@@ -1,0 +1,60 @@
+:host {
+  display: inline-flex;
+  min-width: 0;
+  /* Encima del botón que selecciona la fila, que está superpuesto por
+     `inset: 0`. Sin esto el clic en la insignia caería en el de debajo y
+     seleccionaría la Orden en vez de abrir el menú. */
+  position: relative;
+  z-index: 1;
+}
+
+/* El disparador NO se pinta: la insignia ya es la forma. Un botón alrededor
+   con su propio fondo y su propio borde metería una segunda cápsula alrededor
+   de la cápsula, y la fila pasaría a tener dos objetos donde hay un dato. */
+.menu-estado__disparador {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+/* La única marca de que se puede pulsar, y va en la flecha y no en la
+   insignia: teñir la insignia al pasar por encima cambiaría el color que
+   codifica el estado, que es justo lo que no puede moverse (#18 §6.2). */
+.menu-estado__flecha {
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--app-text-soft);
+  transition: color 100ms linear;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .menu-estado__disparador:hover .menu-estado__flecha {
+    color: var(--app-text);
+  }
+}
+
+.menu-estado__disparador:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-estado__flecha {
+    transition: none;
+  }
+}
+
+.menu-estado__error {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--app-danger);
+}

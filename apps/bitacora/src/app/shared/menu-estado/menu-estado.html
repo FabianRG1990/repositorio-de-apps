@@ -1,0 +1,41 @@
+@let o = orden(); @if (sePuedeMover()) {
+<!--
+  El nombre accesible dice QUÉ orden se está cambiando. Sin el folio, una
+  lista de diez carros son diez botones que se anuncian igual y no hay forma
+  de saber cuál se abrió.
+-->
+<button
+  type="button"
+  class="menu-estado__disparador"
+  [matMenuTriggerFor]="estadosMenu"
+  [attr.aria-label]="
+    'Estado de la orden ' + o.folio + ': ' + o.estado + '. Cambiar'
+  "
+>
+  <app-insignia-estado [texto]="o.estado" [tono]="o.tono" />
+  <fa-icon class="menu-estado__flecha" [icon]="['fas', 'chevron-down']" />
+</button>
+
+<mat-menu #estadosMenu="matMenu" class="panel-estados">
+  @for (estado of estados; track estado) {
+  <button
+    mat-menu-item
+    type="button"
+    [attr.aria-current]="estado === o.estadoClave ? 'true' : null"
+    (click)="moverA(estado)"
+  >
+    <span>{{ presentacion[estado].etiqueta }}</span>
+    @if (estado === o.estadoClave) {
+    <fa-icon class="panel-estados__marca" [icon]="['fas', 'check']" />
+    }
+  </button>
+  }
+</mat-menu>
+
+@if (error(); as mensaje) {
+<p class="menu-estado__error" role="alert">{{ mensaje }}</p>
+} } @else {
+<!-- Entregada: se lee y no se toca. Devolverla al Taller es deshacer la
+     entrega, y eso tiene su propio botón en la ventana. -->
+<app-insignia-estado [texto]="o.estado" [tono]="o.tono" />
+}

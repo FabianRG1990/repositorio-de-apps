@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { ConfiguracionTallerStore } from '../../data-access/configuracion-taller.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
-import { InsigniaEstado } from '../insignia-estado/insignia-estado';
+import { MenuEstado } from '../menu-estado/menu-estado';
 import {
   tiempoParadoLegible,
   type Orden,
@@ -62,7 +62,7 @@ import { Boton } from '../boton/boton';
   templateUrl: './fila-orden.html',
   styleUrl: './fila-orden.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Boton, InsigniaEstado, EtiquetaEspecialidad],
+  imports: [Boton, MenuEstado, EtiquetaEspecialidad],
   host: {
     class: 'fila',
     '[class.fila--seleccionada]': 'seleccionada()',
