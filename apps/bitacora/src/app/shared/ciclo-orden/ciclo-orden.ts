@@ -14,10 +14,7 @@ import {
 } from '../../data-access/db/ciclo';
 import type { EstadoOrden, MedioDeAviso } from '../../data-access/db/esquema';
 import { enlaceDeWhatsApp } from '../../data-access/db/trabajos';
-import {
-  PRESENTACION,
-  type Orden,
-} from '../../data-access/ordenes.store';
+import { PRESENTACION, type Orden } from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
 import { fechaLarga } from '../formato';
 import { GrupoOpciones, type Opcion } from '../grupo-opciones/grupo-opciones';
