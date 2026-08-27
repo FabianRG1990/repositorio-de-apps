@@ -57,6 +57,10 @@
 }
 
 .fila__cuerpo {
+  /* El ancla del botón superpuesto. Ver el comentario de la plantilla: el
+     cuerpo dejó de ser el `<button>` para que lo de dentro pueda ser pulsable
+     sin anidar controles. */
+  position: relative;
   display: grid;
   align-items: center;
   gap: 0 1rem;
@@ -86,7 +90,25 @@
 /* #18 §6.4: 2 px de trazo con 2 px de hueco. Los 3 px no están en la escala.
    El hueco deja ver la superficie de debajo y ES el segundo anillo: por eso
    funciona sobre cualquier fondo, incluido el de la fila seleccionada. */
-.fila__cuerpo:focus-visible,
+/* Cubre el cuerpo entero: el área pulsable es la misma que cuando el cuerpo
+   ERA el botón. Va por debajo del contenido —sin `z-index` propio— para que
+   los controles de dentro, que sí lo llevan, queden encima y reciban su
+   propio clic. */
+.fila__seleccionar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+
+.fila__seleccionar:focus-visible,
 .fila__accion:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
