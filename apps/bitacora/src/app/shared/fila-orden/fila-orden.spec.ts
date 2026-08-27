@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import { faCheck, faChevronDown } from '@fortawesome/pro-solid-svg-icons';
 import { ConfiguracionTallerStore } from '../../data-access/configuracion-taller.store';
 import type { Orden } from '../../data-access/ordenes.store';
 import { EtiquetaEspecialidad } from '../etiqueta-especialidad/etiqueta-especialidad';
@@ -47,7 +49,14 @@ class Anfitriona {
 }
 
 describe('la fila de una Orden', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    /* La fila enseña el estado con un menú desplegable, y sus iconos los
+       registra el componente raíz —que acá no se monta—. Sin esto FontAwesome
+       lanza al no encontrarlos y se cae hasta la prueba de que el `<li>` es un
+       `<li>`, que no tiene nada que ver. */
+    TestBed.inject(FaIconLibrary).addIcons(faCheck, faChevronDown);
+  });
 
   async function montar(orden: Orden = ORDEN) {
     const fixture = TestBed.createComponent(Anfitriona);
@@ -68,15 +77,32 @@ describe('la fila de una Orden', () => {
   });
 
   /* Un `<button>` dentro de otro `<button>` es HTML inválido, y era lo que
-     salía de meter Ver orden dentro de la fila clicable. */
-  it('los dos botones son hermanos, no uno dentro del otro', async () => {
+     salía de meter Ver orden dentro de la fila clicable.
+
+     Son TRES desde que el estado se cambia desde la fila —seleccionar, el
+     estado y Ver orden— y lo que se comprueba no es cuántos hay sino que
+     ninguno cuelgue de otro: es la invariante que permitió que el estado
+     entrara sin tocar la rejilla. */
+  it('los botones son hermanos, ninguno dentro de otro', async () => {
     const fixture = await montar();
     const botones = [
       ...fixture.nativeElement.querySelectorAll('li.fila button'),
     ] as HTMLElement[];
 
-    expect(botones.length).toBe(2);
+    expect(botones.length).toBe(3);
     expect(botones.some((b) => b.querySelector('button'))).toBe(false);
+  });
+
+  /* El botón que selecciona se vació al dejar de envolver la fila, así que si
+     no llevara texto propio se anunciaría como "botón" a secas. */
+  it('el botón de seleccionar se anuncia con la Orden que selecciona', async () => {
+    const fixture = await montar();
+    const seleccionar = fixture.nativeElement.querySelector(
+      '.fila__seleccionar',
+    ) as HTMLElement;
+
+    expect(seleccionar.textContent?.trim()).toContain('A1-2418');
+    expect(seleccionar.textContent?.trim()).toContain('Toyota Hilux 2019');
   });
 
   it('Ver orden avisa por su propia salida, no por la de seleccionar', async () => {
