@@ -145,8 +145,14 @@ const ORDEN_ESPECIALIDADES: readonly ClaveEspecialidad[] = [
 
 /* El estado es un dato del dominio; el tono y la etiqueta son presentación.
    Viven acá y no en la base para que cambiar cómo se ve un estado no sea una
-   migración de todas las bases locales. */
-const PRESENTACION: Record<
+   migración de todas las bases locales.
+
+   Se EXPORTA porque hay más de un sitio que nombra los estados —la insignia
+   del tablero y el menú que los cambia— y hasta ahora cada uno traía su
+   propia copia de los rótulos. El comentario que las acompañaba ya avisaba
+   del riesgo: "el estado se llama igual en los dos sitios o deja de ser el
+   mismo estado". Dos tablas no lo garantizan; una sí. */
+export const PRESENTACION: Record<
   EstadoOrden,
   { etiqueta: string; tono: TonoEstado }
 > = {
