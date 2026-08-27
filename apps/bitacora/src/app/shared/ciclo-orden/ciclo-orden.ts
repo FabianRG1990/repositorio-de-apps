@@ -14,26 +14,22 @@ import {
 } from '../../data-access/db/ciclo';
 import type { EstadoOrden, MedioDeAviso } from '../../data-access/db/esquema';
 import { enlaceDeWhatsApp } from '../../data-access/db/trabajos';
-import type { Orden } from '../../data-access/ordenes.store';
+import {
+  PRESENTACION,
+  type Orden,
+} from '../../data-access/ordenes.store';
 import { Boton } from '../boton/boton';
 import { fechaLarga } from '../formato';
 import { GrupoOpciones, type Opcion } from '../grupo-opciones/grupo-opciones';
 import { ETIQUETA_MEDIO } from '../trabajos-orden/trabajos-orden';
 
-/* Los mismos rótulos que la insignia del tablero: el estado se llama igual en
-   los dos sitios o deja de ser el mismo estado. */
-const ETIQUETA_ESTADO: Record<EstadoOrden, string> = {
-  recibido: 'Recibido',
-  diagnostico: 'En diagnóstico',
-  'en-proceso': 'En proceso',
-  'esperando-repuesto': 'Esperando repuesto',
-  listo: 'Listo para entrega',
-  entregado: 'Entregado',
-};
-
+/* Los rótulos salen de la MISMA tabla que la insignia del tablero. Estaban
+   copiados acá con un comentario que decía "el estado se llama igual en los
+   dos sitios o deja de ser el mismo estado" — que es cierto, y por eso ahora
+   hay una sola tabla en vez de dos que hay que acordarse de sincronizar. */
 const ESTADOS: readonly Opcion[] = ESTADOS_EN_EL_TALLER.map((id) => ({
   id,
-  etiqueta: ETIQUETA_ESTADO[id],
+  etiqueta: PRESENTACION[id].etiqueta,
 }));
 
 const MEDIOS: readonly Opcion[] = [
