@@ -51,6 +51,16 @@ Cada visita trae a la vista **lo que quedó declinado**. Es lo que el mismo ADR 
 - **Entregar como un estado más**: un radio menos y una fecha que se olvida de fijar.
 - **Avisar mueve el estado a listo**: ahorra un clic el día que coinciden y hace imposible registrar el aviso cuando no.
 
+## Desde dónde se mueve, decidido después
+
+Este ADR resolvió **cómo** se mueve el estado y lo dejó todo dentro de la ventana de la Orden, que era el sitio natural mientras se construía la máquina entera. Lo que no se preguntó es **desde dónde se mueve en un día normal**, y la respuesta no es leyendo la Orden completa: un carro cambia de estado varias veces al día, se recibe una vez y se entrega una vez. Movido en [#120](https://github.com/FabianRG1990/repositorio-de-apps/issues/120).
+
+**El estado se cambia desde donde se lee el estado**: la insignia del tablero y la del panel de resumen son el disparador de un menú con los mismos cinco estados. No es un control nuevo ni una segunda copia — los rótulos salen de la misma tabla y la escritura del mismo `moverA`.
+
+Va en la insignia y no en un botón aparte porque la rejilla de la fila tiene cinco configuraciones entre densidades y reflujo, todas medidas en [#77](https://github.com/FabianRG1990/repositorio-de-apps/issues/77), y una columna más las reabre. La insignia ya ocupaba una celda.
+
+Lo que **no** se movió fuera de la ventana: **entregar**, por lo que dice este mismo ADR —saca el carro del Taller y fija la fecha, y un clic desde una lista es la forma de hacerlo sin querer—, y **avisar**, que arma un mensaje y deja constancia. La Orden ya entregada tampoco se toca desde la lista: devolverla al Taller es deshacer la entrega, y eso limpia la fecha.
+
 ## Consequences
 
 - **La fecha se enseña con el mes en letras.** El `<input type="date">` guarda ISO pero se **presenta** en el formato del aparato: una tableta en inglés pone `mm/dd` donde en Costa Rica se lee `dd/mm`, y un 01/12 leído al revés es un carro que vuelve once meses tarde. Se repite debajo del campo y en todas las vistas.
@@ -58,4 +68,5 @@ Cada visita trae a la vista **lo que quedó declinado**. Es lo que el mismo ADR 
 - **La semilla lleva fechas relativas.** Se instala el día que alguien abre la app, así que una fecha escrita a mano queda vencida sola y la pantalla acabaría enseñando siempre lo mismo.
 - **`reuseExistingServer` puede mentir.** Un `serve-static` vivo de una corrida anterior sirve el bundle viejo, y una prueba mutada pasa igual. Verificar que una prueba muerde exige matar el servidor primero.
 - **Falta el enlace de la lista a la Orden.** Desde Próximas visitas se puede escribir, pero no abrir la Orden: para ver qué se hizo hay que ir a Órdenes. Es un ticket aparte.
+- **La fila del tablero dejó de ser un botón que envuelve su contenido.** Para que la insignia pudiera ser pulsable —un `<button>` dentro de otro es HTML inválido— el botón que selecciona pasó a ir superpuesto por `inset: 0`. El área pulsable no cambió y las veinte mediciones de #77 siguen dando lo mismo, pero cualquier cosa que se añada a la fila tiene que contar con que hay un botón invisible debajo.
 - **El Aviso de listo, la Autorización y ahora la constancia de entrega comparten forma** — un hecho con fecha, persona y medio. El ADR 0009 avisó que si aparecía un tercer caso convenía mirarlos juntos antes de repetir la estructura. Ya son tres.
