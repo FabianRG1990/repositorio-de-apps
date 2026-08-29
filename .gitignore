@@ -60,3 +60,7 @@ __screenshots__/
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+# Caché de scraping de Firecrawl - entrada cruda de investigación y material
+# de terceros. Lo versionable es el documento destilado en docs/research/.
+.firecrawl/
