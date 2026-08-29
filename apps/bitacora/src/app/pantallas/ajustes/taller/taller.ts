@@ -68,7 +68,15 @@ export class AjustesTaller {
   protected readonly puestoNombre = signal('');
   protected readonly puestoLetra = signal('');
 
-  protected readonly tarifas = signal<Record<string, string>>({});
+  /* Parcial y con la clave tipada: las Especialidades salen del registro del
+     Taller y las Tarifas de su propia tabla, así que una Especialidad recién
+     encendida no tiene entrada acá hasta que alguien le fije el monto. Un
+     `Record<string, string>` decía que siempre la hay, y el compilador de
+     plantillas creía en él: marcaba de sobra los `??` que sostienen ese hueco
+     (NG8102). */
+  protected readonly tarifas = signal<Partial<Record<Especialidad, string>>>(
+    {},
+  );
 
   /* --- Personal ------------------------------------------------------------
      La Persona que se está editando, o `nuevo` mientras se crea una. Mismo
