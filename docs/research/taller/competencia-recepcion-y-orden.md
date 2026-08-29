@@ -104,7 +104,11 @@ Este es el hallazgo más accionable del documento, y el resultado es incómodo p
 
 Que la **placa** sea un dato adicional y la **marca** el único obligatorio es exactamente al revés de como funciona un mostrador costarricense, y es un buen recordatorio de que el producto está diseñado para un mercado donde el VIN llega con el carro.
 
-**[PRODUCTO] Shopmonkey — cero campos.** El artículo _Create an Estimate_ describe cuatro sitios desde donde se crea un estimado (el botón `+` de cualquier página, el botón de la página de Workflow, al agendar una cita, desde la búsqueda global y desde las páginas de Cliente, flotilla o vehículo) y **no menciona ni un solo campo obligatorio**: la orden nace vacía y se le va colgando encima. — [Create an Estimate](https://support.shopmonkey.io/hc/en-us/articles/38743909407380-Create-an-Estimate)
+**[PRODUCTO] Shopmonkey — cero campos, y esto se puede afirmar por esquema y no por omisión.** El artículo _Create an Estimate_ describe cuatro sitios desde donde se crea un estimado (el botón `+` de cualquier página, el botón de la página de Workflow, al agendar una cita, desde la búsqueda global y desde las páginas de Cliente, flotilla o vehículo) y **no menciona ni un solo campo obligatorio** — [Create an Estimate](https://support.shopmonkey.io/hc/en-us/articles/38743909407380-Create-an-Estimate).
+
+Que un artículo no mencione algo es evidencia débil, así que se fue a la API pública, que sí marca la obligatoriedad campo por campo. **En `POST /v3/order` ninguno de los ~20 parámetros del cuerpo aparece marcado `Required`** — ni `customerId`, ni `vehicleId`, ni `complaint` ([Create Order](https://shopmonkey.dev/resources/order#create-order)). Y en `Create Vehicle` **el único campo obligatorio de todo el recurso es `size`** —`HeavyDuty`, `LightDuty` u `Other`—, mientras que `vin`, `make`, `model` y `customerId` son opcionales ([Create Vehicle](https://shopmonkey.dev/resources/vehicle#create-vehicle)). La Orden nace literalmente vacía y se le cuelga todo encima.
+
+**[NO VERIFICADO]** cuántos campos exige de verdad el formulario de la pantalla: la API es el contrato del servidor, y un formulario puede ser más estricto que su propio esquema. Pero el piso está probado, y es cero.
 
 **[PRODUCTO] Tekmetric — cero al crear, hasta nueve al cerrar, y lo decide el taller.** _RO Advanced Settings_ es literalmente una pantalla de configuración cuyo propósito declarado es _"Control which data on the repair order is required in order to complete work and post the RO"_. Los nueve interruptores:
 
@@ -191,7 +195,7 @@ Fuente: [SINALEVI — Ley de Certificados, Firmas Digitales y Documentos Electr�
 **[PRODUCTO]** No se encontró en ninguno de los seis un concepto equivalente a **Quien entrega** — la persona que físicamente deja el carro en esta Visita y a quien se le avisa. Lo que hay es otra cosa:
 
 - Mitchell 1 tiene el par Cliente/Vehículo con la operación _Change Customer_ para _"select a different customer and vehicle to substitute for the current combination assigned to this order"_, y **Unit # / Fleet ID** en el vehículo para flotillas ([Vehicle Screen](https://buymitchell1.net/managerhelp/Vehiclescr.htm)).
-- Shopmonkey resuelve la flotilla con `VehicleOwner` muchos-a-muchos y `ownerCount` (#15 §6.2).
+- Shopmonkey resuelve la flotilla con `VehicleOwner` muchos-a-muchos y `ownerCount` (#15 §6.2). Se revisaron para este documento los tres esquemas públicos donde tendría que vivir —[Order](https://shopmonkey.dev/resources/order), [Customer](https://shopmonkey.dev/resources/customer) y [Vehicle](https://shopmonkey.dev/resources/vehicle)— y **no existe ningún campo de contacto alterno, conductor ni "quién lo dejó"**: lo único que hay es el arreglo `owners` del vehículo, que es historial de propiedad, no de entrega física.
 - Shop-Ware pone un _fleet number_ en el vehículo.
 
 **Todos resuelven "este carro es de una flotilla" y ninguno resuelve "hoy lo trajo Marvin y hay que llamarlo a él".** Es el caso que el glosario de Bitácora nombra explícitamente — _"en una flotilla es un chofer distinto cada vez"_ — y `Orden.quienEntrega` lo guarda por Visita, que es donde corresponde.
@@ -310,6 +314,8 @@ Cerrado en #15 §6.4 y #16 §4. Lo que este documento agrega es cuándo el Técn
 La pregunta más importante y la que menos evidencia positiva tiene, en las dos direcciones.
 
 **Lo que se buscó y no apareció:** búsquedas restringidas a `site:support.tekmetric.com` y `site:support.shopmonkey.io` con `offline`, `internet connection` y `outage`, el 2026-08-29. **Cero resultados en ambos casos.**
+
+En el caso de Shopmonkey la búsqueda se rehízo contra el buscador interno del propio centro de ayuda —`support.shopmonkey.io/api/v2/help_center/articles/search.json`, la API de Zendesk que indexa sus artículos—, que es más fiable que un buscador externo porque no depende de qué haya rastreado Google. `offline` devolvió **un solo artículo, sobre disputas de pagos con tarjeta**, sin relación; `connection` devolvió 40 resultados, todos de configuración de lectores de tarjeta y de integraciones. **Ninguno sobre operar la aplicación sin internet.** La app móvil _Shopmonkey for Techs_ tampoco lo menciona en su propio artículo.
 
 **Lo que sí dicen sus propias páginas:**
 
@@ -506,6 +512,14 @@ Complementos: multi-taller **+US$70/mes/taller**, suite de llantas **+US$39**, m
 | **Basic**  | US$239  | US$215 | Texto y correo bidireccional · DVI · firma electrónica · pagos · pedido de repuestos                  |
 | **Clever** | US$399  | US$359 | **Flujo de trabajo configurable** · guías de labor · inventario · QBO · **reloj de tiempo** · ALLDATA |
 | **Genius** | US$499  | US$449 | Reseñas de Google · diagramas y procedimientos · seguimiento automático de estimados                  |
+
+Tres cosas del empaquetado de Shopmonkey que no se ven en la tabla y que cambian la comparación de precio:
+
+- **La inspección digital está capada en el tier de entrada**: Basic trae **dos plantillas** de DVI; se vuelven ilimitadas hasta Clever, US$160/mes más arriba.
+- **La consulta por placa es del tier más caro y además necesita Carfax activado.** El decodificador de VIN sí está en todos los tiers; poder escribir la placa en el buscador y que resuelva el vehículo es exclusivo de Genius — [Add Vehicles](https://support.shopmonkey.io/hc/en-us/articles/38743934303252-Add-Vehicles).
+- **Cobran US$500 una sola vez por migrar los datos**, al pie de _Data Migration Assistance_. Es el número que #15 §5 describía como la barrera de salida del rubro, ahora con precio.
+
+Y por fuera de cualquier plan: CRM Essentials US$314–349/mes, Bookkeeping US$314–349/mes, Accounting US$89–99/mes, Heavy Duty a cotizar. **[NO VERIFICADO]** el costo de los SMS por mensaje o por paquete: no está en la página pública.
 
 **[PRODUCTO] AutoLeap** — https://autoleap.com/pricing/ (2026-08-29)
 
