@@ -3,6 +3,8 @@
 > Investigación de producto del mapa [#14](https://github.com/FabianRG1990/repositorio-de-apps/issues/14).
 > Fecha de verificación: **2026-08-29**. Precios y funciones cambian sin aviso; cada afirmación lleva su URL.
 >
+> **Actualizado por [`competencia-recepcion-anexo.md`](./competencia-recepcion-anexo.md)** (#125, 2026-09-30), que cierra las celdas `?` de Tekmetric y Garage Hive en la recepción y el precio de Shop-Ware y Garage Hive, y **corrige cuatro afirmaciones de este documento** (su §7). Leer la tabla §6 junto con el §8 del anexo.
+>
 > **Este documento empieza donde termina [`que-hace-indispensable.md`](./que-hace-indispensable.md)** (#15, 2026-08-17). El bucle inspección → cotización → aprobación, los cuatro números del taller, por qué se abandona un sistema, el patrón de entidades canónicas y el relevamiento de Latinoamérica ya están ahí y **no se repiten**: se citan y se sigue. Lo nuevo acá es el **detalle mecánico de las dos pantallas que nos importan** —recibir el carro y trabajar la Orden— y el contraste campo por campo contra lo que Bitácora ya tiene construido.
 >
 > Tampoco se re-litiga la identidad del Vehículo: [`placa-vs-vin-costa-rica.md`](./placa-vs-vin-costa-rica.md) (#35) ya cerró que la llave es un `id` sintético, la Placa el identificador operativo y el VIN un atributo de decodificación. Ni el eje de la Especialidad: [`organizacion-multiespecialidad.md`](./organizacion-multiespecialidad.md) (#16) ya cerró que vive en la Línea de servicio.
